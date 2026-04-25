@@ -1,0 +1,27 @@
+# Переменные окружения
+.env
+.env.local
+.env.production
+**/.env
+**/.env.local
+**/.env.production
+
+# IDE настройки
+.idea/
+.vscode/
+
+# Зависимости
+node_modules/
+**/node_modules/
+
+# Сборки
+dist/
+**/dist/
+
+# Логи
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
