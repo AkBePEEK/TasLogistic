@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([token])
+}
+
+enum Role {
+  SELLER
+  ADMIN
+  CUSTOMER
+}
+
+enum Status {
+  CREATED
+  PROCESSING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+
+  items         Item[]          @relation("SellerItems")
+  statusChanges StatusHistory[] @relation("ChangedByUser")
+  trackedItems  TrackedItem[]   @relation("CustomerTracked")
+
+  refreshTokens RefreshToken[]
+}
+
+model Item {
+  id            String   @id @default(uuid())
+  trackingCode  String   @unique @db.VarChar(64)
+  title         String
+  description   String?
+  sellerId      String
+  currentStatus Status   @default(CREATED)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  seller        User            @relation("SellerItems", fields: [sellerId], references: [id])
+  statusHistory StatusHistory[]
+  trackedBy     TrackedItem[]   @relation("TrackedBy")
+
+  @@index([trackingCode])
+  @@index([sellerId])
+}
+
+model StatusHistory {
+  id        String   @id @default(uuid())
+  itemId    String
+  oldStatus Status
+  newStatus Status
+  changedBy String
+  changedAt DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id])
+  user User @relation("ChangedByUser", fields: [changedBy], references: [id])
+
+  @@index([changedAt])
+}
+
+model TrackedItem {
+  id         String   @id @default(uuid())
+  customerId String
+  itemId     String
+  addedAt    DateTime @default(now())
+
+  customer User @relation("CustomerTracked", fields: [customerId], references: [id])
+  item     Item @relation("TrackedBy", fields: [itemId], references: [id])
+
+  @@unique([customerId, itemId])
+  @@index([customerId])
+}
