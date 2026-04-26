@@ -12,10 +12,10 @@ import { SellerItems } from './pages/dashboard/seller/SellerItems';
 import { CreateItem } from './pages/dashboard/seller/CreateItem';
 import { AdminItems } from './pages/dashboard/admin/AdminItems';
 import { CustomerOrders } from './pages/dashboard/customer/CustomerOrder';
-import {NotFoundPage} from "@/pages/NotFoundPage";
-import {Toaster} from "react-hot-toast";
-import {ItemDetail} from "@/pages/dashboard/ItemDetail";
-import {ProfilePage} from "@/pages/dashboard/ProfilePage";
+import { NotFoundPage } from './pages/NotFoundPage';
+import { Toaster } from 'react-hot-toast';
+import { ItemDetail } from './pages/dashboard/ItemDetail';
+import { ProfilePage } from './pages/dashboard/ProfilePage';
 
 const queryClient = new QueryClient({
     defaultOptions: {
