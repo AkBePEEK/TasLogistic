@@ -30,7 +30,12 @@ export async function customerGetTrackedItems(
                         trackingCode: true,
                         title: true,
                         currentStatus: true,
+                        createdAt: true,      // ← добавить
                         updatedAt: true,
+                        fromCity: true,       // ← добавить
+                        toCity: true,         // ← добавить
+                        recipientName: true,  // ← добавить
+                        weight: true,         // ← добавить
                         statusHistory: {
                             orderBy: { changedAt: 'desc' },
                             take: 3,
@@ -141,20 +146,11 @@ export async function customerGetItemHistory(
     res: Response
 ): Promise<void> {
     const { itemId } = req.params;
-
-    if (!itemId) {
-        sendError(res, 400, 'ID товара обязателен');
-        return;
-    }
+    if (!itemId) { sendError(res, 400, 'ID товара обязателен'); return; }
 
     try {
         const tracked = await prisma.trackedItem.findUnique({
-            where: {
-                customerId_itemId: {
-                    customerId: req.user.userId,
-                    itemId,
-                },
-            },
+            where: { customerId_itemId: { customerId: req.user.userId, itemId } },
             include: {
                 item: {
                     select: {
@@ -165,6 +161,13 @@ export async function customerGetItemHistory(
                         currentStatus: true,
                         createdAt: true,
                         updatedAt: true,
+                        fromCity: true,        // ← добавить
+                        toCity: true,          // ← добавить
+                        recipientName: true,   // ← добавить
+                        recipientPhone: true,  // ← добавить
+                        weight: true,          // ← добавить
+                        cashOnDelivery: true,  // ← добавить
+                        comment: true,         // ← добавить
                         statusHistory: {
                             orderBy: { changedAt: 'asc' },
                             select: {
@@ -172,6 +175,7 @@ export async function customerGetItemHistory(
                                 oldStatus: true,
                                 newStatus: true,
                                 changedAt: true,
+                                location: true,    // ← добавить
                             },
                         },
                     },
@@ -179,11 +183,7 @@ export async function customerGetItemHistory(
             },
         });
 
-        if (!tracked) {
-            sendError(res, 404, 'Товар не найден в вашем списке');
-            return;
-        }
-
+        if (!tracked) { sendError(res, 404, 'Товар не найден в вашем списке'); return; }
         sendSuccess(res, { addedAt: tracked.addedAt, ...tracked.item });
     } catch {
         sendError(res, 500, 'Внутренняя ошибка сервера');

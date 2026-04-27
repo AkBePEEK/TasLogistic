@@ -200,6 +200,8 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
         <div className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
+
+                    {/* Трек-код и статус */}
                     <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-sm font-semibold tracking-wider text-indigo-600">
               {item.trackingCode}
@@ -207,24 +209,33 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                         <StatusBadge status={item.currentStatus} />
                     </div>
 
+                    {/* Название */}
                     <p className="mt-1 truncate text-sm font-medium text-gray-900">
                         {item.title}
                     </p>
 
-                    {/* ← Города отправки и доставки */}
+                    {/* ← Города */}
                     {(item.fromCity || item.toCity) && (
                         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500">
-                            <span>{item.fromCity}</span>
-                            <span>→</span>
-                            <span className="font-medium text-gray-700">{item.toCity}</span>
+                            <span>📍</span>
+                            <span>{item.fromCity ?? '—'}</span>
+                            <span className="text-gray-300">→</span>
+                            <span className="font-medium text-gray-700">{item.toCity ?? '—'}</span>
                         </div>
                     )}
 
-                    {/* ← Дата отправки */}
+                    {/* ← Дата и время отправки */}
                     <p className="mt-1 text-xs text-gray-400">
-                        Отправлен: {new Date(item.createdAt).toLocaleDateString('ru-RU', {
-                        day: '2-digit', month: 'long', year: 'numeric',
-                    })}
+                        Отправлен:{' '}
+                        {item.createdAt
+                            ? new Date(item.createdAt).toLocaleString('ru-RU', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                            })
+                            : '—'}
                     </p>
 
                     {/* Мини-хронология */}
@@ -236,17 +247,28 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                                     <StatusChip status={step.newStatus} />
                                 </React.Fragment>
                             ))}
+                            {item.statusHistory.length > 4 && (
+                                <span className="text-xs text-gray-400">
+                  +{item.statusHistory.length - 4} ещё
+                </span>
+                            )}
                         </div>
                     )}
                 </div>
 
+                {/* Кнопки */}
                 <div className="flex flex-shrink-0 flex-col gap-2">
-                    <button onClick={onShowHistory}
-                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
-                        История →
+                    <button
+                        onClick={onShowHistory}
+                        className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100"
+                    >
+                        Подробнее →
                     </button>
-                    <button onClick={onRemove} disabled={isRemoving}
-                            className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-100 disabled:opacity-40">
+                    <button
+                        onClick={onRemove}
+                        disabled={isRemoving}
+                        className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-100 disabled:opacity-40"
+                    >
                         {isRemoving ? '...' : 'Удалить'}
                     </button>
                 </div>

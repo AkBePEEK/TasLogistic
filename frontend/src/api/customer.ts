@@ -12,6 +12,8 @@ export interface TrackedItemSummary {
     createdAt: string;
     fromCity?: string;
     toCity?: string;
+    recipientName?: string;
+    weight?: number;
     statusHistory: { newStatus: Status; changedAt: string }[];
 }
 
