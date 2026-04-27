@@ -59,6 +59,14 @@ model Item {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  recipientName  String?
+  recipientPhone String?
+  fromCity       String?
+  toCity         String?
+  weight         Float?
+  cashOnDelivery Float?
+  comment        String?
+
   seller        User            @relation("SellerItems", fields: [sellerId], references: [id])
   statusHistory StatusHistory[]
   trackedBy     TrackedItem[]   @relation("TrackedBy")
@@ -74,6 +82,7 @@ model StatusHistory {
   newStatus Status
   changedBy String
   changedAt DateTime @default(now())
+  location  String?
 
   item Item @relation(fields: [itemId], references: [id])
   user User @relation("ChangedByUser", fields: [changedBy], references: [id])

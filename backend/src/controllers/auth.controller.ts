@@ -14,6 +14,7 @@ const ACCESS_COOKIE: CookieOptions = {
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
     maxAge: 15 * 60 * 1000,
+    domain: isProd ? undefined : undefined,
 };
 
 const REFRESH_COOKIE: CookieOptions = {
@@ -22,6 +23,7 @@ const REFRESH_COOKIE: CookieOptions = {
     sameSite: isProd ? 'none' : 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
+    domain: isProd ? undefined : undefined,
 };
 
 const REFRESH_TOKEN_TTL_DAYS = 30;

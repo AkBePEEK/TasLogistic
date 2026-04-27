@@ -90,95 +90,91 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                         <div className="space-y-6">
                             {/* Текущий статус */}
                             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                <span className="text-sm font-medium text-gray-600">
-                  Текущий статус
-                </span>
+                                <span className="text-sm font-medium text-gray-600">Текущий статус</span>
                                 <StatusBadge status={data.currentStatus} large />
                             </div>
 
-                            {/* Временная шкала */}
+                            {/* ← Детали отправки */}
+                            <div className="rounded-xl border border-gray-100 bg-white p-4 space-y-3">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                    Детали отправки
+                                </p>
+                                {data.fromCity && data.toCity && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <span className="text-gray-500">Маршрут:</span>
+                                        <span className="font-medium">{data.fromCity}</span>
+                                        <span className="text-gray-300">→</span>
+                                        <span className="font-medium text-indigo-600">{data.toCity}</span>
+                                    </div>
+                                )}
+                                {data.recipientName && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Получатель:</span>
+                                        <span className="font-medium">{data.recipientName}</span>
+                                    </div>
+                                )}
+                                {data.recipientPhone && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Телефон:</span>
+                                        <span className="font-medium">{data.recipientPhone}</span>
+                                    </div>
+                                )}
+                                {data.weight && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Вес:</span>
+                                        <span className="font-medium">{data.weight} кг</span>
+                                    </div>
+                                )}
+                                {data.cashOnDelivery !== undefined && data.cashOnDelivery > 0 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Наложенный платёж:</span>
+                                        <span className="font-medium text-orange-600">
+            {data.cashOnDelivery.toLocaleString('ru-RU')} ₸
+          </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Временная шкала с локацией */}
                             <div>
                                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">
-                                    Хронология — {data.statusHistory.length}{' '}
-                                    {pluralize(
-                                        data.statusHistory.length,
-                                        'событие',
-                                        'события',
-                                        'событий'
-                                    )}
+                                    Хронология — {data.statusHistory.length} событий
                                 </p>
-
                                 <ol className="relative ml-2 border-l-2 border-gray-100">
                                     {data.statusHistory.map((entry, idx) => {
-                                        const isFirst = idx === 0;
                                         const isLast = idx === data.statusHistory.length - 1;
-
                                         return (
-                                            <li
-                                                key={entry.id}
-                                                className={`relative ml-5 ${isLast ? 'pb-0' : 'pb-5'}`}
-                                            >
-                        <span
-                            className={[
-                                'absolute -left-[25px] top-1 flex h-4 w-4 items-center justify-center rounded-full ring-2 ring-white',
-                                TIMELINE_DOT[entry.newStatus],
-                            ].join(' ')}
-                        />
-
+                                            <li key={entry.id} className={`relative ml-5 ${isLast ? 'pb-0' : 'pb-5'}`}>
+                                                  <span className={[
+                                                      'absolute -left-[25px] top-1 flex h-4 w-4 rounded-full ring-2 ring-white',
+                                                      TIMELINE_DOT[entry.newStatus],
+                                                  ].join(' ')} />
                                                 <div className="rounded-lg border border-gray-100 bg-white px-3 py-2.5 shadow-sm">
                                                     <div className="flex items-center justify-between gap-3">
                                                         <div className="flex items-center gap-2">
-                                                            {!isFirst && (
-                                                                <span className="text-xs text-gray-300">
-                                  {entry.oldStatus} →
-                                </span>
+                                                            {idx > 0 && (
+                                                                <span className="text-xs text-gray-300">{entry.oldStatus} →</span>
                                                             )}
                                                             <StatusBadge status={entry.newStatus} />
                                                         </div>
                                                         <time className="flex-shrink-0 text-xs tabular-nums text-gray-400">
                                                             {new Date(entry.changedAt).toLocaleString('ru-RU', {
-                                                                day: '2-digit',
-                                                                month: 'short',
-                                                                year: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
+                                                                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
                                                             })}
                                                         </time>
                                                     </div>
+                                                    {/* ← Локация под статусом */}
+                                                    {entry.location && (
+                                                        <p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                                                            <span>📍</span>
+                                                            <span>{entry.location}</span>
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </li>
                                         );
                                     })}
                                 </ol>
-                            </div>
-
-                            {/* Метаданные */}
-                            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-xs text-gray-500">
-                                {data.description && (
-                                    <p className="mb-3 text-sm text-gray-600">{data.description}</p>
-                                )}
-                                <div className="space-y-1.5">
-                                    <div className="flex justify-between">
-                                        <span>Заказ создан</span>
-                                        <span className="font-medium tabular-nums">
-                      {new Date(data.createdAt).toLocaleDateString('ru-RU', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                      })}
-                    </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Добавлен в отслеживание</span>
-                                        <span className="font-medium tabular-nums">
-                      {new Date(data.addedAt).toLocaleDateString('ru-RU', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                      })}
-                    </span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     )}
@@ -186,13 +182,4 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
             </aside>
         </>
     );
-}
-
-function pluralize(n: number, one: string, few: string, many: string): string {
-    const mod10 = n % 10;
-    const mod100 = n % 100;
-    if (mod100 >= 11 && mod100 <= 19) return many;
-    if (mod10 === 1) return one;
-    if (mod10 >= 2 && mod10 <= 4) return few;
-    return many;
 }

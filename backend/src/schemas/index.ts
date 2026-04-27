@@ -27,10 +27,18 @@ export const LoginSchema = z.object({
 export const CreateItemSchema = z.object({
     title: z.string().min(2).max(255),
     description: z.string().max(1000).optional(),
+    recipientName: z.string().min(2).max(255),
+    recipientPhone: z.string().min(10).max(20),
+    fromCity: z.string().min(2).max(100),
+    toCity: z.string().min(2).max(100),
+    weight: z.number().positive().max(10000),
+    cashOnDelivery: z.number().min(0).optional(),
+    comment: z.string().max(500).optional(),
 });
 
 export const UpdateStatusSchema = z.object({
     status: StatusEnum,
+    location: z.string().max(255).optional(),
 });
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;

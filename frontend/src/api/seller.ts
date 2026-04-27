@@ -1,8 +1,35 @@
 import { apiClient } from './client';
-import {ApiResponse, Item, PaginatedItems, StatusHistoryEntry} from '@/types';
+import {ApiResponse, Item, Status} from '@/types';
 
 export interface ItemDetail extends Item {
     statusHistory: StatusHistoryEntry[];
+}
+
+export interface StatusHistoryEntry {
+    id: string;
+    oldStatus: Status;
+    newStatus: Status;
+    changedAt: string;
+    location?: string;
+}
+
+export interface ItemDetail extends Item {
+    recipientName?: string;
+    recipientPhone?: string;
+    fromCity?: string;
+    toCity?: string;
+    weight?: number;
+    cashOnDelivery?: number;
+    comment?: string;
+    statusHistory: StatusHistoryEntry[];
+}
+
+export interface PaginatedItems {
+    items: Item[];
+    total: number;
+    page: number;
+    limit: number;
+    monthlyCount: number;
 }
 
 export const sellerApi = {
@@ -12,11 +39,14 @@ export const sellerApi = {
         }),
 
     getItemById: (id: string) =>
-        apiClient.get<ApiResponse<ItemDetail>>(`/seller/items/${id}`),  // ← добавить
+        apiClient.get<ApiResponse<ItemDetail>>(`/seller/items/${id}`),
 
-    createItem: (data: { title: string; description?: string }) =>
+    createItem: (data: object) =>
         apiClient.post<ApiResponse<Item>>('/seller/items', data),
 
-    updateStatus: (id: string, status: string) =>
-        apiClient.patch<ApiResponse<Item>>(`/seller/items/${id}/status`, { status }),
+    updateStatus: (id: string, status: string, location?: string) =>
+        apiClient.patch<ApiResponse<Item>>(`/seller/items/${id}/status`, {
+            status,
+            location,
+        }),
 };

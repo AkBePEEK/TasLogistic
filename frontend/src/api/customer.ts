@@ -9,6 +9,9 @@ export interface TrackedItemSummary {
     title: string;
     currentStatus: Status;
     updatedAt: string;
+    createdAt: string;
+    fromCity?: string;
+    toCity?: string;
     statusHistory: { newStatus: Status; changedAt: string }[];
 }
 
@@ -21,11 +24,19 @@ export interface TrackedItemDetail {
     currentStatus: Status;
     createdAt: string;
     updatedAt: string;
+    recipientName?: string;
+    recipientPhone?: string;
+    fromCity?: string;
+    toCity?: string;
+    weight?: number;
+    cashOnDelivery?: number;
+    comment?: string;
     statusHistory: {
         id: string;
         oldStatus: Status;
         newStatus: Status;
         changedAt: string;
+        location?: string;
     }[];
 }
 

@@ -194,25 +194,37 @@ interface OrderCardProps {
 }
 
 function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps) {
-    // Хронология для превью — от старых к новым, максимум 4 шага
     const timeline = [...item.statusHistory].reverse().slice(0, 4);
 
     return (
         <div className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
             <div className="flex items-start justify-between gap-4">
-                {/* Левая часть — информация */}
                 <div className="min-w-0 flex-1">
-                    {/* Строка с кодом и статусом */}
                     <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm font-semibold text-indigo-600 tracking-wider">
+            <span className="font-mono text-sm font-semibold tracking-wider text-indigo-600">
               {item.trackingCode}
             </span>
                         <StatusBadge status={item.currentStatus} />
                     </div>
 
-                    {/* Название */}
                     <p className="mt-1 truncate text-sm font-medium text-gray-900">
                         {item.title}
+                    </p>
+
+                    {/* ← Города отправки и доставки */}
+                    {(item.fromCity || item.toCity) && (
+                        <div className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500">
+                            <span>{item.fromCity}</span>
+                            <span>→</span>
+                            <span className="font-medium text-gray-700">{item.toCity}</span>
+                        </div>
+                    )}
+
+                    {/* ← Дата отправки */}
+                    <p className="mt-1 text-xs text-gray-400">
+                        Отправлен: {new Date(item.createdAt).toLocaleDateString('ru-RU', {
+                        day: '2-digit', month: 'long', year: 'numeric',
+                    })}
                     </p>
 
                     {/* Мини-хронология */}
@@ -220,45 +232,21 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                         <div className="mt-3 flex flex-wrap items-center gap-1">
                             {timeline.map((step, i) => (
                                 <React.Fragment key={i}>
-                                    {i > 0 && (
-                                        <span className="text-gray-300 text-xs select-none">›</span>
-                                    )}
+                                    {i > 0 && <span className="text-xs text-gray-300">›</span>}
                                     <StatusChip status={step.newStatus} />
                                 </React.Fragment>
                             ))}
-                            {item.statusHistory.length > 4 && (
-                                <span className="text-xs text-gray-400">
-                  +{item.statusHistory.length - 4} ещё
-                </span>
-                            )}
                         </div>
                     )}
-
-                    {/* Дата последнего обновления */}
-                    <p className="mt-2 text-xs text-gray-400">
-                        Обновлён:{' '}
-                        {new Date(item.updatedAt).toLocaleString('ru-RU', {
-                            day: '2-digit',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        })}
-                    </p>
                 </div>
 
-                {/* Правая часть — кнопки */}
                 <div className="flex flex-shrink-0 flex-col gap-2">
-                    <button
-                        onClick={onShowHistory}
-                        className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                    >
+                    <button onClick={onShowHistory}
+                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
                         История →
                     </button>
-                    <button
-                        onClick={onRemove}
-                        disabled={isRemoving}
-                        className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-100 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-red-200"
-                    >
+                    <button onClick={onRemove} disabled={isRemoving}
+                            className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-100 disabled:opacity-40">
                         {isRemoving ? '...' : 'Удалить'}
                     </button>
                 </div>

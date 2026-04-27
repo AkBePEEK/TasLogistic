@@ -15,54 +15,43 @@ export async function sellerUpdateStatus(
     res: Response
 ): Promise<void> {
     const { id } = req.params;
-    const { status }: UpdateStatusInput = req.body;
+    const { status, location }: UpdateStatusInput = req.body;
 
-    // Явная проверка — после этого TypeScript знает что id это string, не undefined
-    if (!id) {
-        sendError(res, 400, 'ID товара обязателен');
-        return;
-    }
+    if (!id) { sendError(res, 400, 'ID товара обязателен'); return; }
 
     try {
         const result = await prisma.$transaction(async (tx: PrismaTx) => {
             const item = await tx.item.findUnique({
-                where: { id },           // ← теперь id гарантированно string
+                where: { id },
                 select: { id: true, currentStatus: true, sellerId: true },
             });
 
             if (!item) return null;
-
-            if (item.currentStatus === status) {
-                throw new Error('STATUS_SAME');
-            }
+            if (item.currentStatus === status) throw new Error('STATUS_SAME');
 
             const updatedItem = await tx.item.update({
-                where: { id },           // ← то же самое
+                where: { id },
                 data: { currentStatus: status },
             });
 
             await tx.statusHistory.create({
                 data: {
-                    itemId: id,            // ← гарантированно string
+                    itemId: id,
                     oldStatus: item.currentStatus,
                     newStatus: status,
                     changedBy: req.user.userId,
+                    location: location ?? null, // ← сохраняем локацию
                 },
             });
 
             return updatedItem;
         });
 
-        if (!result) {
-            sendError(res, 404, 'Товар не найден');
-            return;
-        }
-
+        if (!result) { sendError(res, 404, 'Товар не найден'); return; }
         sendSuccess(res, result, 200, 'Статус успешно обновлён');
     } catch (err) {
         if (err instanceof Error && err.message === 'STATUS_SAME') {
-            sendError(res, 400, 'Товар уже имеет указанный статус');
-            return;
+            sendError(res, 400, 'Товар уже имеет указанный статус'); return;
         }
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
@@ -79,8 +68,13 @@ export async function sellerGetItems(
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
 
+    // Начало текущего месяца
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
     try {
-        const [items, total] = await prisma.$transaction([
+        const [items, total, monthlyCount] = await prisma.$transaction([
             prisma.item.findMany({
                 where: { sellerId: req.user.userId },
                 orderBy: { updatedAt: 'desc' },
@@ -89,14 +83,21 @@ export async function sellerGetItems(
                 include: {
                     statusHistory: {
                         orderBy: { changedAt: 'desc' },
-                        take: 1, // последнее изменение для превью
+                        take: 1,
                     },
                 },
             }),
             prisma.item.count({ where: { sellerId: req.user.userId } }),
+            // ← количество товаров созданных за текущий месяц
+            prisma.item.count({
+                where: {
+                    sellerId: req.user.userId,
+                    createdAt: { gte: startOfMonth },
+                },
+            }),
         ]);
 
-        sendSuccess(res, { items, total, page, limit });
+        sendSuccess(res, { items, total, page, limit, monthlyCount });
     } catch {
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
@@ -158,18 +159,17 @@ export async function sellerCreateItem(
     req: AuthenticatedRequest,
     res: Response
 ): Promise<void> {
-    const { title, description } = req.body;
+    const {
+        title, description,
+        recipientName, recipientPhone,
+        fromCity, toCity,
+        weight, cashOnDelivery, comment,
+    } = req.body;
 
-    // Проверяем req.user.userId после переименования sub → userId
-    const sellerId = req.user.userId; // или req.user.sub если не переименовывали
-
-    if (!sellerId) {
-        sendError(res, 401, 'Не авторизован');
-        return;
-    }
+    const sellerId = req.user.userId;
+    if (!sellerId) { sendError(res, 401, 'Не авторизован'); return; }
 
     try {
-        // Генерируем уникальный трек-код на сервере
         const trackingCode = await generateTrackingCode();
 
         const item = await prisma.$transaction(async (tx: PrismaTx) => {
@@ -177,7 +177,14 @@ export async function sellerCreateItem(
                 data: {
                     trackingCode,
                     title,
-                    description: description || undefined,
+                    description,
+                    recipientName,
+                    recipientPhone,
+                    fromCity,
+                    toCity,
+                    weight,
+                    cashOnDelivery,
+                    comment,
                     sellerId,
                 },
             });
@@ -188,6 +195,7 @@ export async function sellerCreateItem(
                     oldStatus: 'CREATED',
                     newStatus: 'CREATED',
                     changedBy: sellerId,
+                    location: fromCity, // ← начальная локация
                 },
             });
 
@@ -197,8 +205,7 @@ export async function sellerCreateItem(
         sendSuccess(res, item, 201, `Товар создан. Трек-код: ${item.trackingCode}`);
     } catch (err) {
         if (err instanceof Error && err.message.includes('уникальный трек-код')) {
-            sendError(res, 500, err.message);
-            return;
+            sendError(res, 500, err.message); return;
         }
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }

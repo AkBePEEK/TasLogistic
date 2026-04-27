@@ -49,6 +49,23 @@ export function SellerItems() {
                 </Link>
             </div>
 
+            {data && (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                            Всего отправок
+                        </p>
+                        <p className="mt-1 text-2xl font-bold text-gray-900">{data.total}</p>
+                    </div>
+                    <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 shadow-sm">
+                        <p className="text-xs font-medium uppercase tracking-wider text-indigo-500">
+                            За этот месяц
+                        </p>
+                        <p className="mt-1 text-2xl font-bold text-indigo-700">{data.monthlyCount}</p>
+                    </div>
+                </div>
+            )}
+
             {isLoading ? (
                 <LoadingSkeleton />
             ) : data?.items.length === 0 ? (
