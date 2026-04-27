@@ -194,6 +194,12 @@ async function setAuthCookies(
         },
     });
 
+    console.log('Setting cookies:', {
+        accessToken: accessToken.substring(0, 20),
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax',
+    });
+
     res.cookie('accessToken', accessToken, ACCESS_COOKIE);
     res.cookie('refreshToken', refreshToken, REFRESH_COOKIE);
 }
