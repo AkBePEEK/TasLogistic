@@ -18,6 +18,7 @@ export async function adminGetItems(
                 OR: [
                     { trackingCode: { contains: search, mode: 'insensitive' as const } },
                     { title: { contains: search, mode: 'insensitive' as const } },
+                    { recipientName: { contains: search, mode: 'insensitive' as const } },
                 ],
             }
             : {};
@@ -25,10 +26,20 @@ export async function adminGetItems(
         const [items, total] = await prisma.$transaction([
             prisma.item.findMany({
                 where,
-                orderBy: { updatedAt: 'desc' },
+                orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,
                 take: limit,
-                include: {
+                select: {
+                    id: true,
+                    trackingCode: true,
+                    title: true,
+                    currentStatus: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    fromCity: true,
+                    toCity: true,
+                    recipientName: true,
+                    cashOnDelivery: true,
                     seller: { select: { email: true } },
                 },
             }),

@@ -1,12 +1,33 @@
 import { apiClient } from './client';
-import { ApiResponse, PaginatedItems, Item } from '@/types';
+import {ApiResponse, Status} from '@/types';
+
+export interface AdminItem {
+    id: string;
+    trackingCode: string;
+    title: string;
+    currentStatus: Status;
+    createdAt: string;
+    updatedAt: string;
+    fromCity?: string;
+    toCity?: string;
+    recipientName?: string;
+    cashOnDelivery?: number;
+    seller: { email: string };
+}
+
+export interface AdminPaginatedItems {
+    items: AdminItem[];
+    total: number;
+    page: number;
+    limit: number;
+}
 
 export const adminApi = {
     getItems: (page = 1, limit = 20, search?: string) =>
-        apiClient.get<ApiResponse<PaginatedItems>>('/admin/items', {
+        apiClient.get<ApiResponse<AdminPaginatedItems>>('/admin/items', {
             params: { page, limit, search },
         }),
 
     updateStatus: (id: string, status: string) =>
-        apiClient.patch<ApiResponse<Item>>(`/admin/items/${id}/status`, { status }),
+        apiClient.patch<ApiResponse<AdminItem>>(`/admin/items/${id}/status`, { status }),
 };

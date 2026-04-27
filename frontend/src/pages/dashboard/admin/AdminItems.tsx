@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/api/admin';
+import toast from 'react-hot-toast';
+import { adminApi, AdminItem } from '@/api/admin';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Status } from '@/types';
-import toast from "react-hot-toast";
 
-const STATUSES: Status[] = ['CREATED','PROCESSING','SHIPPED','IN_TRANSIT','DELIVERED','CANCELLED'];
+const STATUSES: { value: Status; label: string }[] = [
+    { value: 'CREATED',    label: 'Создан' },
+    { value: 'PROCESSING', label: 'Обработка' },
+    { value: 'SHIPPED',    label: 'Отправлен' },
+    { value: 'IN_TRANSIT', label: 'В пути' },
+    { value: 'DELIVERED',  label: 'Доставлен' },
+    { value: 'CANCELLED',  label: 'Отменён' },
+];
 
 export function AdminItems() {
     const qc = useQueryClient();
@@ -16,7 +23,8 @@ export function AdminItems() {
 
     const { data, isLoading } = useQuery({
         queryKey: ['admin-items', page, search],
-        queryFn: () => adminApi.getItems(page, 20, search || undefined).then((r) => r.data.data),
+        queryFn: () =>
+            adminApi.getItems(page, 20, search || undefined).then((r) => r.data.data),
         placeholderData: (prev) => prev,
     });
 
@@ -26,97 +34,241 @@ export function AdminItems() {
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['admin-items'] });
             setEditingId(null);
-            toast.success('Статус обновлён'); // ← добавить
+            toast.success('Статус обновлён');
         },
-        onError: () => {
-            toast.error('Не удалось обновить статус'); // ← добавить
-        },
+        onError: () => toast.error('Не удалось обновить статус'),
     });
 
-    const totalPages = data ? Math.ceil(data.total / data.limit) : 1;
+    const totalPages = data ? Math.ceil(data.total / 20) : 1;
 
     return (
         <div className="space-y-6">
+            {/* Заголовок */}
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Все товары</h1>
-                {data && (
-                    <span className="text-sm text-gray-400">Итого: {data.total}</span>
-                )}
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Все заказы{' '}
+                    {data && (
+                        <span className="text-lg font-normal text-gray-400">
+              ({data.total})
+            </span>
+                    )}
+                </h1>
             </div>
 
-            <input
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Поиск по коду или названию..."
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            />
+            {/* Поиск */}
+            <div className="relative">
+                <svg
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                    placeholder="Поиск по трек-коду, получателю..."
+                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                />
+            </div>
 
+            {/* Таблица */}
             {isLoading ? (
-                <LoadingSkeleton />
+                <LoadingSkeleton rows={5} />
             ) : data?.items.length === 0 ? (
                 <div className="flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-gray-200">
                     <p className="text-sm text-gray-500">Ничего не найдено</p>
                 </div>
             ) : (
-                <div className="space-y-3">
-                    {data?.items.map((item) => (
-                        <div
-                            key={item.id}
-                            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
-                        >
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0">
-                                    <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-indigo-600">
-                      {item.trackingCode}
-                    </span>
-                                        <StatusBadge status={item.currentStatus} />
-                                    </div>
-                                    <p className="mt-1 truncate text-sm font-medium text-gray-900">
-                                        {item.title}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-gray-400">
-                                        {new Date(item.updatedAt).toLocaleString('ru-RU')}
-                                    </p>
-                                </div>
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                    {/* Шапка таблицы — только desktop */}
+                    <div className="hidden grid-cols-[1fr_1fr_1fr_1.5fr_1fr_1fr_auto] gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                        <span>Трек-код</span>
+                        <span>Получатель</span>
+                        <span>Продавец</span>
+                        <span>Маршрут</span>
+                        <span>Статус</span>
+                        <span>Сумма</span>
+                        <span>Дата</span>
+                    </div>
 
-                                <div className="flex-shrink-0">
-                                    {editingId === item.id ? (
-                                        <select
-                                            defaultValue={item.currentStatus}
-                                            onChange={(e) =>
-                                                statusMutation.mutate({ id: item.id, status: e.target.value })
-                                            }
-                                            className="rounded-lg border border-gray-300 px-2 py-1.5 text-xs focus:outline-none"
-                                        >
-                                            {STATUSES.map((s) => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <button
-                                            onClick={() => setEditingId(item.id)}
-                                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-                                        >
-                                            Статус
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                    {/* Строки */}
+                    <div className="divide-y divide-gray-100">
+                        {data?.items.map((item) => (
+                            <AdminRow
+                                key={item.id}
+                                item={item}
+                                isEditing={editingId === item.id}
+                                onEdit={() => setEditingId(item.id)}
+                                onCancelEdit={() => setEditingId(null)}
+                                onStatusChange={(status) =>
+                                    statusMutation.mutate({ id: item.id, status })
+                                }
+                                isPending={statusMutation.isPending}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
 
+            {/* Пагинация */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2">
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-gray-50">←</button>
+                    <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-gray-50"
+                    >
+                        ←
+                    </button>
                     <span className="text-sm text-gray-600">{page} / {totalPages}</span>
-                    <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-gray-50">→</button>
+                    <button
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:bg-gray-50"
+                    >
+                        →
+                    </button>
                 </div>
             )}
+        </div>
+    );
+}
+
+// ── Строка таблицы ────────────────────────────────────────────────────────────
+
+interface AdminRowProps {
+    item: AdminItem;
+    isEditing: boolean;
+    onEdit: () => void;
+    onCancelEdit: () => void;
+    onStatusChange: (status: string) => void;
+    isPending: boolean;
+}
+
+function AdminRow({
+                      item, isEditing, onEdit, onCancelEdit, onStatusChange, isPending,
+                  }: AdminRowProps) {
+    return (
+        <div className="px-5 py-4">
+            {/* Desktop layout */}
+            <div className="hidden grid-cols-[1fr_1fr_1fr_1.5fr_1fr_1fr_auto] items-center gap-4 lg:grid">
+                {/* Трек-код */}
+                <span className="font-mono text-sm font-semibold text-indigo-600">
+          {item.trackingCode}
+        </span>
+
+                {/* Получатель */}
+                <span className="truncate text-sm text-gray-700">
+          {item.recipientName ?? '—'}
+        </span>
+
+                {/* Продавец */}
+                <span className="truncate text-xs text-gray-400">
+          {item.seller.email}
+        </span>
+
+                {/* Маршрут */}
+                <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <span>{item.fromCity ?? '—'}</span>
+                    <span className="text-gray-300">→</span>
+                    <span className="font-medium text-gray-700">{item.toCity ?? '—'}</span>
+                </div>
+
+                {/* Статус */}
+                <div>
+                    {isEditing ? (
+                        <div className="flex items-center gap-2">
+                            <select
+                                defaultValue={item.currentStatus}
+                                onChange={(e) => onStatusChange(e.target.value)}
+                                disabled={isPending}
+                                className="rounded-lg border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            >
+                                {STATUSES.map((s) => (
+                                    <option key={s.value} value={s.value}>{s.label}</option>
+                                ))}
+                            </select>
+                            <button onClick={onCancelEdit} className="text-xs text-gray-400 hover:text-gray-600">
+                                ✕
+                            </button>
+                        </div>
+                    ) : (
+                        <StatusBadge status={item.currentStatus} />
+                    )}
+                </div>
+
+                {/* Сумма */}
+                <span className="text-sm font-medium text-gray-700">
+          {item.cashOnDelivery
+              ? `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`
+              : '—'}
+        </span>
+
+                {/* Дата + кнопка */}
+                <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-400">
+            {new Date(item.createdAt).toLocaleDateString('ru-RU', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+            })}
+          </span>
+                    {!isEditing && (
+                        <button
+                            onClick={onEdit}
+                            className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                        >
+                            Изменить
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Mobile layout — карточка */}
+            <div className="space-y-2 lg:hidden">
+                <div className="flex items-center justify-between">
+          <span className="font-mono text-sm font-semibold text-indigo-600">
+            {item.trackingCode}
+          </span>
+                    <StatusBadge status={item.currentStatus} />
+                </div>
+
+                {item.recipientName && (
+                    <p className="text-sm text-gray-700">{item.recipientName}</p>
+                )}
+
+                {(item.fromCity || item.toCity) && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>{item.fromCity ?? '—'}</span>
+                        <span>→</span>
+                        <span className="font-medium text-gray-700">{item.toCity ?? '—'}</span>
+                    </div>
+                )}
+
+                <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-400">
+            {new Date(item.createdAt).toLocaleDateString('ru-RU')}
+          </span>
+                    <button
+                        onClick={isEditing ? onCancelEdit : onEdit}
+                        className="text-sm font-medium text-indigo-600"
+                    >
+                        {isEditing ? 'Отмена' : 'Изменить'}
+                    </button>
+                </div>
+
+                {isEditing && (
+                    <select
+                        defaultValue={item.currentStatus}
+                        onChange={(e) => onStatusChange(e.target.value)}
+                        disabled={isPending}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    >
+                        {STATUSES.map((s) => (
+                            <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                    </select>
+                )}
+            </div>
         </div>
     );
 }
