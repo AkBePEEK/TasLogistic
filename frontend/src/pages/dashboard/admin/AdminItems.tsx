@@ -91,7 +91,7 @@ export function AdminItems() {
             ) : (
                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                     {/* Шапка таблицы — только desktop */}
-                    <div className="hidden grid-cols-[1fr_1fr_1fr_1.5fr_1fr_1fr_auto] gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                    <div className="hidden grid-cols-[1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
                         <span>Трек-код</span>
                         <span>Получатель</span>
                         <span>Продавец</span>
@@ -166,7 +166,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
-            <div className="hidden grid-cols-[1fr_1fr_1fr_1.5fr_1fr_1fr_auto] items-center gap-4 lg:grid">
+            <div className="hidden grid-cols-[1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 lg:grid">
                 {/* Трек-код */}
                 <span className="font-mono text-sm font-semibold text-indigo-600">
           {item.trackingCode}
