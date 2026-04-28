@@ -166,7 +166,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
-            <div className="hidden grid-cols-[1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 lg:grid">
+            <div className="hidden grid-cols-[1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr_1.5fr] items-center gap-4 lg:grid">
                 {/* Трек-код */}
                 <span className="font-mono text-sm font-semibold text-indigo-600">
           {item.trackingCode}
@@ -214,34 +214,33 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
 
                 {/* Сумма */}
                 <span className="text-sm font-medium text-gray-700">
-          {item.cashOnDelivery
-              ? `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`
-              : '—'}
-        </span>
+                  {item.cashOnDelivery
+                      ? `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`
+                      : '—'}
+                </span>
 
-                {/* Дата + кнопка */}
-                <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-400">
-            {new Date(item.createdAt).toLocaleDateString('ru-RU', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-            })}
-          </span>
-                    {!isEditing && (
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={onEdit}
-                                className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-                            >
+                {/* 7. Дата — отдельная ячейка */}
+                <span className="text-xs text-gray-400 whitespace-nowrap">
+                  {new Date(item.createdAt).toLocaleDateString('ru-RU', {
+                      day: '2-digit', month: '2-digit', year: 'numeric',
+                  })}
+                </span>
+
+                {/* 8. Действия — отдельная ячейка, справа */}
+                <div className="flex justify-end gap-3">
+                    {!isEditing ? (
+                        <>
+                            <button onClick={onEdit} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
                                 Изменить
                             </button>
-                            <button
-                                onClick={onDelete}
-                                disabled={isDeleting}
-                                className="text-sm font-medium text-red-500 hover:text-red-700 disabled:opacity-40"
-                            >
+                            <button onClick={onDelete} disabled={isDeleting} className="text-sm font-medium text-red-500 hover:text-red-700 disabled:opacity-40">
                                 {isDeleting ? '...' : 'Удалить'}
                             </button>
-                        </div>
+                        </>
+                    ) : (
+                        <button onClick={onCancelEdit} className="text-sm font-medium text-gray-500 hover:text-gray-700">
+                            Отмена
+                        </button>
                     )}
                 </div>
             </div>
@@ -249,9 +248,9 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
             {/* Mobile layout — карточка */}
             <div className="space-y-2 lg:hidden">
                 <div className="flex items-center justify-between">
-          <span className="font-mono text-sm font-semibold text-indigo-600">
-            {item.trackingCode}
-          </span>
+                  <span className="font-mono text-sm font-semibold text-indigo-600">
+                    {item.trackingCode}
+                  </span>
                     <StatusBadge status={item.currentStatus} />
                 </div>
 
@@ -268,9 +267,9 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                 )}
 
                 <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            {new Date(item.createdAt).toLocaleDateString('ru-RU')}
-          </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(item.createdAt).toLocaleDateString('ru-RU')}
+                  </span>
                     <button
                         onClick={onDelete}
                         disabled={isDeleting}
