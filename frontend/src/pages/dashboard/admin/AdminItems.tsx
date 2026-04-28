@@ -91,7 +91,7 @@ export function AdminItems() {
             ) : (
                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                     {/* Шапка таблицы — только desktop */}
-                    <div className="hidden grid-cols-[1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                    <div className="hidden grid-cols-[1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr_1.5fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
                         <span>Трек-код</span>
                         <span>Получатель</span>
                         <span>Продавец</span>
@@ -99,7 +99,7 @@ export function AdminItems() {
                         <span>Статус</span>
                         <span>Сумма</span>
                         <span>Дата</span>
-                        <span>Действия</span>
+                        <span className="text-right">Действия</span>
                     </div>
 
                     {/* Строки */}
