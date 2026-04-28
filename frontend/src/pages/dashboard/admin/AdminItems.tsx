@@ -39,6 +39,15 @@ export function AdminItems() {
         onError: () => toast.error('Не удалось обновить статус'),
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => adminApi.deleteItem(id),
+        onSuccess: () => {
+            void qc.invalidateQueries({ queryKey: ['admin-items'] });
+            toast.success('Заказ удалён');
+        },
+        onError: () => toast.error('Не удалось удалить заказ'),
+    });
+
     const totalPages = data ? Math.ceil(data.total / 20) : 1;
 
     return (
@@ -90,6 +99,7 @@ export function AdminItems() {
                         <span>Статус</span>
                         <span>Сумма</span>
                         <span>Дата</span>
+                        <span>Действия</span>
                     </div>
 
                     {/* Строки */}
@@ -101,10 +111,14 @@ export function AdminItems() {
                                 isEditing={editingId === item.id}
                                 onEdit={() => setEditingId(item.id)}
                                 onCancelEdit={() => setEditingId(null)}
-                                onStatusChange={(status) =>
-                                    statusMutation.mutate({ id: item.id, status })
-                                }
+                                onStatusChange={(status) => statusMutation.mutate({ id: item.id, status })}
+                                onDelete={() => {
+                                    if (confirm(`Удалить заказ ${item.trackingCode}?`)) {
+                                        deleteMutation.mutate(item.id);
+                                    }
+                                }}
                                 isPending={statusMutation.isPending}
+                                isDeleting={deleteMutation.isPending && deleteMutation.variables === item.id}
                             />
                         ))}
                     </div>
@@ -143,12 +157,12 @@ interface AdminRowProps {
     onEdit: () => void;
     onCancelEdit: () => void;
     onStatusChange: (status: string) => void;
+    onDelete: () => void;
     isPending: boolean;
+    isDeleting: boolean;
 }
 
-function AdminRow({
-                      item, isEditing, onEdit, onCancelEdit, onStatusChange, isPending,
-                  }: AdminRowProps) {
+function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDelete,isPending, isDeleting,}: AdminRowProps) {
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
@@ -213,12 +227,21 @@ function AdminRow({
             })}
           </span>
                     {!isEditing && (
-                        <button
-                            onClick={onEdit}
-                            className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-                        >
-                            Изменить
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={onEdit}
+                                className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                            >
+                                Изменить
+                            </button>
+                            <button
+                                onClick={onDelete}
+                                disabled={isDeleting}
+                                className="text-sm font-medium text-red-500 hover:text-red-700 disabled:opacity-40"
+                            >
+                                {isDeleting ? '...' : 'Удалить'}
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -248,6 +271,13 @@ function AdminRow({
           <span className="text-xs text-gray-400">
             {new Date(item.createdAt).toLocaleDateString('ru-RU')}
           </span>
+                    <button
+                        onClick={onDelete}
+                        disabled={isDeleting}
+                        className="text-sm font-medium text-red-500 disabled:opacity-40"
+                    >
+                        {isDeleting ? '...' : 'Удалить'}
+                    </button>
                     <button
                         onClick={isEditing ? onCancelEdit : onEdit}
                         className="text-sm font-medium text-indigo-600"

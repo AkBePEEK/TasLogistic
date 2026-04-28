@@ -7,12 +7,26 @@ import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Status } from '@/types';
 import toast from "react-hot-toast";
 
-const STATUSES: Status[] = ['CREATED','PROCESSING','SHIPPED','IN_TRANSIT','DELIVERED','CANCELLED'];
+const STATUSES: { value: Status; label: string }[] = [
+    { value: 'CREATED',    label: 'Создан' },
+    { value: 'PROCESSING', label: 'Обработка' },
+    { value: 'SHIPPED',    label: 'Отправлен' },
+    { value: 'IN_TRANSIT', label: 'В пути' },
+    { value: 'DELIVERED',  label: 'Доставлен' },
+    { value: 'CANCELLED',  label: 'Отменён' },
+];
+
+interface EditingState {
+    id: string;
+    status: Status;
+    location: string;
+}
 
 export function SellerItems() {
     const qc = useQueryClient();
+    const navigate = useNavigate();
     const [page, setPage] = useState(1);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editing, setEditing] = useState<EditingState | null>(null);
 
     const { data, isLoading } = useQuery({
         queryKey: ['seller-items', page],
@@ -21,24 +35,21 @@ export function SellerItems() {
     });
 
     const statusMutation = useMutation({
-        mutationFn: ({ id, status }: { id: string; status: string }) =>
-            sellerApi.updateStatus(id, status),
+        mutationFn: ({ id, status, location }: { id: string; status: string; location?: string }) =>
+            sellerApi.updateStatus(id, status, location),
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['seller-items'] });
-            setEditingId(null);
-            toast.success('Статус обновлён'); // ← добавить
+            setEditing(null);
+            toast.success('Статус обновлён');
         },
-        onError: () => {
-            toast.error('Не удалось обновить статус'); // ← добавить
-        },
+        onError: () => toast.error('Не удалось обновить статус'),
     });
 
-    const navigate = useNavigate();
-
-    const totalPages = data ? Math.ceil(data.total / data.limit) : 1;
+    const totalPages = data ? Math.ceil(data.total / 20) : 1;
 
     return (
         <div className="space-y-6">
+            {/* Заголовок + статистика */}
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">Мои товары</h1>
                 <Link
@@ -49,8 +60,9 @@ export function SellerItems() {
                 </Link>
             </div>
 
+            {/* Статистика за месяц */}
             {data && (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
                             Всего отправок
@@ -61,17 +73,23 @@ export function SellerItems() {
                         <p className="text-xs font-medium uppercase tracking-wider text-indigo-500">
                             За этот месяц
                         </p>
-                        <p className="mt-1 text-2xl font-bold text-indigo-700">{data.monthlyCount}</p>
+                        <p className="mt-1 text-2xl font-bold text-indigo-700">
+                            {data.monthlyCount}
+                        </p>
                     </div>
                 </div>
             )}
 
+            {/* Список */}
             {isLoading ? (
                 <LoadingSkeleton />
             ) : data?.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16">
                     <p className="text-sm text-gray-500">Нет товаров</p>
-                    <Link to="/dashboard/seller/create" className="mt-2 text-sm text-indigo-600 hover:underline">
+                    <Link
+                        to="/dashboard/seller/create"
+                        className="mt-2 text-sm text-indigo-600 hover:underline"
+                    >
                         Добавить первый товар
                     </Link>
                 </div>
@@ -83,55 +101,122 @@ export function SellerItems() {
                             className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
                         >
                             <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0">
-                                    <div className="flex items-center gap-2">
+                                <div className="min-w-0 flex-1">
+                                    {/* Трек-код и статус */}
+                                    <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-xs font-semibold text-indigo-600">
                       {item.trackingCode}
                     </span>
                                         <StatusBadge status={item.currentStatus} />
                                     </div>
+
+                                    {/* Название */}
                                     <p className="mt-1 truncate text-sm font-medium text-gray-900">
                                         {item.title}
                                     </p>
+
+                                    {/* Дата */}
                                     <p className="mt-0.5 text-xs text-gray-400">
-                                        {new Date(item.updatedAt).toLocaleString('ru-RU')}
+                                        {new Date(item.updatedAt).toLocaleString('ru-RU', {
+                                            day: '2-digit', month: 'short',
+                                            hour: '2-digit', minute: '2-digit',
+                                        })}
                                     </p>
+
+                                    {/* Форма смены статуса */}
+                                    {editing?.id === item.id && (
+                                        <div className="mt-3 space-y-2 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
+                                            <div>
+                                                <label className="mb-1 block text-xs font-medium text-gray-600">
+                                                    Новый статус
+                                                </label>
+                                                <select
+                                                    value={editing.status}
+                                                    onChange={(e) =>
+                                                        setEditing((prev) =>
+                                                            prev ? { ...prev, status: e.target.value as Status } : null
+                                                        )
+                                                    }
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                                >
+                                                    {STATUSES.map((s) => (
+                                                        <option key={s.value} value={s.value}>{s.label}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* ← Поле города */}
+                                            <div>
+                                                <label className="mb-1 block text-xs font-medium text-gray-600">
+                                                    Местоположение (необязательно)
+                                                </label>
+                                                <input
+                                                    value={editing.location}
+                                                    onChange={(e) =>
+                                                        setEditing((prev) =>
+                                                            prev ? { ...prev, location: e.target.value } : null
+                                                        )
+                                                    }
+                                                    placeholder="Алматы, склад №2"
+                                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                                />
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() =>
+                                                        statusMutation.mutate({
+                                                            id: item.id,
+                                                            status: editing.status,
+                                                            location: editing.location || undefined,
+                                                        })
+                                                    }
+                                                    disabled={statusMutation.isPending}
+                                                    className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                                                >
+                                                    {statusMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditing(null)}
+                                                    className="rounded-lg border border-gray-300 px-4 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                                                >
+                                                    Отмена
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="flex flex-shrink-0 gap-2">
-                                    {editingId === item.id ? (
-                                        <select
-                                            defaultValue={item.currentStatus}
-                                            onChange={(e) =>
-                                                statusMutation.mutate({ id: item.id, status: e.target.value })
-                                            }
-                                            className="rounded-lg border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                                        >
-                                            {STATUSES.map((s) => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    ) : (
+                                {/* Кнопки действий */}
+                                {editing?.id !== item.id && (
+                                    <div className="flex flex-shrink-0 flex-col gap-2">
                                         <button
-                                            onClick={() => setEditingId(item.id)}
+                                            onClick={() =>
+                                                setEditing({
+                                                    id: item.id,
+                                                    status: item.currentStatus,
+                                                    location: '',
+                                                })
+                                            }
                                             className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
                                         >
                                             Статус
                                         </button>
-                                    )}
-                                    <button
-                                        onClick={() => navigate(`/dashboard/seller/items/${item.id}`)}
-                                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-                                    >
-                                        Подробнее →
-                                    </button>
-                                </div>
+                                        <button
+                                            onClick={() => navigate(`/dashboard/seller/items/${item.id}`)}
+                                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
+                                        >
+                                            Подробнее
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
+            {/* Пагинация */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2">
                     <button

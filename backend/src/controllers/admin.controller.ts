@@ -109,3 +109,32 @@ export async function adminUpdateStatus(
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
 }
+
+/**
+ * DELETE /api/admin/items/:id
+ * Администратор удаляет товар полностью
+ */
+export async function adminDeleteItem(
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> {
+    const { id } = req.params;
+
+    if (!id) {
+        sendError(res, 400, 'ID товара обязателен');
+        return;
+    }
+
+    try {
+        // Удаляем в правильном порядке из-за foreign key constraints
+        await prisma.$transaction([
+            prisma.trackedItem.deleteMany({ where: { itemId: id } }),
+            prisma.statusHistory.deleteMany({ where: { itemId: id } }),
+            prisma.item.delete({ where: { id } }),
+        ]);
+
+        sendSuccess(res, null, 200, 'Товар удалён');
+    } catch {
+        sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}

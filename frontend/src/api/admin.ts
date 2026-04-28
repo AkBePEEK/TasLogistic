@@ -30,4 +30,7 @@ export const adminApi = {
 
     updateStatus: (id: string, status: string) =>
         apiClient.patch<ApiResponse<AdminItem>>(`/admin/items/${id}/status`, { status }),
+
+    deleteItem: (id: string) =>
+        apiClient.delete<ApiResponse>(`/admin/items/${id}`),
 };
