@@ -47,9 +47,10 @@ export function CreateItem() {
     const mutation = useMutation({
         mutationFn: (data: Form) => sellerApi.createItem(data).then((r) => r.data.data),
         onSuccess: (item) => {
-            void qc.invalidateQueries({queryKey: ['seller-items']});
+            void qc.invalidateQueries({ queryKey: ['seller-items'] });
             toast.success(`Отправка создана. Трек-код: ${item?.trackingCode}`);
-            navigate('/dashboard/seller/items');
+            // ← Редирект на страницу чека
+            navigate(`/dashboard/seller/items/${item?.id}/receipt`);
         },
         onError: () => toast.error('Ошибка при создании отправки'),
     });

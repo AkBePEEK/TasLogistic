@@ -16,6 +16,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { Toaster } from 'react-hot-toast';
 import { ItemDetail } from './pages/dashboard/ItemDetail';
 import { ProfilePage } from './pages/dashboard/ProfilePage';
+import {ReceiptPage} from "@/pages/dashboard/seller/ReceiptPage";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -107,6 +108,15 @@ export default function App() {
                                 element={
                                     <RequireRole roles={['SELLER']}>
                                         <CreateItem />
+                                    </RequireRole>
+                                }
+                            />
+
+                            <Route
+                                path="seller/items/:id/receipt"
+                                element={
+                                    <RequireRole roles={['SELLER']}>
+                                        <ReceiptPage />
                                     </RequireRole>
                                 }
                             />

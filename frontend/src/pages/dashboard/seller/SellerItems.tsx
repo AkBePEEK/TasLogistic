@@ -104,9 +104,9 @@ export function SellerItems() {
                                 <div className="min-w-0 flex-1">
                                     {/* Трек-код и статус */}
                                     <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-indigo-600">
-                      {item.trackingCode}
-                    </span>
+                                        <span className="font-mono text-xs font-semibold text-indigo-600">
+                                          {item.trackingCode}
+                                        </span>
                                         <StatusBadge status={item.currentStatus} />
                                     </div>
 
@@ -190,6 +190,7 @@ export function SellerItems() {
                                 {/* Кнопки действий */}
                                 {editing?.id !== item.id && (
                                     <div className="flex flex-shrink-0 flex-col gap-2">
+
                                         <button
                                             onClick={() =>
                                                 setEditing({
@@ -202,12 +203,21 @@ export function SellerItems() {
                                         >
                                             Статус
                                         </button>
+
                                         <button
                                             onClick={() => navigate(`/dashboard/seller/items/${item.id}`)}
                                             className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
                                         >
                                             Подробнее
                                         </button>
+
+                                        <button
+                                            onClick={() => navigate(`/dashboard/seller/items/${item.id}/receipt`)}
+                                            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
+                                        >
+                                            🖨 Чек
+                                        </button>
+
                                     </div>
                                 )}
                             </div>

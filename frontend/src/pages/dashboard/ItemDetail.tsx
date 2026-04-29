@@ -69,14 +69,24 @@ export function ItemDetail() {
     return (
         <div className="space-y-6">
             {/* Шапка */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/dashboard/seller/items')}
+                        className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        ← Назад
+                    </button>
+                    <h1 className="text-2xl font-bold text-gray-900 truncate">{item.title}</h1>
+                </div>
+
+                {/* ← Добавить кнопку чека */}
                 <button
-                    onClick={() => navigate('/dashboard/seller/items')}
-                    className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                    onClick={() => navigate(`/dashboard/seller/items/${item.id}/receipt`)}
+                    className="flex-shrink-0 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 transition-colors"
                 >
-                    ← Назад
+                    🖨 Печать чека
                 </button>
-                <h1 className="text-2xl font-bold text-gray-900 truncate">{item.title}</h1>
             </div>
 
             {/* Основная информация */}
@@ -156,19 +166,19 @@ export function ItemDetail() {
                             const isLast = idx === item.statusHistory.length - 1;
                             return (
                                 <li key={entry.id} className={`relative ml-5 ${isLast ? 'pb-0' : 'pb-5'}`}>
-                  <span
-                      className={[
-                          'absolute -left-[25px] top-1 flex h-4 w-4 rounded-full ring-2 ring-white',
-                          STATUS_DOT[entry.newStatus],
-                      ].join(' ')}
-                  />
+                                    <span
+                                          className={[
+                                              'absolute -left-[25px] top-1 flex h-4 w-4 rounded-full ring-2 ring-white',
+                                              STATUS_DOT[entry.newStatus],
+                                          ].join(' ')}
+                                    />
                                     <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-2.5">
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-2">
                                                 {idx > 0 && (
                                                     <span className="text-xs text-gray-400">
-                            {entry.oldStatus} →
-                          </span>
+                                                        {entry.oldStatus} →
+                                                    </span>
                                                 )}
                                                 <StatusBadge status={entry.newStatus} />
                                             </div>

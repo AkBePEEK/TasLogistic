@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Печать чека ─────────────────────────────────────── */
+@media print {
+    /* Скрываем всё кроме чека */
+    body > * {
+        display: none !important;
+    }
+
+    /* Показываем только нужный размер */
+    .receipt-80,
+    .receipt-58 {
+        display: block !important;
+    }
+
+    /* Убираем отступы страницы */
+    @page {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+@media screen {
+    /* На экране показываем оба чека для предпросмотра */
+    .receipt-80,
+    .receipt-58 {
+        display: inline-block;
+        margin: 20px;
+        border: 1px dashed #ccc;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+}
+
+/* Кнопки не печатаются */
+.no-print {
+    display: block;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    /* По умолчанию скрываем оба */
+    .receipt-80,
+    .receipt-58 {
+        display: none !important;
+    }
+}
+
+/* Выбор размера при печати — добавьте класс active-receipt */
+@media print {
+    .receipt-80.print-active,
+    .receipt-58.print-active {
+        display: block !important;
+    }
+}
