@@ -189,3 +189,52 @@ export async function customerGetItemHistory(
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
 }
+
+/**
+ * GET /api/customer/stats
+ * Статистика покупателя: количество посылок по статусам + суммы
+ */
+export async function customerGetStats(
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> {
+    try {
+        const trackedItems = await prisma.trackedItem.findMany({
+            where: { customerId: req.user.userId },
+            include: {
+                item: {
+                    select: {
+                        currentStatus: true,
+                        cashOnDelivery: true,
+                    },
+                },
+            },
+        });
+
+        // Считаем количество по статусам
+        const statusCounts: Record<string, number> = {};
+        let totalPaid = 0;
+        let totalToPay = 0;
+
+        for (const tracked of trackedItems) {
+            const status = tracked.item.currentStatus;
+            statusCounts[status] = (statusCounts[status] ?? 0) + 1;
+
+            const amount = tracked.item.cashOnDelivery ?? 0;
+            if (status === 'DELIVERED') {
+                totalPaid += amount;
+            } else if (status !== 'CANCELLED') {
+                totalToPay += amount;
+            }
+        }
+
+        sendSuccess(res, {
+            total: trackedItems.length,
+            statusCounts,
+            totalPaid,
+            totalToPay,
+        });
+    } catch {
+        sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}

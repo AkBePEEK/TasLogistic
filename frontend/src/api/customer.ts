@@ -42,7 +42,17 @@ export interface TrackedItemDetail {
     }[];
 }
 
+export interface CustomerStats {
+    total: number;
+    statusCounts: Partial<Record<Status, number>>;
+    totalPaid: number;
+    totalToPay: number;
+}
+
 export const customerApi = {
+    getStats: () =>
+        apiClient.get<ApiResponse<CustomerStats>>('/customer/stats'),
+
     /** Все отслеживаемые товары */
     getTracked: () =>
         apiClient.get<ApiResponse<{ items: TrackedItemSummary[]; total: number }>>(

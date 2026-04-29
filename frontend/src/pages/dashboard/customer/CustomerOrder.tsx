@@ -19,21 +19,42 @@ const AddTrackSchema = z.object({
         .regex(/^[A-Z0-9-]+$/, 'Только заглавные буквы, цифры и дефис')
         .transform((v) => v.toUpperCase()),
 });
+
 type AddTrackForm = z.infer<typeof AddTrackSchema>;
+
+const STATUS_CONFIG: {
+    value: Status;
+    label: string;
+    icon: string;
+    color: string;
+}[] = [
+    { value: 'CREATED',    label: 'В ожидании',   icon: '🕐', color: 'text-gray-600' },
+    { value: 'PROCESSING', label: 'На складе',     icon: '🏭', color: 'text-blue-600' },
+    { value: 'SHIPPED',    label: 'Отправлен',     icon: '📦', color: 'text-yellow-600' },
+    { value: 'IN_TRANSIT', label: 'В пути',        icon: '🚚', color: 'text-orange-600' },
+    { value: 'DELIVERED',  label: 'Доставлен',     icon: '✅', color: 'text-green-600' },
+    { value: 'CANCELLED',  label: 'Отменён',       icon: '❌', color: 'text-red-500' },
+];
 
 // ── Главная страница ──────────────────────────────────────────────────────────
 
 export function CustomerOrders() {
     const qc = useQueryClient();
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const [statusFilter, setStatusFilter] = useState<Status | null>(null);
 
-    // Загружаем полный список — без пагинации
+    // Статистика
+    const { data: stats } = useQuery({
+        queryKey: ['customer-stats'],
+        queryFn: () => customerApi.getStats().then((r) => r.data.data),
+    });
+
+    // Список заказов
     const { data, isLoading } = useQuery({
         queryKey: ['customer-tracked'],
         queryFn: () => customerApi.getTracked().then((r) => r.data.data),
     });
 
-    // Форма добавления трек-кода
     const {
         register,
         handleSubmit,
@@ -46,15 +67,16 @@ export function CustomerOrders() {
         mutationFn: (code: string) => customerApi.addTracked(code),
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['customer-tracked'] });
+            void qc.invalidateQueries({ queryKey: ['customer-stats'] });
             reset();
-            toast.success('Заказ добавлен в отслеживание'); // ← добавить
+            toast.success('Заказ добавлен в отслеживание');
         },
         onError: (err: unknown) => {
             const msg =
                 (err as { response?: { data?: { message?: string } } })?.response?.data
                     ?.message ?? 'Товар не найден';
             setError('trackingCode', { message: msg });
-            toast.error(msg); // ← добавить
+            toast.error(msg);
         },
     });
 
@@ -62,34 +84,106 @@ export function CustomerOrders() {
         mutationFn: (itemId: string) => customerApi.removeTracked(itemId),
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['customer-tracked'] });
-            toast.success('Заказ удалён из отслеживания'); // ← добавить
+            void qc.invalidateQueries({ queryKey: ['customer-stats'] });
+            toast.success('Заказ удалён из отслеживания');
         },
-        onError: () => {
-            toast.error('Не удалось удалить заказ'); // ← добавить
-        },
+        onError: () => toast.error('Не удалось удалить заказ'),
     });
 
     const onAddSubmit = (values: AddTrackForm) =>
         addMutation.mutate(values.trackingCode);
 
-    return (
-        <div className="space-y-8">
-            {/* ── Заголовок ────────────────────────────────────────── */}
-            <div className="flex items-end justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Мои заказы</h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Вся история ваших отслеживаемых товаров
-                    </p>
-                </div>
-                {data && (
-                    <span className="text-sm text-gray-400">
-            {data.total} {pluralize(data.total, 'заказ', 'заказа', 'заказов')}
-          </span>
-                )}
-            </div>
+    // Фильтрация по статусу
+    const filteredItems = statusFilter
+        ? data?.items.filter((item) => item.currentStatus === statusFilter)
+        : data?.items;
 
-            {/* ── Форма добавления ─────────────────────────────────── */}
+    return (
+        <div className="space-y-6">
+            {/* Заголовок */}
+            <h1 className="text-2xl font-bold text-gray-900">Мои заказы</h1>
+
+            {/* Финансовая статистика */}
+            {stats && (
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl border border-green-100 bg-green-50 p-4 shadow-sm">
+                        <p className="text-xs font-medium uppercase tracking-wider text-green-600">
+                            Оплачено
+                        </p>
+                        <p className="mt-1 text-xl font-bold text-green-700">
+                            {stats.totalPaid.toLocaleString('ru-RU')} ₸
+                        </p>
+                    </div>
+                    <div className="rounded-xl border border-orange-100 bg-orange-50 p-4 shadow-sm">
+                        <p className="text-xs font-medium uppercase tracking-wider text-orange-600">
+                            К оплате
+                        </p>
+                        <p className="mt-1 text-xl font-bold text-orange-700">
+                            {stats.totalToPay.toLocaleString('ru-RU')} ₸
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Счётчики по статусам */}
+            {stats && stats.total > 0 && (
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                    {STATUS_CONFIG.map((s, idx) => {
+                        const count = stats.statusCounts[s.value] ?? 0;
+                        if (count === 0) return null;
+                        const isActive = statusFilter === s.value;
+
+                        return (
+                            <button
+                                key={s.value}
+                                onClick={() => setStatusFilter(isActive ? null : s.value)}
+                                className={[
+                                    'flex w-full items-center justify-between px-5 py-3.5 transition-colors',
+                                    idx > 0 ? 'border-t border-gray-100' : '',
+                                    isActive ? 'bg-indigo-50' : 'hover:bg-gray-50',
+                                ].join(' ')}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-lg">{s.icon}</span>
+                                    <span className={`text-sm font-medium ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
+                    {s.label}
+                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {count > 0 && (
+                                        <span className={[
+                                            'rounded-full px-2 py-0.5 text-xs font-semibold',
+                                            isActive
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-100 text-gray-600',
+                                        ].join(' ')}>
+                      {count}
+                    </span>
+                                    )}
+                                    <span className="text-gray-400">›</span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Активный фильтр */}
+            {statusFilter && (
+                <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">
+            Фильтр: {STATUS_CONFIG.find((s) => s.value === statusFilter)?.label}
+          </span>
+                    <button
+                        onClick={() => setStatusFilter(null)}
+                        className="text-xs text-indigo-600 hover:underline"
+                    >
+                        Сбросить
+                    </button>
+                </div>
+            )}
+
+            {/* Форма добавления трек-кода */}
             <form
                 onSubmit={handleSubmit(onAddSubmit)}
                 className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
@@ -101,14 +195,14 @@ export function CustomerOrders() {
                     <div className="flex-1">
                         <input
                             {...register('trackingCode')}
-                            placeholder="TRK-123456"
+                            placeholder="TRK-202406-XXXXXXXX"
                             autoComplete="off"
                             spellCheck={false}
                             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 font-mono text-sm uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal placeholder:font-sans placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                         />
                         {errors.trackingCode && (
-                            <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600">
-                                <span>⚠</span> {errors.trackingCode.message}
+                            <p className="mt-1.5 text-xs text-red-600">
+                                ⚠ {errors.trackingCode.message}
                             </p>
                         )}
                     </div>
@@ -129,26 +223,42 @@ export function CustomerOrders() {
                 </div>
             </form>
 
-            {/* ── Список заказов ───────────────────────────────────── */}
+            {/* Список заказов */}
             {isLoading ? (
-                <LoadingState />
-            ) : data?.items.length === 0 ? (
-                <EmptyState />
+                <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-24 animate-pulse rounded-xl border border-gray-100 bg-gray-50" />
+                    ))}
+                </div>
+            ) : filteredItems?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16 text-center">
+                    <div className="mb-3 text-4xl">📦</div>
+                    <p className="text-sm font-medium text-gray-600">
+                        {statusFilter ? 'Нет заказов с этим статусом' : 'Нет отслеживаемых заказов'}
+                    </p>
+                    {!statusFilter && (
+                        <p className="mt-1 text-xs text-gray-400">
+                            Введите трек-код выше, чтобы начать отслеживать заказ
+                        </p>
+                    )}
+                </div>
             ) : (
                 <div className="space-y-3">
-                    {data?.items.map((item) => (
+                    {filteredItems?.map((item) => (
                         <OrderCard
                             key={item.trackedItemId}
                             item={item}
                             onShowHistory={() => setSelectedItemId(item.id)}
                             onRemove={() => removeMutation.mutate(item.id)}
-                            isRemoving={removeMutation.isPending && removeMutation.variables === item.id}
+                            isRemoving={
+                                removeMutation.isPending && removeMutation.variables === item.id
+                            }
                         />
                     ))}
                 </div>
             )}
 
-            {/* ── Drawer с полной историей ─────────────────────────── */}
+            {/* Drawer */}
             {selectedItemId && (
                 <OrderHistoryDrawer
                     itemId={selectedItemId}
@@ -160,32 +270,6 @@ export function CustomerOrders() {
 }
 
 // ── Вспомогательные компоненты ────────────────────────────────────────────────
-
-function LoadingState() {
-    return (
-        <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-                <div
-                    key={i}
-                    className="h-24 animate-pulse rounded-xl border border-gray-100 bg-gray-50"
-                />
-            ))}
-        </div>
-    );
-}
-
-function EmptyState() {
-    return (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16 text-center">
-            <div className="mb-3 text-4xl">📦</div>
-            <p className="text-sm font-medium text-gray-600">Нет отслеживаемых заказов</p>
-            <p className="mt-1 text-xs text-gray-400">
-                Введите трек-код выше, чтобы начать отслеживать заказ
-            </p>
-        </div>
-    );
-}
-
 interface OrderCardProps {
     item: TrackedItemSummary;
     onShowHistory: () => void;
@@ -300,15 +384,4 @@ function StatusChip({ status }: { status: Status }) {
       {LABEL[status]}
     </span>
     );
-}
-
-// ── Утилита ───────────────────────────────────────────────────────────────────
-
-function pluralize(n: number, one: string, few: string, many: string): string {
-    const mod10 = n % 10;
-    const mod100 = n % 100;
-    if (mod100 >= 11 && mod100 <= 19) return many;
-    if (mod10 === 1) return one;
-    if (mod10 >= 2 && mod10 <= 4) return few;
-    return many;
 }
