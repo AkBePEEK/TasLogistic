@@ -138,3 +138,100 @@ export async function adminDeleteItem(
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
 }
+
+/**
+ * GET /api/admin/reports
+ * Отчёты: сумма, вес, количество по статусам, фильтр по периоду
+ */
+export async function adminGetReports(
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> {
+    const period = (req.query.period as string) ?? 'month';
+
+    // Определяем дату начала периода
+    const now = new Date();
+    let dateFrom: Date;
+
+    switch (period) {
+        case 'today':
+            dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            break;
+        case 'week':
+            dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+        case 'month':
+            dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+            break;
+        case 'year':
+            dateFrom = new Date(now.getFullYear(), 0, 1);
+            break;
+        default:
+            dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    try {
+        const items = await prisma.item.findMany({
+            where: { createdAt: { gte: dateFrom } },
+            select: {
+                currentStatus: true,
+                cashOnDelivery: true,
+                weight: true,
+                createdAt: true,
+                fromCity: true,
+                toCity: true,
+            },
+        });
+
+        // Считаем статистику
+        let totalAmount = 0;
+        let totalWeight = 0;
+        let deliveredAmount = 0;
+        let deliveredWeight = 0;
+        const statusCounts: Record<string, number> = {};
+        const cityStats: Record<string, number> = {};
+
+        for (const item of items) {
+            // Суммы
+            const amount = item.cashOnDelivery ?? 0;
+            const weight = item.weight ?? 0;
+            totalAmount += amount;
+            totalWeight += weight;
+
+            // По статусам
+            statusCounts[item.currentStatus] =
+                (statusCounts[item.currentStatus] ?? 0) + 1;
+
+            // Доставленные
+            if (item.currentStatus === 'DELIVERED') {
+                deliveredAmount += amount;
+                deliveredWeight += weight;
+            }
+
+            // Города назначения
+            if (item.toCity) {
+                cityStats[item.toCity] = (cityStats[item.toCity] ?? 0) + 1;
+            }
+        }
+
+        // Топ 5 городов
+        const topCities = Object.entries(cityStats)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([city, count]) => ({ city, count }));
+
+        sendSuccess(res, {
+            period,
+            dateFrom,
+            total: items.length,
+            totalAmount,
+            totalWeight: Math.round(totalWeight * 100) / 100,
+            deliveredAmount,
+            deliveredWeight: Math.round(deliveredWeight * 100) / 100,
+            statusCounts,
+            topCities,
+        });
+    } catch {
+        sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}

@@ -22,6 +22,18 @@ export interface AdminPaginatedItems {
     limit: number;
 }
 
+export interface AdminReports {
+    period: string;
+    dateFrom: string;
+    total: number;
+    totalAmount: number;
+    totalWeight: number;
+    deliveredAmount: number;
+    deliveredWeight: number;
+    statusCounts: Partial<Record<string, number>>;
+    topCities: { city: string; count: number }[];
+}
+
 export const adminApi = {
     getItems: (page = 1, limit = 20, search?: string) =>
         apiClient.get<ApiResponse<AdminPaginatedItems>>('/admin/items', {
@@ -33,4 +45,9 @@ export const adminApi = {
 
     deleteItem: (id: string) =>
         apiClient.delete<ApiResponse>(`/admin/items/${id}`),
+
+    getReports: (period: string) =>
+        apiClient.get<ApiResponse<AdminReports>>('/admin/reports', {
+            params: { period },
+        }),
 };

@@ -17,6 +17,7 @@ import { Toaster } from 'react-hot-toast';
 import { ItemDetail } from './pages/dashboard/ItemDetail';
 import { ProfilePage } from './pages/dashboard/ProfilePage';
 import {ReceiptPage} from "@/pages/dashboard/seller/ReceiptPage";
+import {AdminReports} from "@/pages/dashboard/admin/AdminReports";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -127,6 +128,15 @@ export default function App() {
                                 element={
                                     <RequireRole roles={['ADMIN']}>
                                         <AdminItems />
+                                    </RequireRole>
+                                }
+                            />
+
+                            <Route
+                                path="admin/reports"
+                                element={
+                                    <RequireRole roles={['ADMIN']}>
+                                        <AdminReports />
                                     </RequireRole>
                                 }
                             />
