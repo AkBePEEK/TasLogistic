@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
     { label: 'Все товары',   to: '/dashboard/admin/items',     roles: ['ADMIN'] },
     { label: 'Отчёты',       to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
     { label: 'Мои заказы',   to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
+    { label: 'История заказов', to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
     { label: 'Профиль',      to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
 ];
 

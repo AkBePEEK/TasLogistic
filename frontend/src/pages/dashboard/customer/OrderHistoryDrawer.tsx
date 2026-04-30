@@ -21,7 +21,7 @@ const TIMELINE_DOT: Record<Status, string> = {
 export function OrderHistoryDrawer({ itemId, onClose }: Props) {
     const { data, isLoading, isError } = useQuery({
         queryKey: ['customer-history', itemId],
-        queryFn: () => customerApi.getHistory(itemId).then((r) => r.data.data),
+        queryFn: () => customerApi.getItemHistory(itemId).then((r) => r.data.data),
     });
 
     useEffect(() => {

@@ -2,6 +2,7 @@ import { apiClient } from './client';
 import { ApiResponse, Status } from '@/types';
 
 export interface TrackedItemSummary {
+    cashOnDelivery?: number;
     trackedItemId: string;
     addedAt: string;
     id: string;
@@ -59,6 +60,12 @@ export const customerApi = {
             '/customer/tracked'
         ),
 
+    getHistory: (params?: { search?: string; status?: string }) =>  // ← добавить
+        apiClient.get<ApiResponse<{ items: TrackedItemSummary[]; total: number }>>(
+            '/customer/history',
+            { params }
+        ),
+
     /** Добавить по трек-коду */
     addTracked: (trackingCode: string) =>
         apiClient.post<ApiResponse<{ trackedItemId: string }>>('/customer/tracked', {
@@ -70,7 +77,7 @@ export const customerApi = {
         apiClient.delete<ApiResponse>(`/customer/tracked/${itemId}`),
 
     /** Полная история одного заказа */
-    getHistory: (itemId: string) =>
+    getItemHistory: (itemId: string) =>
         apiClient.get<ApiResponse<TrackedItemDetail>>(
             `/customer/tracked/${itemId}/history`
         ),

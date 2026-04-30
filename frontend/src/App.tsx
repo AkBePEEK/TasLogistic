@@ -18,6 +18,7 @@ import { ItemDetail } from './pages/dashboard/ItemDetail';
 import { ProfilePage } from './pages/dashboard/ProfilePage';
 import {ReceiptPage} from "@/pages/dashboard/seller/ReceiptPage";
 import {AdminReports} from "@/pages/dashboard/admin/AdminReports";
+import {CustomerHistory} from "@/pages/dashboard/customer/CustomerHistory";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -147,6 +148,15 @@ export default function App() {
                                 element={
                                     <RequireRole roles={['CUSTOMER']}>
                                         <CustomerOrders />
+                                    </RequireRole>
+                                }
+                            />
+
+                            <Route
+                                path="customer/history"
+                                element={
+                                    <RequireRole roles={['CUSTOMER']}>
+                                        <CustomerHistory />
                                     </RequireRole>
                                 }
                             />

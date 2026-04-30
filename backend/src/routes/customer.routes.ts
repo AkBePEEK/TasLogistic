@@ -5,7 +5,7 @@ import {
     customerGetTrackedItems,
     customerAddTrackedItem,
     customerRemoveTrackedItem,
-    customerGetItemHistory, customerGetStats,
+    customerGetItemHistory, customerGetStats, customerGetHistory,
 } from '../controllers/customer.controller';
 
 const router = Router();
@@ -16,6 +16,7 @@ router.use(
 );
 
 router.get('/stats', customerGetStats as unknown as RequestHandler);
+router.get('/history', customerGetHistory as unknown as RequestHandler);
 router.get('/tracked', customerGetTrackedItems as unknown as RequestHandler);
 router.post('/tracked', customerAddTrackedItem as unknown as RequestHandler);
 router.delete('/tracked/:itemId', customerRemoveTrackedItem as unknown as RequestHandler);

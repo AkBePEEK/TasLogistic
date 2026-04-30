@@ -238,3 +238,68 @@ export async function customerGetStats(
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
 }
+
+/**
+ * GET /api/customer/history
+ * Полная история всех заказов покупателя с фильтрацией
+ */
+export async function customerGetHistory(
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> {
+    const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+
+    try {
+        const trackedItems = await prisma.trackedItem.findMany({
+            where: {
+                customerId: req.user.userId,
+                ...(status ? { item: { currentStatus: status as any } } : {}),
+                ...(search ? {
+                    item: {
+                        OR: [
+                            { trackingCode: { contains: search, mode: 'insensitive' } },
+                            { title: { contains: search, mode: 'insensitive' } },
+                        ],
+                    },
+                } : {}),
+            },
+            orderBy: { addedAt: 'desc' },
+            include: {
+                item: {
+                    select: {
+                        id: true,
+                        trackingCode: true,
+                        title: true,
+                        currentStatus: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        fromCity: true,
+                        toCity: true,
+                        recipientName: true,
+                        weight: true,
+                        cashOnDelivery: true,
+                        statusHistory: {
+                            orderBy: { changedAt: 'desc' },
+                            take: 1,
+                            select: { newStatus: true, changedAt: true },
+                        },
+                    },
+                },
+            },
+        });
+
+        type TrackedItem = (typeof trackedItems)[number];
+
+        sendSuccess(res, {
+            items: trackedItems.map((t: TrackedItem) => ({
+                trackedItemId: t.id,
+                addedAt: t.addedAt,
+                ...t.item,
+            })),
+            total: trackedItems.length,
+        });
+    } catch {
+        sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}
