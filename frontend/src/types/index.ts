@@ -39,14 +39,6 @@ export interface TrackResult {
     updatedAt: string;
     statusHistory: StatusHistoryEntry[];
 }
-
-export interface PaginatedItems {
-    items: Item[];
-    total: number;
-    page: number;
-    limit: number;
-}
-
 export interface ApiResponse<T = undefined> {
     success: boolean;
     data?: T;
