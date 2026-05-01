@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
 
-export const useSocket = (trackingCode?: string) => {
+export const useSocket = (trackingCode?: string | null) => {
     const socketRef = useRef<Socket>();
     const qc = useQueryClient();
 
