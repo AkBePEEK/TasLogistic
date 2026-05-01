@@ -13,6 +13,8 @@ router.post('/login', authLimiter, validate(LoginSchema), login);
 router.post('/logout', logout);
 router.post('/refresh', refresh);
 router.get('/me', me);
+/*
 router.post('/login/phone/request', otpRequestLimit, requestPhoneOtp);
 router.post('/login/phone/verify', otpRequestLimit, verifyPhoneOtp);
+*/
 export default router;

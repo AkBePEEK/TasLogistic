@@ -5,12 +5,13 @@ import { sendSuccess, sendError } from '../utils/response';
 import { normalizePhone } from '../utils/phone';
 import { generateOtp } from '../utils/otp';
 import { RegisterInput, LoginInput } from '../schemas';
-import { JwtPayload, Role } from '../types';
+import { JwtPayload } from '../types';
 import { generateRefreshToken, signAccessToken, verifyAccessToken } from '../utils/tokens';
 import { CookieOptions } from 'express';
 import {z} from "zod";
 import crypto from 'crypto';
 import jwt from "jsonwebtoken";
+import { Role } from '@prisma/client';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -254,7 +255,7 @@ export async function verifyPhoneOtp(req: Request, res: Response) {
                 data: {
                     phone: normalized,
                     phoneVerified: true,
-                    role: "CUSTOMER",
+                    role: Role.CUSTOMER,
                     email: `${normalized}@phone.taslogistic.kz`,
                     password: crypto.randomUUID(), // случайный пароль, вход только по OTP
                 },
