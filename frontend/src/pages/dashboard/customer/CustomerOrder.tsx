@@ -8,6 +8,7 @@ import { Status } from '@/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { OrderHistoryDrawer } from './OrderHistoryDrawer';
 import toast from "react-hot-toast";
+import {useSocket} from "@/hooks/useSocket";
 
 // ── Форма добавления трек-кода ────────────────────────────────────────────────
 
@@ -39,6 +40,8 @@ const STATUS_CONFIG: {
 // ── Главная страница ──────────────────────────────────────────────────────────
 
 export function CustomerOrders() {
+    useSocket();
+
     const qc = useQueryClient();
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<Status | null>(null);

@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Status } from '@/types';
 import toast from "react-hot-toast";
+import {useSocket} from "@/hooks/useSocket";
 
 const STATUSES: { value: Status; label: string }[] = [
     { value: 'CREATED',    label: 'Создан' },
@@ -23,6 +24,8 @@ interface EditingState {
 }
 
 export function SellerItems() {
+    useSocket();
+
     const qc = useQueryClient();
     const navigate = useNavigate();
     const [page, setPage] = useState(1);

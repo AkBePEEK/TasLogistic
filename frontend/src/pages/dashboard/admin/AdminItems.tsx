@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { adminApi, AdminItem } from '@/api/admin';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
+import {useSocket} from "@/hooks/useSocket";
 
 const CITIES = [
     'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтобе',
@@ -22,6 +23,8 @@ const STATUS_OPTIONS = [
 ];
 
 export function AdminItems() {
+    useSocket();
+
     const qc = useQueryClient();
     const [page, setPage] = useState(1);
     const [editingId, setEditingId] = useState<string | null>(null);
