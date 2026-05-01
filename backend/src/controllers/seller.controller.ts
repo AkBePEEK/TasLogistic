@@ -4,6 +4,7 @@ import {prisma, PrismaTx} from '../config/prisma';
 import { sendSuccess, sendError } from '../utils/response';
 import { UpdateStatusInput } from '../schemas';
 import {generateTrackingCode} from "../utils/generateTrackingCode";
+import { io } from '../socket';
 
 /**
  * PATCH /api/seller/items/:id/status
@@ -16,6 +17,7 @@ export async function sellerUpdateStatus(
 ): Promise<void> {
     const { id } = req.params;
     const { status, location }: UpdateStatusInput = req.body;
+    const userId = req.user.userId; // ← из auth middleware
 
     if (!id) { sendError(res, 400, 'ID товара обязателен'); return; }
 
@@ -23,7 +25,7 @@ export async function sellerUpdateStatus(
         const result = await prisma.$transaction(async (tx: PrismaTx) => {
             const item = await tx.item.findUnique({
                 where: { id },
-                select: { id: true, currentStatus: true, sellerId: true },
+                select: { id: true, currentStatus: true, sellerId: true, trackingCode: true },
             });
 
             if (!item) return null;
@@ -39,20 +41,42 @@ export async function sellerUpdateStatus(
                     itemId: id,
                     oldStatus: item.currentStatus,
                     newStatus: status,
-                    changedBy: req.user.userId,
-                    location: location ?? null, // ← сохраняем локацию
+                    changedBy: userId,
+                    location: location ?? null,
                 },
             });
 
-            return updatedItem;
+            return { updatedItem, trackingCode: item.trackingCode };
         });
 
         if (!result) { sendError(res, 404, 'Товар не найден'); return; }
-        sendSuccess(res, result, 200, 'Статус успешно обновлён');
+
+        const { updatedItem, trackingCode } = result;
+
+        // 📡 Отправляем события через Socket.IO
+        // 1. Всем, кто отслеживает этот трек-код (покупатели)
+        io.to(`track:${trackingCode}`).emit('statusUpdated', {
+            trackingCode,
+            newStatus: status,
+            location,
+            updatedAt: new Date().toISOString(),
+        });
+
+        // 2. Админам (для дашборда)
+        io.to('admin').emit('adminStatusUpdate', {
+            itemId: id,
+            trackingCode,
+            newStatus: status,
+            updatedBy: userId,
+            timestamp: new Date().toISOString(),
+        });
+
+        sendSuccess(res, updatedItem, 200, 'Статус успешно обновлён');
     } catch (err) {
         if (err instanceof Error && err.message === 'STATUS_SAME') {
             sendError(res, 400, 'Товар уже имеет указанный статус'); return;
         }
+        console.error('[sellerUpdateStatus]', err);
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
 }
