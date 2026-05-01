@@ -2,10 +2,15 @@ import { Request, Response } from 'express';
 import * as argon2 from 'argon2';
 import { prisma } from '../config/prisma';
 import { sendSuccess, sendError } from '../utils/response';
+import { normalizePhone } from '../utils/phone';
+import { generateOtp } from '../utils/otp';
 import { RegisterInput, LoginInput } from '../schemas';
 import { JwtPayload, Role } from '../types';
 import { generateRefreshToken, signAccessToken, verifyAccessToken } from '../utils/tokens';
 import { CookieOptions } from 'express';
+import {z} from "zod";
+import crypto from 'crypto';
+import jwt from "jsonwebtoken";
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -27,6 +32,16 @@ const REFRESH_COOKIE: CookieOptions = {
 };
 
 const REFRESH_TOKEN_TTL_DAYS = 30;
+
+// Схемы валидации
+const phoneSchema = z.object({
+    phone: z.string().min(10, 'Введите номер телефона')
+});
+
+const verifySchema = z.object({
+    phone: z.string().min(10),
+    code: z.string().length(6, 'Код должен содержать 6 цифр')
+});
 
 export async function me(req: Request, res: Response): Promise<void> {
     const token: string | undefined = req.cookies?.accessToken;
@@ -174,6 +189,139 @@ export async function refresh(req: Request, res: Response): Promise<void> {
         });
     } catch {
         sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}
+
+// 🔹 POST /api/auth/login/phone/request
+export async function requestPhoneOtp(req: Request, res: Response) {
+    try {
+        const { phone } = phoneSchema.parse(req.body);
+        const normalized = normalizePhone(phone);
+
+        const code = generateOtp();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        // Удаляем старые OTP и создаём новый
+        await prisma.$transaction(async (tx) => {
+            await tx.otp.deleteMany({ where: { phone: normalized } });
+            await tx.otp.create({
+                data: { phone: normalized, code, expiresAt }
+            });
+        });
+
+        // DEV: логирование, PROD: отправка через SMS провайдера
+        console.log(`[DEV] OTP для ${normalized}: ${code}`);
+
+        sendSuccess(res, null, 200, 'Код отправлен');
+    } catch (err) {
+        if (err instanceof z.ZodError) {
+            return sendError(res, 400, 'Неверный формат телефона');
+        }
+        if (err instanceof Error && err.message === 'INVALID_PHONE_FORMAT') {
+            return sendError(res, 400, 'Неверный формат телефона');
+        }
+        console.error('[requestPhoneOtp]', err);
+        sendError(res, 500, 'Ошибка отправки кода');
+    }
+}
+
+// 🔹 POST /api/auth/login/phone/verify
+export async function verifyPhoneOtp(req: Request, res: Response) {
+    try {
+        const { phone, code } = verifySchema.parse(req.body);
+        const normalized = normalizePhone(phone);
+
+        // Поиск валидного OTP
+        const otp = await prisma.otp.findFirst({
+            where: {
+                phone: normalized,
+                code,
+                expiresAt: { gt: new Date() }
+            },
+        });
+
+        if (!otp) {
+            return sendError(res, 400, 'Неверный или истёкший код');
+        }
+
+        // Поиск или создание пользователя
+        let user = await prisma.user.findUnique({
+            where: { phone: normalized }
+        });
+
+        if (!user) {
+            user = await prisma.user.create({
+                data: {
+                    phone: normalized,
+                    phoneVerified: true,
+                    role: "CUSTOMER",
+                    email: `${normalized}@phone.taslogistic.kz`,
+                    password: crypto.randomUUID(), // случайный пароль, вход только по OTP
+                },
+            });
+        } else {
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { phoneVerified: true },
+            });
+        }
+
+        // Генерация JWT (используй свои функции)
+        const accessToken = jwt.sign(
+            { userId: user.id, role: user.role, email: user.email },
+            process.env.JWT_SECRET!,
+            { expiresIn: '15m' }
+        );
+
+        const refreshToken = jwt.sign(
+            { userId: user.id },
+            process.env.JWT_REFRESH_SECRET!,
+            { expiresIn: '30d' }
+        );
+
+        // Сохранение refresh token в БД
+        await prisma.refreshToken.create({
+            data: {
+                userId: user.id,
+                token: refreshToken,
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
+        });
+
+        // Установка cookies
+        const isProd = process.env.NODE_ENV === 'production';
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: 'none',
+            maxAge: 15 * 60 * 1000,
+            path: '/',
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: 'none',
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+            path: '/api/auth',
+        });
+
+        // Удаление OTP
+        await prisma.otp.delete({ where: { id: otp.id } });
+
+        sendSuccess(res, {
+            id: user.id,
+            role: user.role,
+            phone: user.phone,
+            email: user.email
+        }, 200, 'Успешный вход');
+
+    } catch (err) {
+        if (err instanceof z.ZodError) {
+            return sendError(res, 400, 'Ошибка валидации');
+        }
+        console.error('[verifyPhoneOtp]', err);
+        sendError(res, 500, 'Ошибка верификации');
     }
 }
 
