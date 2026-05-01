@@ -8,6 +8,7 @@ import { apiClient } from '@/api/client';
 import { TrackResult, ApiResponse } from '@/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import {LogoLink} from "@/components/LogoLink";
+import { useSocket } from '@/hooks/useSocket';
 
 const Schema = z.object({
     code: z
@@ -25,6 +26,8 @@ export function TrackPage() {
     const { register, handleSubmit, formState: { errors } } = useForm<Form>({
         resolver: zodResolver(Schema),
     });
+
+    useSocket(activeCode);
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ['track', activeCode],
