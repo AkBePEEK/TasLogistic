@@ -36,11 +36,13 @@ enum Status {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  email         String   @unique
+  phone         String?  @unique @db.VarChar(20)
+  phoneVerified Boolean  @default(false)
+  password      String
+  role          Role
+  createdAt     DateTime @default(now())
 
   items         Item[]          @relation("SellerItems")
   statusChanges StatusHistory[] @relation("ChangedByUser")
@@ -101,4 +103,14 @@ model TrackedItem {
 
   @@unique([customerId, itemId])
   @@index([customerId])
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  phone     String   @db.VarChar(20)
+  code      String   @db.Char(6)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone])
 }
