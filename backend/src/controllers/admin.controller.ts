@@ -11,17 +11,33 @@ export async function adminGetItems(
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const fromCity = typeof req.query.fromCity === 'string' ? req.query.fromCity : undefined;
+    const toCity = typeof req.query.toCity === 'string' ? req.query.toCity : undefined;
+    const dateFrom = typeof req.query.dateFrom === 'string' ? req.query.dateFrom : undefined;
+    const dateTo = typeof req.query.dateTo === 'string' ? req.query.dateTo : undefined;
 
     try {
-        const where = search
-            ? {
-                OR: [
-                    { trackingCode: { contains: search, mode: 'insensitive' as const } },
-                    { title: { contains: search, mode: 'insensitive' as const } },
-                    { recipientName: { contains: search, mode: 'insensitive' as const } },
-                ],
-            }
-            : {};
+        const where: Record<string, unknown> = {};
+
+        if (search) {
+            where.OR = [
+                { trackingCode: { contains: search, mode: 'insensitive' } },
+                { title: { contains: search, mode: 'insensitive' } },
+                { recipientName: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        if (status) where.currentStatus = status;
+        if (fromCity) where.fromCity = { contains: fromCity, mode: 'insensitive' };
+        if (toCity) where.toCity = { contains: toCity, mode: 'insensitive' };
+
+        if (dateFrom || dateTo) {
+            where.createdAt = {
+                ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+                ...(dateTo ? { lte: new Date(dateTo) } : {}),
+            };
+        }
 
         const [items, total] = await prisma.$transaction([
             prisma.item.findMany({

@@ -35,10 +35,17 @@ export interface AdminReports {
 }
 
 export const adminApi = {
-    getItems: (page = 1, limit = 20, search?: string) =>
-        apiClient.get<ApiResponse<AdminPaginatedItems>>('/admin/items', {
-            params: { page, limit, search },
-        }),
+    getItems: (params: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        fromCity?: string;
+        toCity?: string;
+        dateFrom?: string;
+        dateTo?: string;
+    } = {}) =>
+        apiClient.get<ApiResponse<AdminPaginatedItems>>('/admin/items', { params }),
 
     updateStatus: (id: string, status: string) =>
         apiClient.patch<ApiResponse<AdminItem>>(`/admin/items/${id}/status`, { status }),
