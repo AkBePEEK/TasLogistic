@@ -19,6 +19,7 @@ import { ProfilePage } from './pages/dashboard/ProfilePage';
 import {ReceiptPage} from "@/pages/dashboard/seller/ReceiptPage";
 import {AdminReports} from "@/pages/dashboard/admin/AdminReports";
 import {CustomerHistory} from "@/pages/dashboard/customer/CustomerHistory";
+import {AdminCarriers} from "@/pages/dashboard/admin/AdminCarriers";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -123,6 +124,15 @@ export default function App() {
                                 }
                             />
 
+                            <Route
+                                path="seller/carriers"
+                                element={
+                                    <RequireRole roles={['SELLER']}>
+                                        <AdminCarriers />
+                                    </RequireRole>
+                                }
+                            />
+
                             {/* Маршруты администратора */}
                             <Route
                                 path="admin/items"
@@ -138,6 +148,15 @@ export default function App() {
                                 element={
                                     <RequireRole roles={['ADMIN']}>
                                         <AdminReports />
+                                    </RequireRole>
+                                }
+                            />
+
+                            <Route
+                                path="admin/carriers"
+                                element={
+                                    <RequireRole roles={['ADMIN']}>
+                                        <AdminCarriers />
                                     </RequireRole>
                                 }
                             />

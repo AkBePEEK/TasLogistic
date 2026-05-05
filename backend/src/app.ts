@@ -14,6 +14,7 @@ import { errorHandler } from './middleware/errorHandler';
 import customerRoutes from "./routes/customer.routes";
 import profileRoutes from "./routes/profile.routes";
 import { initSocket } from './socket';
+import carrierRoutes from './routes/carrier.routes';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -68,6 +69,7 @@ export function createApp() {
     app.use('/api/admin/items', adminRoutes);
     app.use('/api/customer', customerRoutes);
     app.use('/api/profile', profileRoutes);
+    app.use('/api/carriers', carrierRoutes);
 
     // Централизованный обработчик ошибок — всегда последний
     app.use(errorHandler);

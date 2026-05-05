@@ -114,3 +114,22 @@ model Otp {
 
   @@index([phone])
 }
+
+model Carrier {
+  id        String      @id @default(uuid())
+  name      String
+  city      String
+  phone     String
+  type      CarrierType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([city])
+  @@index([type])
+}
+
+enum CarrierType {
+  AVIA
+  RAIL
+  TRUCK
+}
