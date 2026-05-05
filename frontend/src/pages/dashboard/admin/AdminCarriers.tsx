@@ -15,16 +15,15 @@ const Schema = z.object({
 type Form = z.infer<typeof Schema>;
 
 const CITIES = [
-    'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтобе',
-    'Тараз', 'Павлодар', 'Өскемен', 'Семей', 'Атырау',
-    'Қостанай', 'Орал', 'Петропавл', 'Түркістан', 'Көкшетау',
+    'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтобе', 'Ақтау',
+    'Тараз', 'Павлодар', 'Өскемен', 'Семей', 'Атырау', 'Қызылорда', 'Жезқазған',
+    'Қостанай', 'Орал', 'Петропавл', 'Түркістан', 'Көкшетау', 'Темиртау'
 ];
 
 const inputCls = "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
 
 export function AdminCarriers() {
     const qc = useQueryClient();
-    const [editingId, setEditingId] = useState<string | null>(null);
     const [filterCity, setFilterCity] = useState('');
     const [showForm, setShowForm] = useState(false);
 
@@ -34,7 +33,7 @@ export function AdminCarriers() {
             carriersApi.getByCity(filterCity || undefined).then((r) => r.data.data ?? []),
     });
 
-    const { register, handleSubmit, reset, setValue, formState: { errors } } =
+    const { register, handleSubmit, reset, formState: { errors } } =
         useForm<Form>({ resolver: zodResolver(Schema) });
 
     const createMutation = useMutation({
