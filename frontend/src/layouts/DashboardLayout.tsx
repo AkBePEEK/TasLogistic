@@ -3,6 +3,8 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types';
 import { LogoLink } from '@/components/LogoLink';
+import {ROLE_LABELS} from "@/components/ui/RoleLabel";
+import {LanguageSwitcher} from "@/components/LanguageSwitcher";
 
 interface NavItem {
     label: string;
@@ -11,15 +13,15 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-    { label: 'Мои товары',   to: '/dashboard/seller/items',    roles: ['SELLER'] },
-    { label: 'Добавить',     to: '/dashboard/seller/create',   roles: ['SELLER'] },
-    { label: 'Перевозчики', to: '/dashboard/seller/carriers', roles: ['SELLER'] },
-    { label: 'Все товары',   to: '/dashboard/admin/items',     roles: ['ADMIN'] },
-    { label: 'Отчёты',       to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
-    { label: 'Перевозчики', to: '/dashboard/admin/carriers', roles: ['ADMIN'] },
-    { label: 'Мои заказы',   to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
-    { label: 'История заказов', to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
-    { label: 'Профиль',      to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
+    { label: 'Мои товары',    to: '/dashboard/seller/items',    roles: ['SELLER'] },
+    { label: 'Добавить',      to: '/dashboard/seller/create',   roles: ['SELLER'] },
+    { label: 'Перевозчики',   to: '/dashboard/seller/carriers', roles: ['SELLER'] },
+    { label: 'Все товары',    to: '/dashboard/admin/items',     roles: ['ADMIN'] },
+    { label: 'Отчёты',        to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
+    { label: 'Перевозчики',   to: '/dashboard/admin/carriers',  roles: ['ADMIN'] },
+    { label: 'Мои заказы',    to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
+    { label: 'История',       to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
+    { label: 'Профиль',       to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
 ];
 
 export function DashboardLayout() {
@@ -71,12 +73,13 @@ export function DashboardLayout() {
             <div className="border-t border-gray-200 p-4 space-y-2">
                 <p className="truncate text-xs text-gray-400">{user?.email}</p>
                 <span className="inline-flex rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-          {user?.role}
-        </span>
+                    {ROLE_LABELS[user?.role ?? 'CUSTOMER']}
+                </span>
+                <LanguageSwitcher />
                 <button
-                    onClick={handleLogout}
-                    className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
-                >
+                        onClick={handleLogout}
+                        className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    >
                     Выйти
                 </button>
             </div>

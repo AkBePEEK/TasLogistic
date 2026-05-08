@@ -5,13 +5,14 @@ import logo from '../assets/logo.jpg';
 
 interface Props {
     clickable?: boolean;
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const SIZE_CLASSES = {
     sm: 'h-10 w-auto',   // сайдбар и хедер
     md: 'h-16 w-auto',   // TrackPage хедер
     lg: 'h-24 w-auto',   // логин/регистрация
+    xl: 'h-32 w-auto',
 };
 
 function getDashboardPath(role?: string): string {

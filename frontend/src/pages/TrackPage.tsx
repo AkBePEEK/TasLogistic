@@ -9,6 +9,8 @@ import { TrackResult, ApiResponse } from '@/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import {LogoLink} from "@/components/LogoLink";
 import { useSocket } from '@/hooks/useSocket';
+import {LanguageSwitcher} from "@/components/LanguageSwitcher";
+import {useTranslation} from "react-i18next";
 
 const Schema = z.object({
     code: z
@@ -22,6 +24,8 @@ type Form = z.infer<typeof Schema>;
 
 export function TrackPage() {
     const [activeCode, setActiveCode] = useState<string | null>(null);
+
+    const { t } = useTranslation();
 
     const { register, handleSubmit, formState: { errors } } = useForm<Form>({
         resolver: zodResolver(Schema),
@@ -41,21 +45,24 @@ export function TrackPage() {
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
             {/* Header */}
-            <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-                <div className="mb-8 text-center">
-                    <LogoLink clickable={true} size="md" />
+            <header className="relative flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+                {/* Логотип — по центру на десктопе, слева на мобильном */}
+                <div className="flex items-center lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+                    <LogoLink clickable={true} size="lg" />
                 </div>
-                <div className="flex gap-3">
-                    <Link
-                        to="/login"
-                        className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
-                    >
+
+                {/* Пустой div для выравнивания flex на мобильном */}
+                <div className="lg:invisible">
+                    <LogoLink clickable={false} size="lg" />
+                </div>
+
+                {/* Кнопки справа */}
+                <div className="flex items-center gap-3">
+                    <LanguageSwitcher />
+                    <Link to="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
                         Войти
                     </Link>
-                    <Link
-                        to="/register"
-                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                    >
+                    <Link to="/register" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
                         Регистрация
                     </Link>
                 </div>
@@ -64,9 +71,7 @@ export function TrackPage() {
             {/* Main */}
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
                 <div className="w-full max-w-lg">
-                    <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
-                        Отследить заказ
-                    </h1>
+                    <h1>{t('track.title')}</h1>
                     <p className="mb-8 text-center text-sm text-gray-500">
                         Введите трек-код для просмотра статуса доставки
                     </p>

@@ -1,0 +1,94 @@
+export const ru = {
+    translation: {
+        // Навигация
+        nav: {
+            myItems:    'Мои товары',
+            add:        'Добавить',
+            carriers:   'Перевозчики',
+            allItems:   'Все товары',
+            reports:    'Отчёты',
+            myOrders:   'Мои заказы',
+            history:    'История',
+            profile:    'Профиль',
+            logout:     'Выйти',
+        },
+        // Роли
+        roles: {
+            SELLER:   'Поставщик',
+            ADMIN:    'Администратор',
+            CUSTOMER: 'Покупатель',
+        },
+        // Статусы
+        status: {
+            CREATED:    'Создан',
+            PROCESSING: 'Обработка',
+            SHIPPED:    'Отправлен',
+            IN_TRANSIT: 'В пути',
+            DELIVERED:  'Доставлен',
+            CANCELLED:  'Отменён',
+        },
+        // Главная страница
+        track: {
+            title:       'Отследить заказ',
+            subtitle:    'Введите трек-код для просмотра статуса доставки',
+            placeholder: 'TRK-202406-XXXXXXXX',
+            search:      'Найти',
+            notFound:    'Товар с трек-кодом {{code}} не найден.',
+            trackingCode:'Трек-код',
+            statusHistory:'История статусов',
+            login:       'Войти',
+            register:    'Регистрация',
+        },
+        // Вход
+        login: {
+            title:    'Вход в аккаунт',
+            email:    'Email',
+            password: 'Пароль',
+            submit:   'Войти',
+            loading:  'Вход...',
+            noAccount:'Нет аккаунта?',
+            register: 'Зарегистрироваться',
+            error:    'Неверный email или пароль',
+        },
+        // Регистрация
+        register: {
+            title:    'Создать аккаунт',
+            role:     'Я регистрируюсь как',
+            email:    'Email',
+            password: 'Пароль',
+            confirm:  'Подтверждение пароля',
+            submit:   'Зарегистрироваться',
+            loading:  'Создание...',
+            hasAccount:'Уже есть аккаунт?',
+            loginLink: 'Войти',
+            customer: { label: 'Покупатель', desc: 'Отслеживаю свои заказы' },
+            seller:   { label: 'Поставщик',  desc: 'Управляю товарами' },
+        },
+        // Заказы покупателя
+        orders: {
+            title:      'Мои заказы',
+            subtitle:   'Вся история ваших отслеживаемых товаров',
+            addLabel:   'Добавить заказ по трек-коду',
+            track:      'Отслеживать',
+            searching:  'Поиск...',
+            noOrders:   'Нет отслеживаемых заказов',
+            noOrdersHint:'Введите трек-код выше',
+            details:    'Подробнее →',
+            remove:     'Удалить',
+            paid:       'Оплачено',
+            toPay:      'К оплате',
+            sentAt:     'Отправлен',
+        },
+        common: {
+            save:   'Сохранить',
+            cancel: 'Отмена',
+            delete: 'Удалить',
+            edit:   'Изменить',
+            back:   '← Назад',
+            total:  'Итого',
+            search: 'Поиск...',
+            from:   'Откуда',
+            to:     'Куда',
+        },
+    },
+};

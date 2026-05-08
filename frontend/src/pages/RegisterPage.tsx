@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types';
 import {LogoLink} from "@/components/LogoLink";
+import { ROLE_LABELS } from '@/components/ui/RoleLabel';
 
 function EyeIcon({ open }: { open: boolean }) {
     return open ? (
@@ -37,8 +38,8 @@ const Schema = z
 type Form = z.infer<typeof Schema>;
 
 const ROLES: { value: Role; label: string; icon: string; desc: string }[] = [
-    { value: 'CUSTOMER', icon: '📦', label: 'Покупатель', desc: 'Отслеживаю свои заказы' },
-    { value: 'SELLER',   icon: '🏪', label: 'Продавец',   desc: 'Управляю товарами' },
+    { value: 'CUSTOMER', icon: '📦', label: 'Покупатель',  desc: 'Отслеживаю свои заказы' },
+    { value: 'SELLER',   icon: '🏪', label: 'Поставщик',   desc: 'Управляю товарами' },
 ];
 
 export function RegisterPage() {
