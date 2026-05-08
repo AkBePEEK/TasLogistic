@@ -50,7 +50,6 @@ export function RegisterPage() {
     const [role, setRole] = useState<Role>('CUSTOMER');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const { t } = useTranslation();
 
     const {
         register,
