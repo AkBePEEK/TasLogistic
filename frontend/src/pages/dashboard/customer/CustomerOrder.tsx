@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { OrderHistoryDrawer } from './OrderHistoryDrawer';
 import toast from "react-hot-toast";
 import {useSocket} from "@/hooks/useSocket";
+import {useTranslation} from "react-i18next";
 
 // ── Форма добавления трек-кода ────────────────────────────────────────────────
 
@@ -23,18 +24,20 @@ const AddTrackSchema = z.object({
 
 type AddTrackForm = z.infer<typeof AddTrackSchema>;
 
+const { t } = useTranslation();
+
 const STATUS_CONFIG: {
     value: Status;
     label: string;
     icon: string;
     color: string;
 }[] = [
-    { value: 'CREATED',    label: 'В ожидании',   icon: '🕐', color: 'text-gray-600' },
-    { value: 'PROCESSING', label: 'На складе',     icon: '🏭', color: 'text-blue-600' },
-    { value: 'SHIPPED',    label: 'Отправлен',     icon: '📦', color: 'text-yellow-600' },
-    { value: 'IN_TRANSIT', label: 'В пути',        icon: '🚚', color: 'text-orange-600' },
-    { value: 'DELIVERED',  label: 'Доставлен',     icon: '✅', color: 'text-green-600' },
-    { value: 'CANCELLED',  label: 'Отменён',       icon: '❌', color: 'text-red-500' },
+    { value: 'CREATED',    label: t('status.CREATED'),   icon: '🕐', color: 'text-gray-600' },
+    { value: 'PROCESSING', label: t('status.PROCESSING'),     icon: '🏭', color: 'text-blue-600' },
+    { value: 'SHIPPED',    label: t('status.SHIPPED'),     icon: '📦', color: 'text-yellow-600' },
+    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT'),        icon: '🚚', color: 'text-orange-600' },
+    { value: 'DELIVERED',  label: t('status.DELIVERED'),     icon: '✅', color: 'text-green-600' },
+    { value: 'CANCELLED',  label: t('status.CANCELLED'),       icon: '❌', color: 'text-red-500' },
 ];
 
 // ── Главная страница ──────────────────────────────────────────────────────────
@@ -104,14 +107,14 @@ export function CustomerOrders() {
     return (
         <div className="space-y-6">
             {/* Заголовок */}
-            <h1 className="text-2xl font-bold text-gray-900">Мои заказы</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('orders.title')}</h1>
 
             {/* Финансовая статистика */}
             {stats && (
                 <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl border border-green-100 bg-green-50 p-4 shadow-sm">
                         <p className="text-xs font-medium uppercase tracking-wider text-green-600">
-                            Оплачено
+                            {t('orders.paid')}
                         </p>
                         <p className="mt-1 text-xl font-bold text-green-700">
                             {stats.totalPaid.toLocaleString('ru-RU')} ₸
@@ -119,7 +122,7 @@ export function CustomerOrders() {
                     </div>
                     <div className="rounded-xl border border-orange-100 bg-orange-50 p-4 shadow-sm">
                         <p className="text-xs font-medium uppercase tracking-wider text-orange-600">
-                            К оплате
+                            {t('orders.toPay')}
                         </p>
                         <p className="mt-1 text-xl font-bold text-orange-700">
                             {stats.totalToPay.toLocaleString('ru-RU')} ₸
@@ -149,8 +152,8 @@ export function CustomerOrders() {
                                 <div className="flex items-center gap-3">
                                     <span className="text-lg">{s.icon}</span>
                                     <span className={`text-sm font-medium ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
-                    {s.label}
-                  </span>
+                                        {s.label}
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {count > 0 && (
@@ -160,8 +163,8 @@ export function CustomerOrders() {
                                                 ? 'bg-indigo-600 text-white'
                                                 : 'bg-gray-100 text-gray-600',
                                         ].join(' ')}>
-                      {count}
-                    </span>
+                                            {count}
+                                        </span>
                                     )}
                                     <span className="text-gray-400">›</span>
                                 </div>
@@ -174,9 +177,9 @@ export function CustomerOrders() {
             {/* Активный фильтр */}
             {statusFilter && (
                 <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
-            Фильтр: {STATUS_CONFIG.find((s) => s.value === statusFilter)?.label}
-          </span>
+                    <span className="text-sm text-gray-500">
+                        Фильтр: {STATUS_CONFIG.find((s) => s.value === statusFilter)?.label}
+                    </span>
                     <button
                         onClick={() => setStatusFilter(null)}
                         className="text-xs text-indigo-600 hover:underline"
@@ -192,7 +195,7 @@ export function CustomerOrders() {
                 className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
             >
                 <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Добавить заказ по трек-коду
+                    {t('orders.addLabel')}
                 </label>
                 <div className="flex gap-3">
                     <div className="flex-1">
@@ -216,11 +219,11 @@ export function CustomerOrders() {
                     >
                         {addMutation.isPending ? (
                             <span className="flex items-center gap-2">
-                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Поиск...
-              </span>
+                            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                {t('orders.searching')}
+                            </span>
                         ) : (
-                            'Отслеживать'
+                            t('orders.track')
                         )}
                     </button>
                 </div>
@@ -237,11 +240,11 @@ export function CustomerOrders() {
                 <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16 text-center">
                     <div className="mb-3 text-4xl">📦</div>
                     <p className="text-sm font-medium text-gray-600">
-                        {statusFilter ? 'Нет заказов с этим статусом' : 'Нет отслеживаемых заказов'}
+                        {statusFilter ? t("orders.noOrdersStatus") : t('orders.noOrders')}
                     </p>
                     {!statusFilter && (
                         <p className="mt-1 text-xs text-gray-400">
-                            Введите трек-код выше, чтобы начать отслеживать заказ
+                            {t('orders.noOrdersHint')}
                         </p>
                     )}
                 </div>
@@ -290,9 +293,9 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
 
                     {/* Трек-код и статус */}
                     <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm font-semibold tracking-wider text-indigo-600">
-              {item.trackingCode}
-            </span>
+                        <span className="font-mono text-sm font-semibold tracking-wider text-indigo-600">
+                          {item.trackingCode}
+                        </span>
                         <StatusBadge status={item.currentStatus} />
                     </div>
 
@@ -313,7 +316,7 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
 
                     {/* ← Дата и время отправки */}
                     <p className="mt-1 text-xs text-gray-400">
-                        Отправлен:{' '}
+                        {t('orders.sentAt')}:{' '}
                         {item.createdAt
                             ? new Date(item.createdAt).toLocaleString('ru-RU', {
                                 day: '2-digit',
@@ -336,8 +339,8 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                             ))}
                             {item.statusHistory.length > 4 && (
                                 <span className="text-xs text-gray-400">
-                  +{item.statusHistory.length - 4} ещё
-                </span>
+                                  +{item.statusHistory.length - 4} ещё
+                                </span>
                             )}
                         </div>
                     )}
@@ -349,14 +352,14 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                         onClick={onShowHistory}
                         className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100"
                     >
-                        Подробнее →
+                        {t('orders.details')}
                     </button>
                     <button
                         onClick={onRemove}
                         disabled={isRemoving}
                         className="rounded-lg border border-red-100 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-100 disabled:opacity-40"
                     >
-                        {isRemoving ? '...' : 'Удалить'}
+                        {isRemoving ? '...' : t('orders.remove')}
                     </button>
                 </div>
             </div>

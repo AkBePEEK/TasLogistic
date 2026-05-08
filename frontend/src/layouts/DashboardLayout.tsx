@@ -5,6 +5,7 @@ import { Role } from '@/types';
 import { LogoLink } from '@/components/LogoLink';
 import {ROLE_LABELS} from "@/components/ui/RoleLabel";
 import {LanguageSwitcher} from "@/components/LanguageSwitcher";
+import {useTranslation} from "react-i18next";
 
 interface NavItem {
     label: string;
@@ -12,16 +13,18 @@ interface NavItem {
     roles: Role[];
 }
 
+const { t } = useTranslation();
+
 const NAV_ITEMS: NavItem[] = [
-    { label: 'Мои товары',    to: '/dashboard/seller/items',    roles: ['SELLER'] },
-    { label: 'Добавить',      to: '/dashboard/seller/create',   roles: ['SELLER'] },
-    { label: 'Перевозчики',   to: '/dashboard/seller/carriers', roles: ['SELLER'] },
-    { label: 'Все товары',    to: '/dashboard/admin/items',     roles: ['ADMIN'] },
-    { label: 'Отчёты',        to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
-    { label: 'Перевозчики',   to: '/dashboard/admin/carriers',  roles: ['ADMIN'] },
-    { label: 'Мои заказы',    to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
-    { label: 'История',       to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
-    { label: 'Профиль',       to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
+    { label: t('nav.myItems'),    to: '/dashboard/seller/items',    roles: ['SELLER'] },
+    { label: t('nav.add'),      to: '/dashboard/seller/create',   roles: ['SELLER'] },
+    { label: t('nav.carriers'),   to: '/dashboard/seller/carriers', roles: ['SELLER'] },
+    { label: t('nav.allItems'),    to: '/dashboard/admin/items',     roles: ['ADMIN'] },
+    { label: t('nav.report'),        to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
+    { label: t('nav.carriers'),   to: '/dashboard/admin/carriers',  roles: ['ADMIN'] },
+    { label: t('nav.myOrders'),    to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
+    { label: t('nav.history'),       to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
+    { label: t('nav.profile'),       to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
 ];
 
 export function DashboardLayout() {

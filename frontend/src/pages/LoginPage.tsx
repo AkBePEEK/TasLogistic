@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { LogoLink } from '@/components/LogoLink';
 import { apiClient } from '@/api/client';
+import {useTranslation} from "react-i18next";
 
 // Схемы валидации
 const emailSchema = z.object({
@@ -41,6 +42,7 @@ export function LoginPage() {
     const [phoneStep, setPhoneStep] = useState<PhoneStep>('input');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [timer, setTimer] = useState(0);
+    const { t } = useTranslation();
 
     // Формы
     const emailForm = useForm<EmailForm>({
@@ -103,7 +105,7 @@ export function LoginPage() {
             toast.success('Добро пожаловать!');
             navigate(from, { replace: true });
         } catch {
-            toast.error('Неверный email или пароль');
+            toast.error(t('login.error'));
         }
     };
 
@@ -141,7 +143,7 @@ export function LoginPage() {
                             <LogoLink clickable={false} size="lg" />
                         </div>
                     </div>
-                    <h1 className="mt-2 text-xl font-semibold text-gray-900">Вход в аккаунт</h1>
+                    <h1 className="mt-2 text-xl font-semibold text-gray-900">{t('login.title')}</h1>
                 </div>
 
                 {/* Переключатель метода входа */}
@@ -190,7 +192,7 @@ export function LoginPage() {
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-medium text-gray-700">Пароль</label>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">{t('login.password')}</label>
                             <div className="relative">
                                 <input
                                     {...emailForm.register('password')}
@@ -225,7 +227,7 @@ export function LoginPage() {
                             disabled={emailForm.formState.isSubmitting}
                             className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                         >
-                            {emailForm.formState.isSubmitting ? 'Вход...' : 'Войти'}
+                            {emailForm.formState.isSubmitting ? t('login.loading') : t('login.submit')}
                         </button>
                     </form>
                 )}
@@ -285,7 +287,7 @@ export function LoginPage() {
                             disabled={verifyOtpMutation.isPending}
                             className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                         >
-                            {verifyOtpMutation.isPending ? 'Проверка...' : 'Войти'}
+                            {verifyOtpMutation.isPending ? t('login.loading') : t('login.submit')}
                         </button>
 
                         <button
@@ -316,9 +318,9 @@ export function LoginPage() {
                 )}
 
                 <p className="mt-4 text-center text-sm text-gray-500">
-                    Нет аккаунта?{' '}
+                    {t('login.noAccount') + ' '}
                     <Link to="/register" className="font-medium text-indigo-600 hover:underline">
-                        Зарегистрироваться
+                        {t('login.register')}
                     </Link>
                 </p>
             </div>

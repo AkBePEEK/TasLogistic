@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types';
 import {LogoLink} from "@/components/LogoLink";
-import { ROLE_LABELS } from '@/components/ui/RoleLabel';
+import {useTranslation} from "react-i18next";
 
 function EyeIcon({ open }: { open: boolean }) {
     return open ? (
@@ -20,6 +20,8 @@ function EyeIcon({ open }: { open: boolean }) {
         </svg>
     );
 }
+
+const { t } = useTranslation();
 
 const Schema = z
     .object({
@@ -38,8 +40,8 @@ const Schema = z
 type Form = z.infer<typeof Schema>;
 
 const ROLES: { value: Role; label: string; icon: string; desc: string }[] = [
-    { value: 'CUSTOMER', icon: '📦', label: 'Покупатель',  desc: 'Отслеживаю свои заказы' },
-    { value: 'SELLER',   icon: '🏪', label: 'Поставщик',   desc: 'Управляю товарами' },
+    { value: 'CUSTOMER', icon: '📦', label: t('register.customer.label'),  desc: t('register.customer.desc') },
+    { value: 'SELLER',   icon: '🏪', label: t('register.seller.label'),   desc: t('register.seller.desc') },
 ];
 
 export function RegisterPage() {
@@ -48,7 +50,7 @@ export function RegisterPage() {
     const [role, setRole] = useState<Role>('CUSTOMER');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-
+    const { t } = useTranslation();
 
     const {
         register,
@@ -75,7 +77,7 @@ export function RegisterPage() {
                             <LogoLink clickable={false} size="lg" />
                         </div>
                     </div>
-                    <h1 className="mt-2 text-xl font-semibold text-gray-900">Создать аккаунт</h1>
+                    <h1 className="mt-2 text-xl font-semibold text-gray-900">{t('register.title')}</h1>
                 </div>
 
                 <form
@@ -91,7 +93,7 @@ export function RegisterPage() {
                     {/* Выбор роли */}
                     <div>
                         <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Я регистрируюсь как
+                            {t('register.role')}
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             {ROLES.map((r) => (
@@ -127,7 +129,7 @@ export function RegisterPage() {
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-sm font-medium text-gray-700">Пароль</label>
+                        <label className="mb-1 block text-sm font-medium text-gray-700">{t('register.password')}</label>
                         <div className="relative">
                             <input
                                 {...register('password')}
@@ -149,7 +151,7 @@ export function RegisterPage() {
 
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Подтверждение пароля
+                            {t('register.confirm')}
                         </label>
                         <div className="relative">
                             <input
@@ -175,14 +177,14 @@ export function RegisterPage() {
                         disabled={isSubmitting}
                         className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                     >
-                        {isSubmitting ? 'Создание...' : 'Зарегистрироваться'}
+                        {isSubmitting ? t('register.loading') : t('register.confirm')}
                     </button>
                 </form>
 
                 <p className="mt-4 text-center text-sm text-gray-500">
-                    Уже есть аккаунт?{' '}
+                    {t('register.hasAccount') + ' '}
                     <Link to="/login" className="font-medium text-indigo-600 hover:underline">
-                        Войти
+                        {t('register.loginLink')}
                     </Link>
                 </p>
             </div>

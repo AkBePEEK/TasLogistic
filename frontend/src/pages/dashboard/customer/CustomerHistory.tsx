@@ -3,15 +3,18 @@ import { useQuery } from '@tanstack/react-query';
 import { customerApi, TrackedItemSummary } from '@/api/customer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { OrderHistoryDrawer } from './OrderHistoryDrawer';
+import {useTranslation} from "react-i18next";
+
+const {t} = useTranslation();
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
     { value: '',           label: 'Все статусы' },
-    { value: 'CREATED',    label: 'В ожидании' },
-    { value: 'PROCESSING', label: 'На складе' },
-    { value: 'SHIPPED',    label: 'Отправлен' },
-    { value: 'IN_TRANSIT', label: 'В пути' },
-    { value: 'DELIVERED',  label: 'Доставлен' },
-    { value: 'CANCELLED',  label: 'Отменён' },
+    { value: 'CREATED',    label: t('status.CREATED') },
+    { value: 'PROCESSING', label: t('status.PROCESSING') },
+    { value: 'SHIPPED',    label: t('status.SHIPPED') },
+    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT') },
+    { value: 'DELIVERED',  label: t('status.DELIVERED') },
+    { value: 'CANCELLED',  label: t('status.CANCELLED') },
 ];
 
 export function CustomerHistory() {
@@ -33,15 +36,15 @@ export function CustomerHistory() {
             {/* Заголовок */}
             <div className="flex items-end justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">История заказов</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{t('orders.history')}</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Все ваши заказы за всё время
+                        {t('orders.subtitle')}
                     </p>
                 </div>
                 {data && (
                     <span className="text-sm text-gray-400">
-            {data.total} заказов
-          </span>
+                        {data.total} заказов
+                    </span>
                 )}
             </div>
 
@@ -125,9 +128,9 @@ function HistoryRow({
         <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-sm font-semibold text-indigo-600">
-            {item.trackingCode}
-          </span>
+                    <span className="font-mono text-sm font-semibold text-indigo-600">
+                        {item.trackingCode}
+                    </span>
                     <StatusBadge status={item.currentStatus} />
                 </div>
 
@@ -145,19 +148,19 @@ function HistoryRow({
             <div className="flex flex-shrink-0 flex-col items-end gap-1">
                 {item.cashOnDelivery !== undefined && item.cashOnDelivery > 0 && (
                     <span className="text-sm font-semibold text-gray-700">
-            {item.cashOnDelivery.toLocaleString('ru-RU')} ₸
-          </span>
+                        {item.cashOnDelivery.toLocaleString('ru-RU')} ₸
+                    </span>
                 )}
                 <span className="text-xs text-gray-400">
-          {new Date(item.createdAt).toLocaleDateString('ru-RU', {
-              day: '2-digit', month: 'short', year: 'numeric',
-          })}
-        </span>
+                    {new Date(item.createdAt).toLocaleDateString('ru-RU', {
+                      day: '2-digit', month: 'short', year: 'numeric',
+                    })}
+                </span>
                 <button
                     onClick={onShowHistory}
                     className="text-xs font-medium text-indigo-600 hover:underline"
                 >
-                    Подробнее →
+                    {t('orders.details')}
                 </button>
             </div>
         </div>

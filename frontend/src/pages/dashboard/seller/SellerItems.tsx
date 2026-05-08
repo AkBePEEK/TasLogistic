@@ -7,14 +7,17 @@ import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import { Status } from '@/types';
 import toast from "react-hot-toast";
 import {useSocket} from "@/hooks/useSocket";
+import {useTranslation} from "react-i18next";
+
+const {t} = useTranslation();
 
 const STATUSES: { value: Status; label: string }[] = [
-    { value: 'CREATED',    label: 'Создан' },
-    { value: 'PROCESSING', label: 'Обработка' },
-    { value: 'SHIPPED',    label: 'Отправлен' },
-    { value: 'IN_TRANSIT', label: 'В пути' },
-    { value: 'DELIVERED',  label: 'Доставлен' },
-    { value: 'CANCELLED',  label: 'Отменён' },
+    { value: 'CREATED',    label: t('status.CREATED') },
+    { value: 'PROCESSING', label: t('status.PROCESSING') },
+    { value: 'SHIPPED',    label: t('status.SHIPPED') },
+    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT') },
+    { value: 'DELIVERED',  label: t('status.DELIVERED') },
+    { value: 'CANCELLED',  label: t('status.CANCELLED') },
 ];
 
 interface EditingState {
@@ -54,12 +57,12 @@ export function SellerItems() {
         <div className="space-y-6">
             {/* Заголовок + статистика */}
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Мои товары</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('nav.myItems')}</h1>
                 <Link
                     to="/dashboard/seller/create"
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
                 >
-                    + Добавить
+                    + {t('nav.add')}
                 </Link>
             </div>
 
@@ -183,7 +186,7 @@ export function SellerItems() {
                                                     onClick={() => setEditing(null)}
                                                     className="rounded-lg border border-gray-300 px-4 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
                                                 >
-                                                    Отмена
+                                                    {t('common.cancel')}
                                                 </button>
                                             </div>
                                         </div>
@@ -211,7 +214,7 @@ export function SellerItems() {
                                             onClick={() => navigate(`/dashboard/seller/items/${item.id}`)}
                                             className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
                                         >
-                                            Подробнее
+                                            {t('orders.details')}
                                         </button>
 
                                         <button

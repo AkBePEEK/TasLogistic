@@ -5,13 +5,15 @@ import { QRCodeSVG } from 'qrcode.react';
 import { sellerApi } from '@/api/seller';
 import { carriersApi, Carrier, CarrierType } from '@/api/carrier';
 
+const { t } = useTranslation();
+
 const STATUS_LABEL: Record<string, string> = {
-    CREATED:    'Создан',
-    PROCESSING: 'Обработка',
-    SHIPPED:    'Отправлен',
-    IN_TRANSIT: 'В пути',
-    DELIVERED:  'Доставлен',
-    CANCELLED:  'Отменён',
+    CREATED:    t('status.CREATED'),
+    PROCESSING: t('status.PROCESSING'),
+    SHIPPED:    t('status.SHIPPED'),
+    IN_TRANSIT: t('status.IN_TRANSIT'),
+    DELIVERED:  t('status.DELIVERED'),
+    CANCELLED:  t('status.CANCELLED'),
 };
 
 const DELIVERY_TYPES: { value: CarrierType; label: string }[] = [
@@ -129,6 +131,7 @@ export function ReceiptPage() {
 // ── Компонент чека ────────────────────────────────────────────────────────────
 
 import { ItemDetail } from '@/api/seller';
+import {useTranslation} from "react-i18next";
 
 function Receipt({
                      item,

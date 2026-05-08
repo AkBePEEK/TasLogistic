@@ -129,8 +129,8 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Наложенный платёж:</span>
                                         <span className="font-medium text-orange-600">
-            {data.cashOnDelivery.toLocaleString('ru-RU')} ₸
-          </span>
+                                            {data.cashOnDelivery.toLocaleString('ru-RU')} ₸
+                                        </span>
                                     </div>
                                 )}
                             </div>

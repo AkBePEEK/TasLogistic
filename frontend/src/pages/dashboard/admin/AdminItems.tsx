@@ -5,6 +5,7 @@ import { adminApi, AdminItem } from '@/api/admin';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import {useSocket} from "@/hooks/useSocket";
+import {useTranslation} from "react-i18next";
 
 const CITIES = [
     'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтобе',
@@ -12,14 +13,16 @@ const CITIES = [
     'Қостанай', 'Орал', 'Петропавл', 'Түркістан', 'Көкшетау',
 ];
 
+const { t } = useTranslation();
+
 const STATUS_OPTIONS = [
     { value: '',           label: 'Все статусы' },
-    { value: 'CREATED',    label: 'Создан' },
-    { value: 'PROCESSING', label: 'Обработка' },
-    { value: 'SHIPPED',    label: 'Отправлен' },
-    { value: 'IN_TRANSIT', label: 'В пути' },
-    { value: 'DELIVERED',  label: 'Доставлен' },
-    { value: 'CANCELLED',  label: 'Отменён' },
+    { value: 'CREATED',    label: t('status.CREATED') },
+    { value: 'PROCESSING', label: t('status.PROCESSING') },
+    { value: 'SHIPPED',    label: t('status.SHIPPED') },
+    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT') },
+    { value: 'DELIVERED',  label: t('status.DELIVERED') },
+    { value: 'CANCELLED',  label: t('status.CANCELLED') },
 ];
 
 export function AdminItems() {
@@ -155,7 +158,7 @@ export function AdminItems() {
                         {/* Город отправки */}
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Город отправки
+                                {t('common.from')}
                             </label>
                             <select
                                 value={fromCity}
@@ -170,7 +173,7 @@ export function AdminItems() {
                         {/* Город доставки */}
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Город доставки
+                                {t('common.to')}
                             </label>
                             <select
                                 value={toCity}

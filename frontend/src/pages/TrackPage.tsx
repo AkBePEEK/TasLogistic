@@ -24,9 +24,7 @@ type Form = z.infer<typeof Schema>;
 
 export function TrackPage() {
     const [activeCode, setActiveCode] = useState<string | null>(null);
-
     const { t } = useTranslation();
-
     const { register, handleSubmit, formState: { errors } } = useForm<Form>({
         resolver: zodResolver(Schema),
     });
@@ -60,10 +58,10 @@ export function TrackPage() {
                 <div className="flex items-center gap-3">
                     <LanguageSwitcher />
                     <Link to="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">
-                        Войти
+                        {t('track.login')}
                     </Link>
                     <Link to="/register" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                        Регистрация
+                        {t('track.register')}
                     </Link>
                 </div>
             </header>
@@ -71,9 +69,11 @@ export function TrackPage() {
             {/* Main */}
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
                 <div className="w-full max-w-lg">
-                    <h1>{t('track.title')}</h1>
+                    <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
+                        {t('track.title')}
+                    </h1>
                     <p className="mb-8 text-center text-sm text-gray-500">
-                        Введите трек-код для просмотра статуса доставки
+                        {t('track.subtitle')}
                     </p>
 
                     <form
@@ -89,7 +89,7 @@ export function TrackPage() {
                             type="submit"
                             className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
                         >
-                            Найти
+                            {t('track.search', { code: activeCode })}
                         </button>
                     </form>
 
@@ -106,7 +106,7 @@ export function TrackPage() {
 
                     {isError && (
                         <div className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">
-                            Товар с трек-кодом <strong>{activeCode}</strong> не найден.
+                            {t('track.notFound')}
                         </div>
                     )}
 
@@ -123,7 +123,7 @@ export function TrackPage() {
                             <p className="mb-5 font-semibold text-gray-900">{data.title}</p>
 
                             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                История статусов
+                                {t('track.statusHistory')}
                             </p>
                             <ol className="relative ml-2 border-l-2 border-gray-100">
                                 {data.statusHistory.map((entry, i) => (

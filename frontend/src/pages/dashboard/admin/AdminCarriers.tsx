@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { carriersApi, Carrier, CARRIER_TYPE_LABELS } from '@/api/carrier';
+import {useTranslation} from "react-i18next";
 
 const Schema = z.object({
     name:  z.string().min(2, 'Минимум 2 символа'),
@@ -26,6 +27,7 @@ export function AdminCarriers() {
     const qc = useQueryClient();
     const [filterCity, setFilterCity] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const { t }=  useTranslation();
 
     const { data: carriers, isLoading } = useQuery({
         queryKey: ['carriers', filterCity],
@@ -66,12 +68,14 @@ export function AdminCarriers() {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Перевозчики</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    {t('nav.carriers')}
+                </h1>
                 <button
                     onClick={() => { setShowForm((v) => !v); reset(); }}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
                 >
-                    + Добавить
+                    + {t('nav.add')}
                 </button>
             </div>
 
@@ -132,7 +136,7 @@ export function AdminCarriers() {
                             onClick={() => { setShowForm(false); reset(); }}
                             className="rounded-lg border border-gray-300 px-5 py-2 text-sm text-gray-600 hover:bg-gray-50"
                         >
-                            Отмена
+                            {t('common.cancel')}
                         </button>
                     </div>
                 </form>
@@ -171,12 +175,12 @@ export function AdminCarriers() {
                                     <div key={carrier.id} className="flex items-center justify-between px-5 py-3">
                                         <div>
                                             <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500">
-                          {CARRIER_TYPE_LABELS[carrier.type]}
-                        </span>
+                                                <span className="text-xs font-medium text-gray-500">
+                                                  {CARRIER_TYPE_LABELS[carrier.type]}
+                                                </span>
                                                 <span className="text-sm font-semibold text-gray-800">
-                          {carrier.name}
-                        </span>
+                                                  {carrier.name}
+                                                </span>
                                             </div>
                                             <p className="mt-0.5 text-sm text-gray-500">{carrier.phone}</p>
                                         </div>
@@ -188,7 +192,7 @@ export function AdminCarriers() {
                                             }}
                                             className="text-xs font-medium text-red-500 hover:text-red-700"
                                         >
-                                            Удалить
+                                            {t('orders.remove')}
                                         </button>
                                     </div>
                                 ))}
