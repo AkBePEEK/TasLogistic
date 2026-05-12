@@ -17,6 +17,7 @@ export const kz = {
             CUSTOMER: 'Сатып алушы',
         },
         status: {
+            ALL: 'Барлық мәртебелер',
             CREATED:    'Жасалды',
             PROCESSING: 'Өңдеуде',
             SHIPPED:    'Жіберілді',
@@ -110,6 +111,12 @@ export const kz = {
             allOrders:   'Барлық тапсырыстар',
             receipt:     '🖨 Чек',
             statusBtn:   'Мәртебе',
+            dateFromLabel: 'Күннен бастап',
+            dateToLabel: 'Күнге дейін',
+            searchPlaceholder: 'Трек-код немесе алушы бойынша іздеу...',
+            confirmDelete: '{{code}} тапсырысын жою?',
+            previousPage: 'Алдыңғы бет',
+            nextPage: 'Келесі бет',
         },
         receipt: {
             title:       'TAS LOGISTIC',
@@ -134,5 +141,11 @@ export const kz = {
             rail:        'ТЖ',
             truck:       'ЖҮКТІ АВТОКӨЛІК',
         },
+        toast: {
+            statusUpdated: 'Мәртебе жаңартылды',
+            statusUpdateError: 'Мәртебені жаңарту сәтсіз',
+            itemDeleted: 'Тапсырыс жойылды',
+            itemDeleteError: 'Тапсырысты жою сәтсіз',
+        }
     },
 };

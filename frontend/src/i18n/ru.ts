@@ -20,6 +20,7 @@ export const ru = {
         },
         // Статусы
         status: {
+            ALL: 'Все статусы',
             CREATED:    'Создан',
             PROCESSING: 'Обработка',
             SHIPPED:    'Отправлен',
@@ -118,6 +119,12 @@ export const ru = {
             allOrders:   'Все заказы',
             receipt:     '🖨 Чек',
             statusBtn:   'Статус',
+            dateFromLabel: 'Дата от',
+            dateToLabel: 'Дата до',
+            searchPlaceholder: 'Поиск по трек-коду, получателю...',
+            confirmDelete: 'Удалить заказ {{code}}?',
+            previousPage: 'Предыдущая страница',
+            nextPage: 'Следующая страница',
         },
         receipt: {
             title:       'TAS LOGISTIC',
@@ -142,5 +149,11 @@ export const ru = {
             rail:        'ЖД',
             truck:       'ФУРА',
         },
+        toast: {
+            statusUpdated: 'Статус обновлён',
+            statusUpdateError: 'Не удалось обновить статус',
+            itemDeleted: 'Заказ удалён',
+            itemDeleteError: 'Не удалось удалить заказ',
+        }
     },
 };

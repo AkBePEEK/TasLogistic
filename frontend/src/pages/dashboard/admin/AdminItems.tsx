@@ -72,18 +72,18 @@ export function AdminItems() {
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['admin-items'] });
             setEditingId(null);
-            toast.success('Статус обновлён');
+            toast.success(t('toast.statusUpdated'));
         },
-        onError: () => toast.error('Не удалось обновить статус'),
+        onError: () => toast.error(t('toast.statusUpdateError')),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => adminApi.deleteItem(id),
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['admin-items'] });
-            toast.success('Заказ удалён');
+            toast.success(t('toast.itemDeleted'));
         },
-        onError: () => toast.error('Не удалось удалить заказ'),
+        onError: () => toast.error(t('toast.itemDeleteError')),
     });
 
     const totalPages = data ? Math.ceil(data.total / 20) : 1;
@@ -93,7 +93,7 @@ export function AdminItems() {
             {/* Заголовок */}
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">
-                    Все заказы{' '}
+                    {t("common.allOrders") + ' '}
                     {data && (
                         <span className="text-lg font-normal text-gray-400">({data.total})</span>
                     )}
@@ -111,7 +111,7 @@ export function AdminItems() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                               d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
                     </svg>
-                    Фильтры
+                    {t("common.filters")}
                     {hasActiveFilters && (
                         <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 text-xs text-white">
               !
@@ -132,7 +132,7 @@ export function AdminItems() {
                 <input
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="Поиск по трек-коду, получателю..."
+                    placeholder={t('common.searchPlaceholder')}
                     className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 />
             </div>
@@ -143,7 +143,9 @@ export function AdminItems() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {/* Статус */}
                         <div>
-                            <label className="mb-1 block text-xs font-medium text-gray-600">Статус</label>
+                            <label className="mb-1 block text-xs font-medium text-gray-600">
+                                {t('common.statusBtn')}
+                            </label>
                             <select
                                 value={status}
                                 onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -165,7 +167,7 @@ export function AdminItems() {
                                 onChange={(e) => { setFromCity(e.target.value); setPage(1); }}
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                             >
-                                <option value="">Все города</option>
+                                <option value="">{t("common.allCities")}</option>
                                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
@@ -180,7 +182,7 @@ export function AdminItems() {
                                 onChange={(e) => { setToCity(e.target.value); setPage(1); }}
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                             >
-                                <option value="">Все города</option>
+                                <option value="">{t("common.allCities")}</option>
                                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
@@ -188,7 +190,7 @@ export function AdminItems() {
                         {/* Дата от */}
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Дата от
+                                {t('common.dateFromLabel')}
                             </label>
                             <input
                                 type="date"
@@ -201,7 +203,7 @@ export function AdminItems() {
                         {/* Дата до */}
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Дата до
+                                {t('common.dateToLabel')}
                             </label>
                             <input
                                 type="date"
@@ -418,13 +420,13 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                         disabled={isDeleting}
                         className="text-sm font-medium text-red-500 disabled:opacity-40"
                     >
-                        {isDeleting ? '...' : 'Удалить'}
+                        {isDeleting ? '...' : t('common.delete')}
                     </button>
                     <button
                         onClick={isEditing ? onCancelEdit : onEdit}
                         className="text-sm font-medium text-indigo-600"
                     >
-                        {isEditing ? 'Отмена' : 'Изменить'}
+                        {isEditing ? t('common.cancel') : t('common.edit')}
                     </button>
                 </div>
 
