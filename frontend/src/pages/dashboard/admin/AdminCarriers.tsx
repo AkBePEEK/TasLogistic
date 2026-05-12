@@ -133,7 +133,9 @@ export function AdminCarriers() {
                             disabled={createMutation.isPending}
                             className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
                         >
-                            {createMutation.isPending ? 'Сохранение...' : 'Сохранить'}
+                            {createMutation.isPending
+                                ? t('common.saving')
+                                : t('common.save')}
                         </button>
                         <button
                             type="button"
