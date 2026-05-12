@@ -24,7 +24,7 @@ type Form = z.infer<typeof Schema>;
 
 export function TrackPage() {
     const [activeCode, setActiveCode] = useState<string | null>(null);
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
     const { register, handleSubmit, formState: { errors } } = useForm<Form>({
         resolver: zodResolver(Schema),
     });
@@ -132,7 +132,7 @@ export function TrackPage() {
                                         <div className="flex items-center justify-between">
                                             <StatusBadge status={entry.newStatus} />
                                             <time className="text-xs text-gray-400">
-                                                {new Date(entry.changedAt).toLocaleString('ru-RU', {
+                                                {new Date(entry.changedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                                                     day: '2-digit',
                                                     month: 'short',
                                                     hour: '2-digit',

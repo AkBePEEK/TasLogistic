@@ -30,7 +30,7 @@ export function ItemDetail() {
     const navigate = useNavigate();
     const qc = useQueryClient();
     const [editingStatus, setEditingStatus] = useState(false);
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     const { data: item, isLoading, isError } = useQuery({
         queryKey: ['seller-item', id],
@@ -116,8 +116,8 @@ export function ItemDetail() {
                         )}
 
                         <div className="flex gap-6 text-xs text-gray-400">
-                            <span>{t('item.createdAt')}: {new Date(item.createdAt).toLocaleDateString('ru-RU')}</span>
-                            <span>{t('item.updatedAt')}: {new Date(item.updatedAt).toLocaleString('ru-RU')}</span>
+                            <span>{t('item.createdAt')}: {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU')}</span>
+                            <span>{t('item.updatedAt')}: {new Date(item.updatedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU')}</span>
                         </div>
                     </div>
 
@@ -189,7 +189,7 @@ export function ItemDetail() {
                                                 <StatusBadge status={entry.newStatus} />
                                             </div>
                                             <time className="text-xs tabular-nums text-gray-400">
-                                                {new Date(entry.changedAt).toLocaleString('ru-RU', {
+                                                {new Date(entry.changedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                                                     day: '2-digit',
                                                     month: 'short',
                                                     year: 'numeric',

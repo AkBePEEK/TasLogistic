@@ -32,7 +32,7 @@ export function SellerItems() {
     const navigate = useNavigate();
     const [page, setPage] = useState(1);
     const [editing, setEditing] = useState<EditingState | null>(null);
-    const {t} = useTranslation();
+    const { i18n, t } = useTranslation();
 
     const { data, isLoading } = useQuery({
         queryKey: ['seller-items', page],
@@ -123,7 +123,7 @@ export function SellerItems() {
 
                                     {/* Дата */}
                                     <p className="mt-0.5 text-xs text-gray-400">
-                                        {new Date(item.updatedAt).toLocaleString('ru-RU', {
+                                        {new Date(item.updatedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                                             day: '2-digit', month: 'short',
                                             hour: '2-digit', minute: '2-digit',
                                         })}

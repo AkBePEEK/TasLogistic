@@ -286,7 +286,7 @@ interface OrderCardProps {
 
 function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps) {
     const timeline = [...item.statusHistory].reverse().slice(0, 4);
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     return (
         <div className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -320,7 +320,7 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                     <p className="mt-1 text-xs text-gray-400">
                         {t('orders.sentAt')}:{' '}
                         {item.createdAt
-                            ? new Date(item.createdAt).toLocaleString('ru-RU', {
+                            ? new Date(item.createdAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                                 day: '2-digit',
                                 month: 'long',
                                 year: 'numeric',

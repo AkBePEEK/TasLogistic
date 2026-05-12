@@ -124,7 +124,7 @@ function HistoryRow(
     onShowHistory: () => void;
 }
 ) {
-    const {t} = useTranslation();
+    const { i18n, t } = useTranslation();
     return (
         <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
             <div className="min-w-0 flex-1">
@@ -153,7 +153,7 @@ function HistoryRow(
                     </span>
                 )}
                 <span className="text-xs text-gray-400">
-                    {new Date(item.createdAt).toLocaleDateString('ru-RU', {
+                    {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                       day: '2-digit', month: 'short', year: 'numeric',
                     })}
                 </span>

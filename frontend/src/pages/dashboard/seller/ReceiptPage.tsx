@@ -145,7 +145,7 @@ function Receipt({
 {
     const fontSize = width === 58 ? '10px' : '11px';
     const qrSize = width === 58 ? 80 : 100;
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     // Фильтруем перевозчиков по выбранному типу доставки
     const filteredCarriers = carriers.filter((c) => c.type === deliveryType);
@@ -227,7 +227,7 @@ function Receipt({
                 />
             )}
             <Row label={t('receipt.status')} value={t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus)} />
-            <Row label={t('receipt.date')} value={new Date(item.createdAt).toLocaleString('ru-RU', {
+            <Row label={t('receipt.date')} value={new Date(item.createdAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit',
             })} />

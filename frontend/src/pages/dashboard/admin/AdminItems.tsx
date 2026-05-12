@@ -307,7 +307,7 @@ interface AdminRowProps {
 }
 
 function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDelete,isPending, isDeleting,}: AdminRowProps) {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
@@ -366,7 +366,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
 
                 {/* 7. Дата — отдельная ячейка */}
                 <span className="text-xs text-gray-400 whitespace-nowrap">
-                  {new Date(item.createdAt).toLocaleDateString('ru-RU', {
+                  {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                       day: '2-digit', month: '2-digit', year: 'numeric',
                   })}
                 </span>
@@ -413,7 +413,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">
-                    {new Date(item.createdAt).toLocaleDateString('ru-RU')}
+                    {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU',)}
                   </span>
                     <button
                         onClick={onDelete}

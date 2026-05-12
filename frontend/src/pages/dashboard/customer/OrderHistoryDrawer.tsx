@@ -31,7 +31,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
     }, [onClose]);
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     return (
         <>
@@ -163,7 +163,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                                                             <StatusBadge status={entry.newStatus} />
                                                         </div>
                                                         <time className="flex-shrink-0 text-xs tabular-nums text-gray-400">
-                                                            {new Date(entry.changedAt).toLocaleString('ru-RU', {
+                                                            {new Date(entry.changedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                                                                 day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
                                                             })}
                                                         </time>

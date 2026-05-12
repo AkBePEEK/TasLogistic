@@ -37,7 +37,7 @@ type PasswordForm = z.infer<typeof PasswordSchema>;
 // ── Компонент ─────────────────────────────────────────────────────────────────
 
 export function ProfilePage() {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'email' | 'password'>('email');
@@ -132,7 +132,7 @@ export function ProfilePage() {
                 <p className="mt-3 text-xs text-gray-400">
                     {t('profile.createdAt')}:{' '}
                     {profile?.createdAt
-                        ? new Date(profile.createdAt).toLocaleDateString('ru-RU', {
+                        ? new Date(profile.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
                             day: '2-digit',
                             month: 'long',
                             year: 'numeric',
