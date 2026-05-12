@@ -7,21 +7,21 @@ import { useNavigate, Link } from 'react-router-dom';
 import { sellerApi } from '@/api/seller';
 import toast from "react-hot-toast";
 import {CITY_LIST, CreateItemSchema} from "@/schemas";
+import {useTranslation} from "react-i18next";
+
 z.object({
     title: z.string().min(2, 'Минимум 2 символа').max(255),
     description: z.string().max(1000).optional(),
 });
 type Form = z.infer<typeof CreateItemSchema>;
 
-function Field({
-                   label, error, required = false,
-                   children,
-               }: {
+function Field({label, error, required = false, children,}: {
     label: string;
     error?: string;
     required?: boolean;
     children: React.ReactNode;
-}) {
+})
+{
     return (
         <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -38,6 +38,7 @@ const inputCls = "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm f
 export function CreateItem() {
     const navigate = useNavigate();
     const qc = useQueryClient();
+    const { t } = useTranslation();
 
     const {register, handleSubmit, formState: {errors}} = useForm<Form>({
         resolver: zodResolver(CreateItemSchema),
@@ -52,16 +53,18 @@ export function CreateItem() {
             // ← Редирект на страницу чека
             navigate(`/dashboard/seller/items/${item?.id}/receipt`);
         },
-        onError: () => toast.error('Ошибка при создании отправки'),
+        onError: () => toast.error(t('toast.createItemError')),
     });
 
     return (
         <div className="max-w-2xl space-y-6">
             <div className="flex items-center gap-4">
                 <Link to="/dashboard/seller/items" className="text-sm text-gray-400 hover:text-gray-600">
-                    ← Назад
+                    {t('common.back')}
                 </Link>
-                <h1 className="text-2xl font-bold text-gray-900">Создать новую отправку</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    {t('createItem.title')}
+                </h1>
             </div>
 
             <form
@@ -71,20 +74,20 @@ export function CreateItem() {
                 {/* Информация о получателе */}
                 <div>
                     <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                        Получатель
+                        {t('createItem.recipientSection')}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field label="ФИО получателя" error={errors.recipientName?.message} required>
+                        <Field label={t('createItem.recipientName')} error={errors.recipientName?.message} required>
                             <input
                                 {...register('recipientName')}
-                                placeholder="Иванов Иван Иванович"
+                                placeholder={t('createItem.recipientNamePlaceholder')}
                                 className={inputCls}
                             />
                         </Field>
-                        <Field label="Телефон" error={errors.recipientPhone?.message} required>
+                        <Field label={t('createItem.phone')} error={errors.recipientPhone?.message} required>
                             <input
                                 {...register('recipientPhone')}
-                                placeholder="+7 707 123 4567"
+                                placeholder={t('createItem.phonePlaceholder')}
                                 className={inputCls}
                             />
                         </Field>
@@ -94,20 +97,24 @@ export function CreateItem() {
                 {/* Маршрут */}
                 <div>
                     <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                        Маршрут
+                        {t('createItem.routeSection')}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field label="Город отправки" error={errors.fromCity?.message} required>
+                        <Field label={t('createItem.fromCity')} error={errors.fromCity?.message} required>
                             <select {...register('fromCity')} className={inputCls}>
-                                <option value="">Выберите город</option>
+                                <option value="">
+                                    {t('createItem.selectCity')}
+                                </option>
                                 {CITY_LIST.map((c) => (
                                     <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
                         </Field>
-                        <Field label="Город доставки" error={errors.toCity?.message} required>
+                        <Field label={t('createItem.toCity')} error={errors.toCity?.message} required>
                             <select {...register('toCity')} className={inputCls}>
-                                <option value="">Выберите город</option>
+                                <option value="">
+                                    {t('createItem.selectCity')}
+                                </option>
                                 {CITY_LIST.map((c) => (
                                     <option key={c} value={c}>{c}</option>
                                 ))}
@@ -119,23 +126,23 @@ export function CreateItem() {
                 {/* Параметры */}
                 <div>
                     <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                        Параметры
+                        {t('createItem.paramsSection')}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Field label="Вес (кг)" error={errors.weight?.message} required>
+                        <Field label={t('createItem.weight')} error={errors.weight?.message} required>
                             <input
                                 {...register('weight')}
                                 type="number"
                                 step="0.1"
-                                placeholder="2.5"
+                                placeholder={t('createItem.weightPlaceholder')}
                                 className={inputCls}
                             />
                         </Field>
-                        <Field label="Сумма наложенного платежа (₸)" error={errors.cashOnDelivery?.message}>
+                        <Field label={t('createItem.cashOnDelivery')}  error={errors.cashOnDelivery?.message}>
                             <input
                                 {...register('cashOnDelivery')}
                                 type="number"
-                                placeholder="15000"
+                                placeholder={t('createItem.codPlaceholder')}
                                 className={inputCls}
                             />
                         </Field>
@@ -144,34 +151,34 @@ export function CreateItem() {
 
                 {/* Название и комментарий */}
                 <div className="space-y-4">
-                    <Field label="Название / описание товара" error={errors.title?.message} required>
+                    <Field label={t('createItem.itemTitle')}  error={errors.title?.message} required>
                         <input
                             {...register('title')}
-                            placeholder="Ноутбук, одежда, документы..."
+                            placeholder={t('createItem.titlePlaceholder')}
                             className={inputCls}
                         />
                     </Field>
-                    <Field label="Комментарий" error={errors.comment?.message}>
-            <textarea
-                {...register('comment')}
-                rows={3}
-                placeholder="Хрупкое, не переворачивать..."
-                className={inputCls}
-            />
+                    <Field label={t('createItem.comment')}  error={errors.comment?.message}>
+                        <textarea
+                            {...register('comment')}
+                            rows={3}
+                            placeholder={t('createItem.commentPlaceholder')}
+                            className={inputCls}
+                        />
                     </Field>
                 </div>
 
                 {/* Информация о трек-коде */}
                 <div className="rounded-lg bg-indigo-50 px-4 py-3">
                     <p className="text-xs text-indigo-600">
-                        Трек-код будет сгенерирован автоматически в формате{' '}
+                        {t('createItem.trackingCodeInfo') + ' '}
                         <span className="font-mono font-semibold">TRK-YYYYMM-XXXXXXXX</span>
                     </p>
                 </div>
 
                 {mutation.isError && (
                     <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                        Ошибка при создании отправки
+                        {t('toast.createItemError')}
                     </div>
                 )}
 
@@ -181,13 +188,16 @@ export function CreateItem() {
                         disabled={mutation.isPending}
                         className="flex-1 rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                     >
-                        {mutation.isPending ? 'Создание...' : 'Создать отправку'}
+                        {mutation.isPending
+                            ? t('createItem.creating')
+                            : t('createItem.createButton')
+                        }
                     </button>
                     <Link
                         to="/dashboard/seller/items"
                         className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                        Отмена
+                        {t('common.cancel')}
                     </Link>
                 </div>
             </form>
