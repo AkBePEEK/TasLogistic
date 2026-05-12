@@ -88,6 +88,9 @@ export const ru = {
             paid:       'Оплачено',
             toPay:      'К оплате',
             sentAt:     'Отправлен',
+            orderNumbers: '{{code}} заказов',
+            historyEmpty: 'История заказов пуста',
+            searchPlaceholder: 'Поиск по трек-коду или названию...',
         },
         common: {
             save:        'Сохранить',

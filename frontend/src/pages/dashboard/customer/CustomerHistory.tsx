@@ -7,7 +7,7 @@ import {useTranslation} from "react-i18next";
 
 
 const STATUS_OPTIONS = [
-    { value: '',           label: 'Все статусы' },
+    { value: '',           label: 'status.ALL' },
     { value: 'CREATED',    label: 'status.CREATED' },
     { value: 'PROCESSING', label: 'status.PROCESSING' },
     { value: 'SHIPPED',    label: 'status.SHIPPED' },
@@ -44,7 +44,7 @@ export function CustomerHistory() {
                 </div>
                 {data && (
                     <span className="text-sm text-gray-400">
-                        {data.total} заказов
+                        {t('orders.orderNumbers', {code: data.total})}
                     </span>
                 )}
             </div>
@@ -62,7 +62,7 @@ export function CustomerHistory() {
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Поиск по трек-коду или названию..."
+                        placeholder={t('orders.searchPlaceholder')}
                         className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     />
                 </div>
@@ -88,7 +88,7 @@ export function CustomerHistory() {
                 <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16 text-center">
                     <div className="mb-3 text-4xl">📋</div>
                     <p className="text-sm font-medium text-gray-600">
-                        {search || status ? 'Ничего не найдено' : 'История заказов пуста'}
+                        {search || status ? t('common.notFound') : t('orders.historyEmpty')}
                     </p>
                 </div>
             ) : (

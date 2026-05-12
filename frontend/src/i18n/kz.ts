@@ -81,6 +81,9 @@ export const kz = {
             paid:        'Төленді',
             toPay:       'Төлеу керек',
             sentAt:      'Жіберілді',
+            orderNumbers: '{{code}} тапсырыстар',
+            historyEmpty: 'Тапсырыс тарихы бос',
+            searchPlaceholder: 'Трек коды немесе атауы бойынша іздеу...',
         },
         common: {
             save:        'Сақтау',
