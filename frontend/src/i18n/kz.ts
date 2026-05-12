@@ -62,6 +62,14 @@ export const kz = {
         orders: {
             title:       'Менің тапсырыстарым',
             subtitle:    'Барлық бақыланатын тауарларыңыздың тарихы',
+            history: 'Тапсырыс тарихы',
+            historyError: 'Тарихты жүктеу мүмкін болмады. Қайта көріңіз.',
+            currentStatus: 'Ағымдағы мәртебе',
+            shippingDetails: 'Жөнелту деректері',
+            recipient: 'Алушы',
+            weight: 'Салмағы',
+            cashOnDelivery: 'Алдын ала төлем',
+            timelineTitle: 'Хронология — {{count}} оқиға',
             addLabel:    'Трек-код арқылы тапсырыс қосу',
             track:       'Қадағалау',
             searching:   'Іздеу...',
@@ -118,6 +126,7 @@ export const kz = {
             previousPage: 'Алдыңғы бет',
             nextPage: 'Келесі бет',
             backToList: 'Тізімге қайту',
+            phone: 'Телефон',
         },
         receipt: {
             title:       'TAS LOGISTIC',

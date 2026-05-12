@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { customerApi } from '@/api/customer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Status } from '@/types';
+import {useTranslation} from "react-i18next";
 
 interface Props {
     itemId: string;
@@ -23,7 +24,6 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
         queryKey: ['customer-history', itemId],
         queryFn: () => customerApi.getItemHistory(itemId).then((r) => r.data.data),
     });
-
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
@@ -31,6 +31,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
     }, [onClose]);
+    const { t } = useTranslation();
 
     return (
         <>
@@ -51,7 +52,9 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                 {/* Шапка */}
                 <div className="flex items-start justify-between border-b border-gray-100 px-6 py-4">
                     <div>
-                        <h2 className="text-base font-bold text-gray-900">История заказа</h2>
+                        <h2 className="text-base font-bold text-gray-900">
+                            {t('orders.history')}
+                        </h2>
                         {data && (
                             <>
                                 <p className="mt-0.5 font-mono text-xs font-semibold tracking-wider text-indigo-600">
@@ -64,7 +67,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                     <button
                         onClick={onClose}
                         className="ml-4 flex-shrink-0 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-                        aria-label="Закрыть"
+                        aria-label={t('common.cancel')}
                     >
                         <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z" />
@@ -82,7 +85,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
 
                     {isError && (
                         <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">
-                            Не удалось загрузить историю. Попробуйте ещё раз.
+                            {t('orders.historyError')}
                         </div>
                     )}
 
@@ -90,18 +93,20 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                         <div className="space-y-6">
                             {/* Текущий статус */}
                             <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                                <span className="text-sm font-medium text-gray-600">Текущий статус</span>
+                                <span className="text-sm font-medium text-gray-600">
+                                    {t('orders.currentStatus')}
+                                </span>
                                 <StatusBadge status={data.currentStatus} large />
                             </div>
 
                             {/* ← Детали отправки */}
                             <div className="rounded-xl border border-gray-100 bg-white p-4 space-y-3">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                    Детали отправки
+                                    {t('orders.shippingDetails')}
                                 </p>
                                 {data.fromCity && data.toCity && (
                                     <div className="flex items-center gap-2 text-sm">
-                                        <span className="text-gray-500">Маршрут:</span>
+                                        <span className="text-gray-500">{t('common.route')}:</span>
                                         <span className="font-medium">{data.fromCity}</span>
                                         <span className="text-gray-300">→</span>
                                         <span className="font-medium text-indigo-600">{data.toCity}</span>
@@ -109,25 +114,25 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                                 )}
                                 {data.recipientName && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Получатель:</span>
+                                        <span className="text-gray-500">{t('orders.recipient')}:</span>
                                         <span className="font-medium">{data.recipientName}</span>
                                     </div>
                                 )}
                                 {data.recipientPhone && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Телефон:</span>
+                                        <span className="text-gray-500">{t('common.phone')}:</span>
                                         <span className="font-medium">{data.recipientPhone}</span>
                                     </div>
                                 )}
                                 {data.weight && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Вес:</span>
+                                        <span className="text-gray-500">{t('orders.weight')}:</span>
                                         <span className="font-medium">{data.weight} кг</span>
                                     </div>
                                 )}
                                 {data.cashOnDelivery !== undefined && data.cashOnDelivery > 0 && (
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Наложенный платёж:</span>
+                                        <span className="text-gray-500">{t('orders.cashOnDelivery')}:</span>
                                         <span className="font-medium text-orange-600">
                                             {data.cashOnDelivery.toLocaleString('ru-RU')} ₸
                                         </span>
@@ -138,7 +143,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                             {/* Временная шкала с локацией */}
                             <div>
                                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-400">
-                                    Хронология — {data.statusHistory.length} событий
+                                    {t('orders.timelineTitle', { count: data.statusHistory.length })}
                                 </p>
                                 <ol className="relative ml-2 border-l-2 border-gray-100">
                                     {data.statusHistory.map((entry, idx) => {
@@ -153,7 +158,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                                                     <div className="flex items-center justify-between gap-3">
                                                         <div className="flex items-center gap-2">
                                                             {idx > 0 && (
-                                                                <span className="text-xs text-gray-300">{entry.oldStatus} →</span>
+                                                                <span className="text-xs text-gray-300">{t(`status.${entry.oldStatus}`)} →</span>
                                                             )}
                                                             <StatusBadge status={entry.newStatus} />
                                                         </div>
