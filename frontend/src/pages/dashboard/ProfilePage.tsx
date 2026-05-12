@@ -7,26 +7,27 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { profileApi } from '@/api/profile';
 import { useAuth } from '@/hooks/useAuth';
+import {useTranslation} from "react-i18next";
 
 // ── Схемы ────────────────────────────────────────────────────────────────────
 
 const EmailSchema = z.object({
-    email: z.string().email('Некорректный email'),
-    currentPassword: z.string().min(1, 'Введите текущий пароль'),
+    email: z.string().email('profile.emailInvalid'),
+    currentPassword: z.string().min(1, 'profile.currentPasswordRequired'),
 });
 
 const PasswordSchema = z
     .object({
-        currentPassword: z.string().min(1, 'Введите текущий пароль'),
+        currentPassword: z.string().min(1, 'profile.currentPasswordRequired'),
         newPassword: z
             .string()
-            .min(8, 'Минимум 8 символов')
-            .regex(/[A-Z]/, 'Нужна заглавная буква')
-            .regex(/[0-9]/, 'Нужна цифра'),
+            .min(8, 'profile.passwordMin')
+            .regex(/[A-Z]/, 'profile.passwordUppercase')
+            .regex(/[0-9]/, 'profile.passwordNumber'),
         confirmPassword: z.string(),
     })
     .refine((d) => d.newPassword === d.confirmPassword, {
-        message: 'Пароли не совпадают',
+        message: 'profile.passwordsMatch',
         path: ['confirmPassword'],
     });
 
@@ -36,6 +37,7 @@ type PasswordForm = z.infer<typeof PasswordSchema>;
 // ── Компонент ─────────────────────────────────────────────────────────────────
 
 export function ProfilePage() {
+    const { t } = useTranslation();
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'email' | 'password'>('email');
@@ -55,13 +57,13 @@ export function ProfilePage() {
     const emailMutation = useMutation({
         mutationFn: (data: EmailForm) => profileApi.updateEmail(data),
         onSuccess: () => {
-            toast.success('Email успешно обновлён');
+            toast.success(t('toast.emailUpdated'));
             emailForm.reset({ email: emailForm.getValues('email'), currentPassword: '' });
         },
         onError: (err: unknown) => {
             const msg =
                 (err as { response?: { data?: { message?: string } } })?.response?.data
-                    ?.message ?? 'Ошибка при обновлении email';
+                    ?.message ?? t('toast.emailUpdateError');
             toast.error(msg);
         },
     });
@@ -79,7 +81,7 @@ export function ProfilePage() {
                 newPassword: data.newPassword,
             }),
         onSuccess: async () => {
-            toast.success('Пароль изменён. Выполняется выход...');
+            toast.success(t('toast.passwordChanged'));
             // После смены пароля все токены инвалидированы — разлогиниваем
             setTimeout(async () => {
                 await logout();
@@ -89,7 +91,7 @@ export function ProfilePage() {
         onError: (err: unknown) => {
             const msg =
                 (err as { response?: { data?: { message?: string } } })?.response?.data
-                    ?.message ?? 'Ошибка при смене пароля';
+                    ?.message ?? t('toast.passwordChangeError');
             toast.error(msg);
         },
     });
@@ -106,9 +108,11 @@ export function ProfilePage() {
         <div className="max-w-lg space-y-6">
             {/* Заголовок */}
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Профиль</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    {t('nav.profile')}
+                </h1>
                 <p className="mt-1 text-sm text-gray-500">
-                    Управление данными аккаунта
+                    {t('profile.subtitle')}
                 </p>
             </div>
 
@@ -121,12 +125,12 @@ export function ProfilePage() {
                     <div>
                         <p className="font-medium text-gray-900">{profile?.email}</p>
                         <span className="inline-flex rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-              {profile?.role}
-            </span>
+                            {t(`roles.${profile?.role}`)}
+                        </span>
                     </div>
                 </div>
                 <p className="mt-3 text-xs text-gray-400">
-                    Аккаунт создан:{' '}
+                    {t('profile.createdAt')}:{' '}
                     {profile?.createdAt
                         ? new Date(profile.createdAt).toLocaleDateString('ru-RU', {
                             day: '2-digit',
@@ -150,7 +154,7 @@ export function ProfilePage() {
                                 : 'text-gray-500 hover:text-gray-700',
                         ].join(' ')}
                     >
-                        {tab === 'email' ? 'Сменить email' : 'Сменить пароль'}
+                        {tab === 'email' ? t('profile.changeEmail') : t('profile.changePassword')}
                     </button>
                 ))}
             </div>
@@ -163,7 +167,7 @@ export function ProfilePage() {
                 >
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Новый email
+                            {t('profile.newEmail')}
                         </label>
                         <input
                             {...emailForm.register('email')}
@@ -172,14 +176,14 @@ export function ProfilePage() {
                         />
                         {emailForm.formState.errors.email && (
                             <p className="mt-1 text-xs text-red-600">
-                                {emailForm.formState.errors.email.message}
+                                {t(`${emailForm.formState.errors.email.message}`)}
                             </p>
                         )}
                     </div>
 
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Текущий пароль
+                            {t('profile.currentPassword')}
                         </label>
                         <input
                             {...emailForm.register('currentPassword')}
@@ -188,7 +192,7 @@ export function ProfilePage() {
                         />
                         {emailForm.formState.errors.currentPassword && (
                             <p className="mt-1 text-xs text-red-600">
-                                {emailForm.formState.errors.currentPassword.message}
+                                {t(`${emailForm.formState.errors.currentPassword.message}`)}
                             </p>
                         )}
                     </div>
@@ -198,7 +202,9 @@ export function ProfilePage() {
                         disabled={emailMutation.isPending}
                         className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                     >
-                        {emailMutation.isPending ? 'Сохранение...' : 'Сохранить email'}
+                        {emailMutation.isPending
+                            ? t('common.saving')
+                            : t('profile.saveEmail')}
                     </button>
                 </form>
             )}
@@ -211,7 +217,7 @@ export function ProfilePage() {
                 >
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Текущий пароль
+                            {t('profile.currentPassword')}
                         </label>
                         <input
                             {...passwordForm.register('currentPassword')}
@@ -220,14 +226,14 @@ export function ProfilePage() {
                         />
                         {passwordForm.formState.errors.currentPassword && (
                             <p className="mt-1 text-xs text-red-600">
-                                {passwordForm.formState.errors.currentPassword.message}
+                                {t(`${passwordForm.formState.errors.currentPassword.message}`)}
                             </p>
                         )}
                     </div>
 
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Новый пароль
+                            {t('profile.newPassword')}
                         </label>
                         <input
                             {...passwordForm.register('newPassword')}
@@ -236,14 +242,14 @@ export function ProfilePage() {
                         />
                         {passwordForm.formState.errors.newPassword && (
                             <p className="mt-1 text-xs text-red-600">
-                                {passwordForm.formState.errors.newPassword.message}
+                                {t(`${passwordForm.formState.errors.newPassword.message}`)}  {/* ← перевод ошибки */}
                             </p>
                         )}
                     </div>
 
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">
-                            Подтверждение пароля
+                            {t('profile.confirmPassword')}
                         </label>
                         <input
                             {...passwordForm.register('confirmPassword')}
@@ -252,13 +258,13 @@ export function ProfilePage() {
                         />
                         {passwordForm.formState.errors.confirmPassword && (
                             <p className="mt-1 text-xs text-red-600">
-                                {passwordForm.formState.errors.confirmPassword.message}
+                                {t(`${passwordForm.formState.errors.confirmPassword.message}`)}
                             </p>
                         )}
                     </div>
 
                     <div className="rounded-lg bg-yellow-50 p-3 text-xs text-yellow-700">
-                        ⚠ После смены пароля вы будете автоматически разлогинены на всех устройствах
+                        ⚠ {t('profile.logoutWarning')}
                     </div>
 
                     <button
@@ -266,7 +272,9 @@ export function ProfilePage() {
                         disabled={passwordMutation.isPending}
                         className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                     >
-                        {passwordMutation.isPending ? 'Сохранение...' : 'Сменить пароль'}
+                        {passwordMutation.isPending
+                            ? t('common.saving')
+                            : t('profile.changePasswordBtn')}
                     </button>
                 </form>
             )}
