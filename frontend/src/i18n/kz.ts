@@ -117,6 +117,7 @@ export const kz = {
             confirmDelete: '{{code}} тапсырысын жою?',
             previousPage: 'Алдыңғы бет',
             nextPage: 'Келесі бет',
+            backToList: 'Тізімге қайту',
         },
         receipt: {
             title:       'TAS LOGISTIC',
@@ -173,7 +174,7 @@ export const kz = {
         createItem: {
             title: 'Жаңа жөнелтім жасау',
             recipientSection: 'Алушы',
-            recipientName: 'Алушының АТА-жөні',
+            recipientName: 'Алушының аты-жөні',
             recipientNamePlaceholder: 'Иванов Иван Иванович',
             phone: 'Телефон',
             phonePlaceholder: '+7 707 123 4567',
@@ -193,6 +194,17 @@ export const kz = {
             trackingCodeInfo: 'Трек-код автоматты түрде {{format}} форматында жасалады',
             creating: 'Жасалуда...',
             createButton: 'Жөнелтім жасау',
+        },
+        item: {
+            notFound: 'Тауар табылмады',
+            trackingCode: 'Трек-код',
+            description: 'Сипаттамасы',
+            createdAt: 'Жасалған',
+            updatedAt: 'Жаңартылған',
+            changeStatus: 'Мәртебені өзгерту',
+            printReceipt: '🖨 Чек басып шығару',
+            historyTitle: 'Өзгерістер тарихы — {{count}} оқиға',
+            historyEmpty: 'Тарих бос',
         }
     },
 };

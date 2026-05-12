@@ -125,6 +125,7 @@ export const ru = {
             confirmDelete: 'Удалить заказ {{code}}?',
             previousPage: 'Предыдущая страница',
             nextPage: 'Следующая страница',
+            backToList: 'Назад к списку',
         },
         receipt: {
             title:       'TAS LOGISTIC',
@@ -201,6 +202,17 @@ export const ru = {
             trackingCodeInfo: 'Трек-код будет сгенерирован автоматически в формате {{format}}',
             creating: 'Создание...',
             createButton: 'Создать отправку',
+        },
+        item: {
+            notFound: 'Товар не найден',
+            trackingCode: 'Трек-код',
+            description: 'Описание',
+            createdAt: 'Создан',
+            updatedAt: 'Обновлён',
+            changeStatus: 'Сменить статус',
+            printReceipt: '🖨 Печать чека',
+            historyTitle: 'История изменений — {{count}} событий',
+            historyEmpty: 'История пуста',
         }
     },
 };

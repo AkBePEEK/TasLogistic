@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { sellerApi } from '@/api/seller';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Status } from '@/types';
+import {useTranslation} from "react-i18next";
 
 const STATUSES: Status[] = [
     'CREATED',
@@ -29,6 +30,7 @@ export function ItemDetail() {
     const navigate = useNavigate();
     const qc = useQueryClient();
     const [editingStatus, setEditingStatus] = useState(false);
+    const { t } = useTranslation();
 
     const { data: item, isLoading, isError } = useQuery({
         queryKey: ['seller-item', id],
@@ -58,9 +60,11 @@ export function ItemDetail() {
     if (isError || !item) {
         return (
             <div className="rounded-xl bg-red-50 p-6 text-center">
-                <p className="text-sm text-red-700">Товар не найден</p>
+                <p className="text-sm text-red-700">
+                    {t('item.notFound')}
+                </p>
                 <Link to="/dashboard/seller/items" className="mt-3 inline-block text-sm text-indigo-600 hover:underline">
-                    ← Назад к списку
+                    {t('common.backToList')}
                 </Link>
             </div>
         );
@@ -75,7 +79,7 @@ export function ItemDetail() {
                         onClick={() => navigate('/dashboard/seller/items')}
                         className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                        ← Назад
+                        {t('common.backToList')}
                     </button>
                     <h1 className="text-2xl font-bold text-gray-900 truncate">{item.title}</h1>
                 </div>
@@ -85,7 +89,7 @@ export function ItemDetail() {
                     onClick={() => navigate(`/dashboard/seller/items/${item.id}/receipt`)}
                     className="flex-shrink-0 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 transition-colors"
                 >
-                    🖨 Печать чека
+                    {t('item.printReceipt')}
                 </button>
             </div>
 
@@ -95,7 +99,7 @@ export function ItemDetail() {
                     <div className="space-y-3">
                         <div>
                             <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                                Трек-код
+                                {t('item.trackingCode')}
                             </p>
                             <p className="mt-1 font-mono text-lg font-bold text-indigo-600">
                                 {item.trackingCode}
@@ -105,15 +109,15 @@ export function ItemDetail() {
                         {item.description && (
                             <div>
                                 <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                                    Описание
+                                    {t('item.description')}
                                 </p>
                                 <p className="mt-1 text-sm text-gray-700">{item.description}</p>
                             </div>
                         )}
 
                         <div className="flex gap-6 text-xs text-gray-400">
-                            <span>Создан: {new Date(item.createdAt).toLocaleDateString('ru-RU')}</span>
-                            <span>Обновлён: {new Date(item.updatedAt).toLocaleString('ru-RU')}</span>
+                            <span>{t('item.createdAt')}: {new Date(item.createdAt).toLocaleDateString('ru-RU')}</span>
+                            <span>{t('item.updatedAt')}: {new Date(item.updatedAt).toLocaleString('ru-RU')}</span>
                         </div>
                     </div>
 
@@ -130,14 +134,14 @@ export function ItemDetail() {
                                     className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                 >
                                     {STATUSES.map((s) => (
-                                        <option key={s} value={s}>{s}</option>
+                                        <option key={s} value={s}>{t(`status.${s}`)}</option>
                                     ))}
                                 </select>
                                 <button
                                     onClick={() => setEditingStatus(false)}
                                     className="text-xs text-gray-400 hover:text-gray-600"
                                 >
-                                    Отмена
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         ) : (
@@ -145,7 +149,7 @@ export function ItemDetail() {
                                 onClick={() => setEditingStatus(true)}
                                 className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
                             >
-                                Сменить статус
+                                {t('item.changeStatus')}
                             </button>
                         )}
                     </div>
@@ -155,11 +159,13 @@ export function ItemDetail() {
             {/* История статусов */}
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 className="mb-5 text-sm font-semibold uppercase tracking-wider text-gray-400">
-                    История изменений — {item.statusHistory.length} событий
+                    {t('item.historyTitle', { count: item.statusHistory.length })}
                 </h2>
 
                 {item.statusHistory.length === 0 ? (
-                    <p className="text-sm text-gray-400">История пуста</p>
+                    <p className="text-sm text-gray-400">
+                        {t('item.historyEmpty')}
+                    </p>
                 ) : (
                     <ol className="relative ml-2 border-l-2 border-gray-100">
                         {item.statusHistory.map((entry, idx) => {
@@ -177,7 +183,7 @@ export function ItemDetail() {
                                             <div className="flex items-center gap-2">
                                                 {idx > 0 && (
                                                     <span className="text-xs text-gray-400">
-                                                        {entry.oldStatus} →
+                                                        {t(`status.${entry.oldStatus}`)} →
                                                     </span>
                                                 )}
                                                 <StatusBadge status={entry.newStatus} />
