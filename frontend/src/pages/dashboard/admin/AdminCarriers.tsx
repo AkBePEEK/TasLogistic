@@ -148,7 +148,7 @@ export function AdminCarriers() {
                 onChange={(e) => setFilterCity(e.target.value)}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
             >
-                <option value="">Все города</option>
+                <option value="">{t('common.allCities')}</option>
                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
 

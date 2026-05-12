@@ -13,16 +13,15 @@ const CITIES = [
     'Қостанай', 'Орал', 'Петропавл', 'Түркістан', 'Көкшетау',
 ];
 
-const { t } = useTranslation();
 
 const STATUS_OPTIONS = [
-    { value: '',           label: 'Все статусы' },
-    { value: 'CREATED',    label: t('status.CREATED') },
-    { value: 'PROCESSING', label: t('status.PROCESSING') },
-    { value: 'SHIPPED',    label: t('status.SHIPPED') },
-    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT') },
-    { value: 'DELIVERED',  label: t('status.DELIVERED') },
-    { value: 'CANCELLED',  label: t('status.CANCELLED') },
+    { value: '',           label: 'status.ALL' },
+    { value: 'CREATED',    label: 'status.CREATED' },
+    { value: 'PROCESSING', label: 'status.PROCESSING' },
+    { value: 'SHIPPED',    label: 'status.SHIPPED' },
+    { value: 'IN_TRANSIT', label: 'status.IN_TRANSIT' },
+    { value: 'DELIVERED',  label: 'status.DELIVERED' },
+    { value: 'CANCELLED',  label: 'status.CANCELLED' },
 ];
 
 export function AdminItems() {
@@ -32,6 +31,7 @@ export function AdminItems() {
     const [page, setPage] = useState(1);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
+    const { t } = useTranslation();
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -150,7 +150,7 @@ export function AdminItems() {
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                             >
                                 {STATUS_OPTIONS.map((o) => (
-                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                    <option key={o.value} value={o.value}>{t(o.label)}</option>
                                 ))}
                             </select>
                         </div>
@@ -217,7 +217,7 @@ export function AdminItems() {
                             onClick={resetFilters}
                             className="text-sm font-medium text-red-500 hover:text-red-700"
                         >
-                            Сбросить все фильтры
+                            {t('common.resetAll')}
                         </button>
                     )}
                 </div>
@@ -228,19 +228,19 @@ export function AdminItems() {
                 <LoadingSkeleton rows={5} />
             ) : data?.items.length === 0 ? (
                 <div className="flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-gray-200">
-                    <p className="text-sm text-gray-500">Ничего не найдено</p>
+                    <p className="text-sm text-gray-500">{t('common.nothingFound')}</p>
                 </div>
             ) : (
                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                     <div className="hidden grid-cols-[1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
-                        <span>Трек-код</span>
-                        <span>Получатель</span>
-                        <span>Продавец</span>
-                        <span>Маршрут</span>
-                        <span>Статус</span>
-                        <span>Сумма</span>
-                        <span>Дата</span>
-                        <span>Действия</span>
+                        <span>{t('common.trackCode')}</span>
+                        <span>{t('common.recipient')}</span>
+                        <span>{t('common.supplier')}</span>
+                        <span>{t('common.route')}</span>
+                        <span>{t('common.status')}</span>
+                        <span>{t('common.amount')}</span>
+                        <span>{t('common.date')}</span>
+                        <span>{t('common.actions')}</span>
                     </div>
                     <div className="divide-y divide-gray-100">
                         {data?.items.map((item) => (
@@ -305,24 +305,25 @@ interface AdminRowProps {
 }
 
 function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDelete,isPending, isDeleting,}: AdminRowProps) {
+    const { t } = useTranslation();
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
             <div className="hidden grid-cols-[1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr_1.5fr] items-center gap-4 lg:grid">
                 {/* Трек-код */}
                 <span className="font-mono text-sm font-semibold text-indigo-600">
-          {item.trackingCode}
-        </span>
+                    {item.trackingCode}
+                </span>
 
                 {/* Получатель */}
                 <span className="truncate text-sm text-gray-700">
-          {item.recipientName ?? '—'}
-        </span>
+                    {item.recipientName ?? '—'}
+                </span>
 
                 {/* Продавец */}
                 <span className="truncate text-xs text-gray-400">
-          {item.seller.email}
-        </span>
+                    {item.seller.email}
+                </span>
 
                 {/* Маршрут */}
                 <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -342,7 +343,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                                 className="rounded-lg border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-200"
                             >
                                 {STATUS_OPTIONS.map((s) => (
-                                    <option key={s.value} value={s.value}>{s.label}</option>
+                                    <option key={s.value} value={s.value}>{t(s.label)}</option>
                                 ))}
                             </select>
                             <button onClick={onCancelEdit} className="text-xs text-gray-400 hover:text-gray-600">
@@ -373,15 +374,15 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                     {!isEditing ? (
                         <>
                             <button onClick={onEdit} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                                Изменить
+                                {t('common.edit')}
                             </button>
                             <button onClick={onDelete} disabled={isDeleting} className="text-sm font-medium text-red-500 hover:text-red-700 disabled:opacity-40">
-                                {isDeleting ? '...' : 'Удалить'}
+                                {isDeleting ? '...' : t('common.delete')}
                             </button>
                         </>
                     ) : (
                         <button onClick={onCancelEdit} className="text-sm font-medium text-gray-500 hover:text-gray-700">
-                            Отмена
+                            {t('common.cancel')}
                         </button>
                     )}
                 </div>
@@ -435,7 +436,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                         className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                     >
                         {STATUS_OPTIONS.map((s) => (
-                            <option key={s.value} value={s.value}>{s.label}</option>
+                            <option key={s.value} value={s.value}>{t(s.label)}</option>
                         ))}
                     </select>
                 )}

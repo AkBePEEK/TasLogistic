@@ -24,20 +24,20 @@ const AddTrackSchema = z.object({
 
 type AddTrackForm = z.infer<typeof AddTrackSchema>;
 
-const { t } = useTranslation();
 
 const STATUS_CONFIG: {
     value: Status;
     label: string;
     icon: string;
     color: string;
-}[] = [
-    { value: 'CREATED',    label: t('status.CREATED'),   icon: '🕐', color: 'text-gray-600' },
-    { value: 'PROCESSING', label: t('status.PROCESSING'),     icon: '🏭', color: 'text-blue-600' },
-    { value: 'SHIPPED',    label: t('status.SHIPPED'),     icon: '📦', color: 'text-yellow-600' },
-    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT'),        icon: '🚚', color: 'text-orange-600' },
-    { value: 'DELIVERED',  label: t('status.DELIVERED'),     icon: '✅', color: 'text-green-600' },
-    { value: 'CANCELLED',  label: t('status.CANCELLED'),       icon: '❌', color: 'text-red-500' },
+}[] =
+    [
+    { value: 'CREATED',    label: 'status.CREATED',   icon: '🕐', color: 'text-gray-600' },
+    { value: 'PROCESSING', label: 'status.PROCESSING',     icon: '🏭', color: 'text-blue-600' },
+    { value: 'SHIPPED',    label: 'status.SHIPPED',     icon: '📦', color: 'text-yellow-600' },
+    { value: 'IN_TRANSIT', label: 'status.IN_TRANSIT',        icon: '🚚', color: 'text-orange-600' },
+    { value: 'DELIVERED',  label: 'status.DELIVERED',     icon: '✅', color: 'text-green-600' },
+    { value: 'CANCELLED',  label: 'status.CANCELLED',       icon: '❌', color: 'text-red-500' },
 ];
 
 // ── Главная страница ──────────────────────────────────────────────────────────
@@ -48,6 +48,7 @@ export function CustomerOrders() {
     const qc = useQueryClient();
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<Status | null>(null);
+    const { t } = useTranslation();
 
     // Статистика
     const { data: stats } = useQuery({
@@ -152,7 +153,7 @@ export function CustomerOrders() {
                                 <div className="flex items-center gap-3">
                                     <span className="text-lg">{s.icon}</span>
                                     <span className={`text-sm font-medium ${isActive ? 'text-indigo-700' : 'text-gray-700'}`}>
-                                        {s.label}
+                                        {t(s.label)}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -178,13 +179,13 @@ export function CustomerOrders() {
             {statusFilter && (
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">
-                        Фильтр: {STATUS_CONFIG.find((s) => s.value === statusFilter)?.label}
+                        {t('common.filter')}: {t(STATUS_CONFIG.find((s) => s.value === statusFilter)?.label ?? '')}
                     </span>
                     <button
                         onClick={() => setStatusFilter(null)}
                         className="text-xs text-indigo-600 hover:underline"
                     >
-                        Сбросить
+                        {t('common.reset')}
                     </button>
                 </div>
             )}
@@ -285,6 +286,7 @@ interface OrderCardProps {
 
 function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps) {
     const timeline = [...item.statusHistory].reverse().slice(0, 4);
+    const { t } = useTranslation();
 
     return (
         <div className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
@@ -378,16 +380,17 @@ function StatusChip({ status }: { status: Status }) {
         CANCELLED:  'bg-red-50 text-red-500',
     };
     const LABEL: Record<Status, string> = {
-        CREATED:    'Создан',
-        PROCESSING: 'Обработка',
-        SHIPPED:    'Отправлен',
-        IN_TRANSIT: 'В пути',
-        DELIVERED:  'Доставлен',
-        CANCELLED:  'Отменён',
+        CREATED:    'status.CREATED',
+        PROCESSING: 'status.PROCESSING',
+        SHIPPED:    'status.SHIPPED',
+        IN_TRANSIT: 'status.IN_TRANSIT',
+        DELIVERED:  'status.DELIVERED',
+        CANCELLED:  'status.CANCELLED',
     };
+    const { t } = useTranslation();
     return (
         <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${CHIP[status]}`}>
-      {LABEL[status]}
-    </span>
+            {t(LABEL[status])}
+        </span>
     );
 }

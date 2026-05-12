@@ -13,23 +13,34 @@ interface NavItem {
     roles: Role[];
 }
 
-const { t } = useTranslation();
-
-const NAV_ITEMS: NavItem[] = [
-    { label: t('nav.myItems'),    to: '/dashboard/seller/items',    roles: ['SELLER'] },
-    { label: t('nav.add'),      to: '/dashboard/seller/create',   roles: ['SELLER'] },
-    { label: t('nav.carriers'),   to: '/dashboard/seller/carriers', roles: ['SELLER'] },
-    { label: t('nav.allItems'),    to: '/dashboard/admin/items',     roles: ['ADMIN'] },
-    { label: t('nav.report'),        to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
-    { label: t('nav.carriers'),   to: '/dashboard/admin/carriers',  roles: ['ADMIN'] },
-    { label: t('nav.myOrders'),    to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
-    { label: t('nav.history'),       to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
-    { label: t('nav.profile'),       to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
+const NAV_ITEMS: Omit<NavItem, 'label'>[] = [
+    { to: '/dashboard/seller/items',    roles: ['SELLER'] },
+    { to: '/dashboard/seller/create',   roles: ['SELLER'] },
+    { to: '/dashboard/seller/carriers', roles: ['SELLER'] },
+    { to: '/dashboard/admin/items',     roles: ['ADMIN'] },
+    { to: '/dashboard/admin/reports',   roles: ['ADMIN'] },
+    { to: '/dashboard/admin/carriers',  roles: ['ADMIN'] },
+    { to: '/dashboard/customer/orders', roles: ['CUSTOMER'] },
+    { to: '/dashboard/customer/history',roles: ['CUSTOMER'] },
+    { to: '/dashboard/profile',         roles: ['SELLER', 'ADMIN', 'CUSTOMER'] },
 ];
+
+const NAV_LABELS: Record<string, string> = {
+    '/dashboard/seller/items':     'nav.myItems',
+    '/dashboard/seller/create':    'nav.add',
+    '/dashboard/seller/carriers':  'nav.carriers',
+    '/dashboard/admin/items':      'nav.allItems',
+    '/dashboard/admin/reports':    'nav.reports',
+    '/dashboard/admin/carriers':   'nav.carriers',
+    '/dashboard/customer/orders':  'nav.myOrders',
+    '/dashboard/customer/history': 'nav.history',
+    '/dashboard/profile':          'nav.profile',
+};
 
 export function DashboardLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const handleLogout = async () => {
@@ -65,7 +76,7 @@ export function DashboardLayout() {
                                     ].join(' ')
                                 }
                             >
-                                {item.label}
+                                {t(NAV_LABELS[item.to] ?? '')}
                             </NavLink>
                         </li>
                     ))}
@@ -83,7 +94,7 @@ export function DashboardLayout() {
                         onClick={handleLogout}
                         className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                     >
-                    Выйти
+                    {t('nav.logout')}
                 </button>
             </div>
         </div>

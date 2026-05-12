@@ -5,22 +5,23 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { OrderHistoryDrawer } from './OrderHistoryDrawer';
 import {useTranslation} from "react-i18next";
 
-const {t} = useTranslation();
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
+const STATUS_OPTIONS = [
     { value: '',           label: 'Все статусы' },
-    { value: 'CREATED',    label: t('status.CREATED') },
-    { value: 'PROCESSING', label: t('status.PROCESSING') },
-    { value: 'SHIPPED',    label: t('status.SHIPPED') },
-    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT') },
-    { value: 'DELIVERED',  label: t('status.DELIVERED') },
-    { value: 'CANCELLED',  label: t('status.CANCELLED') },
+    { value: 'CREATED',    label: 'status.CREATED' },
+    { value: 'PROCESSING', label: 'status.PROCESSING' },
+    { value: 'SHIPPED',    label: 'status.SHIPPED' },
+    { value: 'IN_TRANSIT', label: 'status.IN_TRANSIT' },
+    { value: 'DELIVERED',  label: 'status.DELIVERED' },
+    { value: 'CANCELLED',  label: 'status.CANCELLED' },
 ];
+
 
 export function CustomerHistory() {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+    const {t} = useTranslation();
 
     const { data, isLoading } = useQuery({
         queryKey: ['customer-history', search, status],
@@ -71,7 +72,7 @@ export function CustomerHistory() {
                     className="rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 >
                     {STATUS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        <option key={opt.value} value={opt.value}>{t(opt.label)}</option>
                     ))}
                 </select>
             </div>
@@ -117,13 +118,13 @@ export function CustomerHistory() {
 
 // ── Строка истории ────────────────────────────────────────────────────────────
 
-function HistoryRow({
-                        item,
-                        onShowHistory,
-                    }: {
+function HistoryRow(
+    {item, onShowHistory,}: {
     item: TrackedItemSummary;
     onShowHistory: () => void;
-}) {
+}
+) {
+    const {t} = useTranslation();
     return (
         <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
             <div className="min-w-0 flex-1">

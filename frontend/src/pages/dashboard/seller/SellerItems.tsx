@@ -9,15 +9,14 @@ import toast from "react-hot-toast";
 import {useSocket} from "@/hooks/useSocket";
 import {useTranslation} from "react-i18next";
 
-const {t} = useTranslation();
 
 const STATUSES: { value: Status; label: string }[] = [
-    { value: 'CREATED',    label: t('status.CREATED') },
-    { value: 'PROCESSING', label: t('status.PROCESSING') },
-    { value: 'SHIPPED',    label: t('status.SHIPPED') },
-    { value: 'IN_TRANSIT', label: t('status.IN_TRANSIT') },
-    { value: 'DELIVERED',  label: t('status.DELIVERED') },
-    { value: 'CANCELLED',  label: t('status.CANCELLED') },
+    { value: 'CREATED',    label: 'status.CREATED' },
+    { value: 'PROCESSING', label: 'status.PROCESSING' },
+    { value: 'SHIPPED',    label: 'status.SHIPPED' },
+    { value: 'IN_TRANSIT', label: 'status.IN_TRANSIT' },
+    { value: 'DELIVERED',  label: 'status.DELIVERED' },
+    { value: 'CANCELLED',  label: 'status.CANCELLED' },
 ];
 
 interface EditingState {
@@ -33,6 +32,7 @@ export function SellerItems() {
     const navigate = useNavigate();
     const [page, setPage] = useState(1);
     const [editing, setEditing] = useState<EditingState | null>(null);
+    const {t} = useTranslation();
 
     const { data, isLoading } = useQuery({
         queryKey: ['seller-items', page],
@@ -71,13 +71,13 @@ export function SellerItems() {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                         <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                            Всего отправок
+                            {t('common.totalItems')}
                         </p>
                         <p className="mt-1 text-2xl font-bold text-gray-900">{data.total}</p>
                     </div>
                     <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 shadow-sm">
                         <p className="text-xs font-medium uppercase tracking-wider text-indigo-500">
-                            За этот месяц
+                            {t('common.thisMonth')}
                         </p>
                         <p className="mt-1 text-2xl font-bold text-indigo-700">
                             {data.monthlyCount}
@@ -91,12 +91,12 @@ export function SellerItems() {
                 <LoadingSkeleton />
             ) : data?.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 py-16">
-                    <p className="text-sm text-gray-500">Нет товаров</p>
+                    <p className="text-sm text-gray-500">{t('common.noItems')}</p>
                     <Link
                         to="/dashboard/seller/create"
                         className="mt-2 text-sm text-indigo-600 hover:underline"
                     >
-                        Добавить первый товар
+                        {t('common.addFirst')}
                     </Link>
                 </div>
             ) : (
@@ -134,7 +134,7 @@ export function SellerItems() {
                                         <div className="mt-3 space-y-2 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
                                             <div>
                                                 <label className="mb-1 block text-xs font-medium text-gray-600">
-                                                    Новый статус
+                                                    {t('common.newStatus')}
                                                 </label>
                                                 <select
                                                     value={editing.status}
@@ -146,7 +146,7 @@ export function SellerItems() {
                                                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                                 >
                                                     {STATUSES.map((s) => (
-                                                        <option key={s.value} value={s.value}>{s.label}</option>
+                                                        <option key={s.value} value={s.value}>{t(s.label)}</option>
                                                     ))}
                                                 </select>
                                             </div>
@@ -154,7 +154,7 @@ export function SellerItems() {
                                             {/* ← Поле города */}
                                             <div>
                                                 <label className="mb-1 block text-xs font-medium text-gray-600">
-                                                    Местоположение (необязательно)
+                                                    {t('common.location')}
                                                 </label>
                                                 <input
                                                     value={editing.location}
@@ -163,7 +163,7 @@ export function SellerItems() {
                                                             prev ? { ...prev, location: e.target.value } : null
                                                         )
                                                     }
-                                                    placeholder="Алматы, склад №2"
+                                                    placeholder={t('common.locationHint')}
                                                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                                                 />
                                             </div>
@@ -207,7 +207,7 @@ export function SellerItems() {
                                             }
                                             className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
                                         >
-                                            Статус
+                                            {t('common.statusBtn')}
                                         </button>
 
                                         <button
@@ -221,7 +221,7 @@ export function SellerItems() {
                                             onClick={() => navigate(`/dashboard/seller/items/${item.id}/receipt`)}
                                             className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
                                         >
-                                            🖨 Чек
+                                            {t('common.receipt')}
                                         </button>
 
                                     </div>

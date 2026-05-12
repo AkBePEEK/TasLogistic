@@ -5,15 +5,14 @@ import { QRCodeSVG } from 'qrcode.react';
 import { sellerApi } from '@/api/seller';
 import { carriersApi, Carrier, CarrierType } from '@/api/carrier';
 
-const { t } = useTranslation();
 
 const STATUS_LABEL: Record<string, string> = {
-    CREATED:    t('status.CREATED'),
-    PROCESSING: t('status.PROCESSING'),
-    SHIPPED:    t('status.SHIPPED'),
-    IN_TRANSIT: t('status.IN_TRANSIT'),
-    DELIVERED:  t('status.DELIVERED'),
-    CANCELLED:  t('status.CANCELLED'),
+    CREATED:    'status.CREATED',
+    PROCESSING: 'status.PROCESSING',
+    SHIPPED:    'status.SHIPPED',
+    IN_TRANSIT: 'status.IN_TRANSIT',
+    DELIVERED:  'status.DELIVERED',
+    CANCELLED:  'status.CANCELLED'
 };
 
 const DELIVERY_TYPES: { value: CarrierType; label: string }[] = [
@@ -22,12 +21,11 @@ const DELIVERY_TYPES: { value: CarrierType; label: string }[] = [
     { value: 'TRUCK', label: '🚛 Фура' },
 ];
 
-const DISCLAIMER = 'Груз принят без досмотра и проверки содержимого в упаковке. Ответственность за недостоверное указание информации о грузе лежит на получателе и отправителе. За стекло, хрупкий груз и не соответствующую упаковку ответственность не несём!';
-
 export function ReceiptPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [deliveryType, setDeliveryType] = useState<CarrierType>('TRUCK');
+    const { t } = useTranslation();
 
     const { data: item, isLoading, isError } = useQuery({
         queryKey: ['seller-item', id],
@@ -61,8 +59,8 @@ export function ReceiptPage() {
     if (isError || !item) {
         return (
             <div className="flex h-screen flex-col items-center justify-center gap-4">
-                <p className="text-red-600">Заказ не найден</p>
-                <button onClick={() => navigate(-1)} className="text-indigo-600 underline">Назад</button>
+                <p className="text-red-600">{t('receipt.notFound')}</p>
+                <button onClick={() => navigate(-1)} className="text-indigo-600 underline">{t('common.back')}</button>
             </div>
         );
     }
@@ -94,13 +92,13 @@ export function ReceiptPage() {
                         onClick={() => navigate(-1)}
                         className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-lg hover:bg-gray-50"
                     >
-                        ← Назад
+                        {t('receipt.back')}
                     </button>
                     <button
                         onClick={() => window.print()}
                         className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg hover:bg-indigo-700"
                     >
-                        🖨 Печать
+                        {t('receipt.print')}
                     </button>
                 </div>
             </div>
@@ -143,9 +141,11 @@ function Receipt({
     deliveryType: CarrierType;
     carriers: Carrier[];
     width: 58 | 80;
-}) {
+})
+{
     const fontSize = width === 58 ? '10px' : '11px';
     const qrSize = width === 58 ? 80 : 100;
+    const { t } = useTranslation();
 
     // Фильтруем перевозчиков по выбранному типу доставки
     const filteredCarriers = carriers.filter((c) => c.type === deliveryType);
@@ -162,10 +162,10 @@ function Receipt({
             {/* Шапка */}
             <div style={{ textAlign: 'center', marginBottom: '3mm' }}>
                 <div style={{ fontWeight: 'bold', fontSize: width === 58 ? '13px' : '15px' }}>
-                    TAS LOGISTIC
+                    {t('receipt.title')}
                 </div>
                 <div style={{ fontSize: width === 58 ? '9px' : '10px', marginTop: '1mm' }}>
-                    Логистическая служба
+                    {t('receipt.subtitle')}
                 </div>
             </div>
 
@@ -173,7 +173,7 @@ function Receipt({
 
             {/* Трек-код */}
             <div style={{ textAlign: 'center', margin: '2mm 0' }}>
-                <div style={{ fontSize: '9px', color: '#555' }}>Трек-код</div>
+                <div style={{ fontSize: '9px', color: '#555' }}>{t('receipt.trackCode')}</div>
                 <div style={{
                     fontWeight: 'bold',
                     fontSize: width === 58 ? '12px' : '14px',
@@ -189,8 +189,8 @@ function Receipt({
             {/* Маршрут + тип доставки в ряд */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <Row label="Откуда" value={item.fromCity ?? '—'} />
-                    <Row label="Куда" value={item.toCity ?? '—'} />
+                    <Row label={t('receipt.from')} value={item.fromCity ?? '—'} />
+                    <Row label={t('receipt.to')} value={item.toCity ?? '—'} />
                 </div>
                 <div style={{
                     border: '1px solid #000',
@@ -211,23 +211,23 @@ function Receipt({
             <Divider />
 
             {/* Получатель */}
-            <Row label="Получатель" value={item.recipientName ?? '—'} />
-            <Row label="Телефон" value={item.recipientPhone ?? '—'} />
+            <Row label={t('receipt.recipient')} value={item.recipientName ?? '—'} />
+            <Row label={t('receipt.phone')} value={item.recipientPhone ?? '—'} />
 
             <Divider />
 
             {/* Параметры */}
-            <Row label="Товар" value={item.title} />
-            {item.weight && <Row label="Вес" value={`${item.weight} кг`} />}
+            <Row label={t('receipt.item')} value={item.title} />
+            {item.weight && <Row label={t('receipt.weight')} value={`${item.weight} кг`} />}
             {item.cashOnDelivery !== undefined && item.cashOnDelivery > 0 && (
                 <Row
-                    label="Наложенный платёж"
+                    label={t('receipt.cod')}
                     value={`${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`}
                     bold
                 />
             )}
-            <Row label="Статус" value={STATUS_LABEL[item.currentStatus] ?? item.currentStatus} />
-            <Row label="Дата" value={new Date(item.createdAt).toLocaleString('ru-RU', {
+            <Row label={t('receipt.status')} value={t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus)} />
+            <Row label={t('receipt.date')} value={new Date(item.createdAt).toLocaleString('ru-RU', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit',
             })} />
@@ -236,7 +236,7 @@ function Receipt({
                 <>
                     <Divider />
                     <div style={{ fontSize: '9px' }}>
-                        <span style={{ color: '#555' }}>Комментарий: </span>
+                        <span style={{ color: '#555' }}>{t('receipt.comment')}: </span>
                         {item.comment}
                     </div>
                 </>
@@ -258,7 +258,7 @@ function Receipt({
                     <Divider />
                     <div style={{ fontSize: '9px' }}>
                         <div style={{ fontWeight: 'bold', marginBottom: '1mm' }}>
-                            Контакты перевозчиков ({item.toCity}):
+                            {t('receipt.carriers')} ({item.toCity}):
                         </div>
                         {filteredCarriers.map((c) => (
                             <div key={c.id} style={{ marginBottom: '1mm' }}>
@@ -279,7 +279,7 @@ function Receipt({
                 lineHeight: '1.4',
                 marginTop: '2mm',
             }}>
-                {DISCLAIMER}
+                {t('receipt.disclaimer')}
             </div>
         </div>
     );
@@ -291,7 +291,8 @@ function Divider() {
 
 function Row({ label, value, bold = false }: {
     label: string; value: string; bold?: boolean;
-}) {
+})
+{
     return (
         <div style={{
             display: 'flex', justifyContent: 'space-between',

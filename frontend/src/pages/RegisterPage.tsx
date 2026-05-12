@@ -21,8 +21,6 @@ function EyeIcon({ open }: { open: boolean }) {
     );
 }
 
-const { t } = useTranslation();
-
 const Schema = z
     .object({
         email: z.string().email('Некорректный email'),
@@ -40,8 +38,8 @@ const Schema = z
 type Form = z.infer<typeof Schema>;
 
 const ROLES: { value: Role; label: string; icon: string; desc: string }[] = [
-    { value: 'CUSTOMER', icon: '📦', label: t('register.customer.label'),  desc: t('register.customer.desc') },
-    { value: 'SELLER',   icon: '🏪', label: t('register.seller.label'),   desc: t('register.seller.desc') },
+    { value: 'CUSTOMER', icon: '📦', label: 'register.customer.label',  desc: 'register.customer.desc' },
+    { value: 'SELLER',   icon: '🏪', label: 'register.seller.label',   desc: 'register.seller.desc' },
 ];
 
 export function RegisterPage() {
@@ -50,6 +48,7 @@ export function RegisterPage() {
     const [role, setRole] = useState<Role>('CUSTOMER');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const { t } = useTranslation();
 
     const {
         register,
@@ -108,8 +107,8 @@ export function RegisterPage() {
                                     ].join(' ')}
                                 >
                                     <div className="text-xl">{r.icon}</div>
-                                    <div className="mt-1 text-sm font-semibold text-gray-800">{r.label}</div>
-                                    <div className="text-xs text-gray-400">{r.desc}</div>
+                                    <div className="mt-1 text-sm font-semibold text-gray-800">{t(r.label)}</div>
+                                    <div className="text-xs text-gray-400">{t(r.desc)}</div>
                                 </button>
                             ))}
                         </div>
