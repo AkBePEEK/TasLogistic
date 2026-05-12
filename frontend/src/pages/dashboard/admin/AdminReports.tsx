@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/api/admin';
+import {useTranslation} from "react-i18next";
 
 const PERIODS = [
-    { value: 'today', label: 'Сегодня' },
-    { value: 'week',  label: 'Неделя' },
-    { value: 'month', label: 'Месяц' },
-    { value: 'year',  label: 'Год' },
+    { value: 'today', label: 'reports.today' },
+    { value: 'week',  label: 'reports.week' },
+    { value: 'month', label: 'reports.month' },
+    { value: 'year',  label: 'reports.year' },
 ];
 
 const STATUS_LABELS: Record<string, string> = {
-    CREATED:    'Создан',
-    PROCESSING: 'Обработка',
-    SHIPPED:    'Отправлен',
-    IN_TRANSIT: 'В пути',
-    DELIVERED:  'Доставлен',
-    CANCELLED:  'Отменён',
+    CREATED:    'status.CREATED',
+    PROCESSING: 'status.PROCESSING',
+    SHIPPED:    'status.SHIPPED',
+    IN_TRANSIT: 'status.IN_TRANSIT',
+    DELIVERED:  'status.DELIVERED',
+    CANCELLED:  'status.CANCELLED',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -35,11 +36,15 @@ export function AdminReports() {
         queryFn: () => adminApi.getReports(period).then((r) => r.data.data),
     });
 
+    const { t } = useTranslation();
+
     return (
         <div className="space-y-6">
             {/* Заголовок + фильтр периода */}
             <div className="flex flex-wrap items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold text-gray-900">Отчёты</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    {t('nav.reports')}
+                </h1>
 
                 <div className="flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
                     {PERIODS.map((p) => (
@@ -53,7 +58,7 @@ export function AdminReports() {
                                     : 'text-gray-500 hover:text-gray-700',
                             ].join(' ')}
                         >
-                            {p.label}
+                            {t(p.label)}
                         </button>
                     ))}
                 </div>
@@ -70,25 +75,25 @@ export function AdminReports() {
                     {/* Основные метрики */}
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                         <MetricCard
-                            label="Всего заказов"
+                            label={t('reports.totalOrders')}
                             value={data.total.toString()}
                             icon="📦"
                             color="indigo"
                         />
                         <MetricCard
-                            label="Общая сумма"
+                            label={t('reports.totalAmount')}
                             value={`${data.totalAmount.toLocaleString('ru-RU')} ₸`}
                             icon="💰"
                             color="green"
                         />
                         <MetricCard
-                            label="Общий вес"
+                            label={t('reports.totalWeight')}
                             value={`${data.totalWeight} кг`}
                             icon="⚖️"
                             color="blue"
                         />
                         <MetricCard
-                            label="Доставлено"
+                            label={t('reports.delivered')}
                             value={`${data.statusCounts['DELIVERED'] ?? 0}`}
                             icon="✅"
                             color="emerald"
@@ -101,26 +106,32 @@ export function AdminReports() {
                         {/* Сумма доставленных */}
                         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                             <p className="mb-4 text-sm font-semibold text-gray-700">
-                                Финансовый итог
+                                {t('reports.financialSummary')}
                             </p>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Сумма всех заказов</span>
+                                    <span className="text-gray-500">
+                                        {t('reports.allOrdersAmount')}
+                                    </span>
                                     <span className="font-semibold">
-                    {data.totalAmount.toLocaleString('ru-RU')} ₸
-                  </span>
+                                        {data.totalAmount.toLocaleString('ru-RU')} ₸
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Получено (доставлено)</span>
+                                    <span className="text-gray-500">
+                                        {t('reports.receivedDelivered')}
+                                    </span>
                                     <span className="font-semibold text-green-600">
-                    {data.deliveredAmount.toLocaleString('ru-RU')} ₸
-                  </span>
+                                        {data.deliveredAmount.toLocaleString('ru-RU')} ₸
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Ожидается</span>
+                                    <span className="text-gray-500">
+                                        {t('reports.pending')}
+                                    </span>
                                     <span className="font-semibold text-orange-600">
-                    {(data.totalAmount - data.deliveredAmount).toLocaleString('ru-RU')} ₸
-                  </span>
+                                        {(data.totalAmount - data.deliveredAmount).toLocaleString('ru-RU')} ₸
+                                    </span>
                                 </div>
                                 <div className="mt-2 h-2 rounded-full bg-gray-100">
                                     <div
@@ -135,7 +146,7 @@ export function AdminReports() {
                                 <p className="text-right text-xs text-gray-400">
                                     {data.totalAmount > 0
                                         ? Math.round((data.deliveredAmount / data.totalAmount) * 100)
-                                        : 0}% выполнено
+                                        : 0}% {t('reports.completed')}
                                 </p>
                             </div>
                         </div>
@@ -143,24 +154,30 @@ export function AdminReports() {
                         {/* Вес */}
                         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                             <p className="mb-4 text-sm font-semibold text-gray-700">
-                                Статистика по весу
+                                {t('reports.weightStats')}
                             </p>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Общий вес заказов</span>
+                                    <span className="text-gray-500">
+                                        {t('reports.totalOrdersWeight')}
+                                    </span>
                                     <span className="font-semibold">{data.totalWeight} кг</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Доставлено</span>
+                                    <span className="text-gray-500">
+                                        {t('reports.deliveredWeight')}
+                                    </span>
                                     <span className="font-semibold text-green-600">
-                    {data.deliveredWeight} кг
-                  </span>
+                                        {data.deliveredWeight} кг
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">В обработке</span>
+                                    <span className="text-gray-500">
+                                        {t('reports.inProcessing')}
+                                    </span>
                                     <span className="font-semibold text-orange-600">
-                    {Math.round((data.totalWeight - data.deliveredWeight) * 100) / 100} кг
-                  </span>
+                                        {Math.round((data.totalWeight - data.deliveredWeight) * 100) / 100} кг
+                                    </span>
                                 </div>
                                 <div className="mt-2 h-2 rounded-full bg-gray-100">
                                     <div
@@ -181,17 +198,17 @@ export function AdminReports() {
                         {/* По статусам */}
                         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                             <p className="mb-4 text-sm font-semibold text-gray-700">
-                                По статусам
+                                {t('reports.byStatus')}
                             </p>
                             <div className="space-y-2">
                                 {Object.entries(data.statusCounts).map(([status, count]) => (
                                     <div key={status} className="flex items-center justify-between">
-                    <span className={[
-                        'rounded-full px-2.5 py-0.5 text-xs font-medium',
-                        STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-600',
-                    ].join(' ')}>
-                      {STATUS_LABELS[status] ?? status}
-                    </span>
+                                        <span className={[
+                                            'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                            STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-600',
+                                        ].join(' ')}>
+                                          {t(STATUS_LABELS[status] ?? status)}
+                                        </span>
                                         <div className="flex items-center gap-3">
                                             <div className="h-2 w-24 rounded-full bg-gray-100">
                                                 <div
@@ -204,8 +221,8 @@ export function AdminReports() {
                                                 />
                                             </div>
                                             <span className="w-6 text-right text-sm font-semibold text-gray-700">
-                        {count}
-                      </span>
+                                                {count}
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -215,17 +232,19 @@ export function AdminReports() {
                         {/* Топ городов */}
                         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                             <p className="mb-4 text-sm font-semibold text-gray-700">
-                                Топ городов назначения
+                                {t('reports.topCities')}
                             </p>
                             {data.topCities.length === 0 ? (
-                                <p className="text-sm text-gray-400">Нет данных</p>
+                                <p className="text-sm text-gray-400">
+                                    {t('common.nothingFound')}
+                                </p>
                             ) : (
                                 <div className="space-y-3">
                                     {data.topCities.map(({ city, count }, idx) => (
                                         <div key={city} className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
-                        {idx + 1}
-                      </span>
+                                            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
+                                                {idx + 1}
+                                            </span>
                                             <span className="flex-1 text-sm text-gray-700">{city}</span>
                                             <div className="flex items-center gap-2">
                                                 <div className="h-2 w-20 rounded-full bg-gray-100">
@@ -239,8 +258,8 @@ export function AdminReports() {
                                                     />
                                                 </div>
                                                 <span className="w-6 text-right text-sm font-semibold">
-                          {count}
-                        </span>
+                                                    {count}
+                                                </span>
                                             </div>
                                         </div>
                                     ))}
