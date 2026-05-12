@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@formatjs/intl-datetimeformat": "^7.4.3",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.19.3",
     "@tanstack/react-query": "^5.99.2",

@@ -130,6 +130,7 @@ export function ReceiptPage() {
 
 import { ItemDetail } from '@/api/seller';
 import {useTranslation} from "react-i18next";
+import {formatDate} from "../../../../../backend/src/utils/formatDate";
 
 function Receipt({
                      item,
@@ -227,10 +228,7 @@ function Receipt({
                 />
             )}
             <Row label={t('receipt.status')} value={t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus)} />
-            <Row label={t('receipt.date')} value={new Date(item.createdAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit',
-            })} />
+            <Row label={t('receipt.date')} value={formatDate(item.createdAt, i18n.language)} />
 
             {item.comment && (
                 <>

@@ -11,6 +11,7 @@ import {LogoLink} from "@/components/LogoLink";
 import { useSocket } from '@/hooks/useSocket';
 import {LanguageSwitcher} from "@/components/LanguageSwitcher";
 import {useTranslation} from "react-i18next";
+import {formatDate} from "../../../backend/src/utils/formatDate";
 
 const Schema = z.object({
     code: z
@@ -132,12 +133,7 @@ export function TrackPage() {
                                         <div className="flex items-center justify-between">
                                             <StatusBadge status={entry.newStatus} />
                                             <time className="text-xs text-gray-400">
-                                                {new Date(entry.changedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
+                                                {formatDate(entry.changedAt, i18n.language)}
                                             </time>
                                         </div>
                                     </li>

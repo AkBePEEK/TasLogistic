@@ -10,6 +10,7 @@ import { OrderHistoryDrawer } from './OrderHistoryDrawer';
 import toast from "react-hot-toast";
 import {useSocket} from "@/hooks/useSocket";
 import {useTranslation} from "react-i18next";
+import {formatDateLong} from "../../../../../backend/src/utils/formatDate";
 
 // ── Форма добавления трек-кода ────────────────────────────────────────────────
 
@@ -319,15 +320,7 @@ function OrderCard({ item, onShowHistory, onRemove, isRemoving }: OrderCardProps
                     {/* ← Дата и время отправки */}
                     <p className="mt-1 text-xs text-gray-400">
                         {t('orders.sentAt')}:{' '}
-                        {item.createdAt
-                            ? new Date(item.createdAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })
-                            : '—'}
+                        {item.createdAt ? formatDateLong(item.createdAt, i18n.language) : '—'}
                     </p>
 
                     {/* Мини-хронология */}

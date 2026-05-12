@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import {useSocket} from "@/hooks/useSocket";
 import {useTranslation} from "react-i18next";
+import {formatDateOnly} from "../../../../../backend/src/utils/formatDate";
 
 const CITIES = [
     'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтобе',
@@ -366,9 +367,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
 
                 {/* 7. Дата — отдельная ячейка */}
                 <span className="text-xs text-gray-400 whitespace-nowrap">
-                  {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                      day: '2-digit', month: '2-digit', year: 'numeric',
-                  })}
+                  {formatDateOnly(item.createdAt, i18n.language)}
                 </span>
 
                 {/* 8. Действия — отдельная ячейка, справа */}
@@ -413,7 +412,7 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">
-                    {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU',)}
+                    {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU')}
                   </span>
                     <button
                         onClick={onDelete}

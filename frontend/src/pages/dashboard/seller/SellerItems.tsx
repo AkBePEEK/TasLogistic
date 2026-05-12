@@ -8,6 +8,7 @@ import { Status } from '@/types';
 import toast from "react-hot-toast";
 import {useSocket} from "@/hooks/useSocket";
 import {useTranslation} from "react-i18next";
+import {formatDate} from "../../../../../backend/src/utils/formatDate";
 
 
 const STATUSES: { value: Status; label: string }[] = [
@@ -123,10 +124,7 @@ export function SellerItems() {
 
                                     {/* Дата */}
                                     <p className="mt-0.5 text-xs text-gray-400">
-                                        {new Date(item.updatedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                                            day: '2-digit', month: 'short',
-                                            hour: '2-digit', minute: '2-digit',
-                                        })}
+                                        {formatDate(item.updatedAt, i18n.language)}
                                     </p>
 
                                     {/* Форма смены статуса */}

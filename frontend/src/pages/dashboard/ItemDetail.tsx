@@ -6,6 +6,7 @@ import { sellerApi } from '@/api/seller';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Status } from '@/types';
 import {useTranslation} from "react-i18next";
+import {formatDateWithYear} from "../../../../backend/src/utils/formatDate";
 
 const STATUSES: Status[] = [
     'CREATED',
@@ -189,13 +190,7 @@ export function ItemDetail() {
                                                 <StatusBadge status={entry.newStatus} />
                                             </div>
                                             <time className="text-xs tabular-nums text-gray-400">
-                                                {new Date(entry.changedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
+                                                {formatDateWithYear(entry.changedAt, i18n.language)}
                                             </time>
                                         </div>
                                     </div>

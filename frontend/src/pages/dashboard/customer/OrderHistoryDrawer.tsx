@@ -4,6 +4,7 @@ import { customerApi } from '@/api/customer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Status } from '@/types';
 import {useTranslation} from "react-i18next";
+import {formatDate} from "../../../../../backend/src/utils/formatDate"
 
 interface Props {
     itemId: string;
@@ -163,9 +164,7 @@ export function OrderHistoryDrawer({ itemId, onClose }: Props) {
                                                             <StatusBadge status={entry.newStatus} />
                                                         </div>
                                                         <time className="flex-shrink-0 text-xs tabular-nums text-gray-400">
-                                                            {new Date(entry.changedAt).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                                                                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-                                                            })}
+                                                            {formatDate(entry.changedAt, i18n.language)}
                                                         </time>
                                                     </div>
                                                     {/* ← Локация под статусом */}

@@ -4,6 +4,7 @@ import { customerApi, TrackedItemSummary } from '@/api/customer';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { OrderHistoryDrawer } from './OrderHistoryDrawer';
 import {useTranslation} from "react-i18next";
+import {formatDateOnly} from "../../../../../backend/src/utils/formatDate";
 
 
 const STATUS_OPTIONS = [
@@ -153,9 +154,7 @@ function HistoryRow(
                     </span>
                 )}
                 <span className="text-xs text-gray-400">
-                    {new Date(item.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                      day: '2-digit', month: 'short', year: 'numeric',
-                    })}
+                    {formatDateOnly(item.createdAt, i18n.language)}
                 </span>
                 <button
                     onClick={onShowHistory}

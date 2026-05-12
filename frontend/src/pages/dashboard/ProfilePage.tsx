@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { profileApi } from '@/api/profile';
 import { useAuth } from '@/hooks/useAuth';
 import {useTranslation} from "react-i18next";
+import {formatDateOnly} from "../../../../backend/src/utils/formatDate";
 
 // ── Схемы ────────────────────────────────────────────────────────────────────
 
@@ -131,13 +132,7 @@ export function ProfilePage() {
                 </div>
                 <p className="mt-3 text-xs text-gray-400">
                     {t('profile.createdAt')}:{' '}
-                    {profile?.createdAt
-                        ? new Date(profile.createdAt).toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : 'ru-RU', {
-                            day: '2-digit',
-                            month: 'long',
-                            year: 'numeric',
-                        })
-                        : '—'}
+                    {profile?.createdAt ? formatDateOnly(profile.createdAt, i18n.language) : '—'}
                 </p>
             </div>
 
