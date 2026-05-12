@@ -205,6 +205,27 @@ export const kz = {
             printReceipt: '🖨 Чек басып шығару',
             historyTitle: 'Өзгерістер тарихы — {{count}} оқиға',
             historyEmpty: 'Тарих бос',
+        },
+        carriers: {
+            name: 'Атауы',
+            nameMin: 'Кемінде 2 таңба',
+            namePlaceholder: 'ЖШС Транспорт',
+            city: 'Қала',
+            cityRequired: 'Қаланы таңдаңыз',
+            selectCity: 'Қаланы таңдаңыз',
+            allCities: 'Барлық қалалар',
+            phone: 'Телефон',
+            phoneMin: 'Телефон нөмірін енгізіңіз',
+            phonePlaceholder: '+7 777 123 4567',
+            type: 'Түрі',
+            newCarrier: 'Жаңа тасымалдаушы',
+            noCarriers: 'Тасымалдаушылар жоқ',
+            confirmDelete: '{{name}} жойылсын ба?',
+        },
+        carrierType: {
+            AVIA: '✈️ Әуе',
+            RAIL: '🚂 Теміржол',
+            TRUCK: '🚛 Жүк көлігі',
         }
     },
 };

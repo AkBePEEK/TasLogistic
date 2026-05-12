@@ -213,6 +213,27 @@ export const ru = {
             printReceipt: '🖨 Печать чека',
             historyTitle: 'История изменений — {{count}} событий',
             historyEmpty: 'История пуста',
+        },
+        carriers: {
+            name: 'Название',
+            nameMin: 'Минимум 2 символа',
+            namePlaceholder: 'ООО Транспорт',
+            city: 'Город',
+            cityRequired: 'Выберите город',
+            selectCity: 'Выберите город',
+            allCities: 'Все города',
+            phone: 'Телефон',
+            phoneMin: 'Введите телефон',
+            phonePlaceholder: '+7 777 123 4567',
+            type: 'Тип',
+            newCarrier: 'Новый перевозчик',
+            noCarriers: 'Нет перевозчиков',
+            confirmDelete: 'Удалить {{name}}?',
+        },
+        carrierType: {
+            AVIA: '✈️ Авиа',
+            RAIL: '🚂 ЖД',
+            TRUCK: '🚛 Фура',
         }
     },
 };

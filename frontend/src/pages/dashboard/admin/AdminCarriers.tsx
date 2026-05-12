@@ -8,9 +8,9 @@ import { carriersApi, Carrier, CARRIER_TYPE_LABELS } from '@/api/carrier';
 import {useTranslation} from "react-i18next";
 
 const Schema = z.object({
-    name:  z.string().min(2, 'Минимум 2 символа'),
-    city:  z.string().min(2, 'Выберите город'),
-    phone: z.string().min(7, 'Введите телефон'),
+    name:  z.string().min(2, 'carriers.nameMin'),
+    city:  z.string().min(2, 'carriers.cityRequired'),
+    phone: z.string().min(7, 'carriers.phoneMin'),
     type:  z.enum(['AVIA', 'RAIL', 'TRUCK']),
 });
 type Form = z.infer<typeof Schema>;
@@ -44,18 +44,18 @@ export function AdminCarriers() {
             void qc.invalidateQueries({ queryKey: ['carriers'] });
             reset();
             setShowForm(false);
-            toast.success('Перевозчик добавлен');
+            toast.success(t('toast.carrierCreated'));
         },
-        onError: () => toast.error('Ошибка при добавлении'),
+        onError: () => toast.error(t('toast.carrierCreateError')),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => carriersApi.delete(id),
         onSuccess: () => {
             void qc.invalidateQueries({ queryKey: ['carriers'] });
-            toast.success('Перевозчик удалён');
+            toast.success(t('toast.carrierDeleted'));
         },
-        onError: () => toast.error('Ошибка при удалении'),
+        onError: () => toast.error(t('toast.carrierDeleteError')),
     });
 
     // Группируем по городам
@@ -85,42 +85,46 @@ export function AdminCarriers() {
                     onSubmit={handleSubmit((d) => createMutation.mutate(d))}
                     className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4"
                 >
-                    <h2 className="text-sm font-semibold text-gray-700">Новый перевозчик</h2>
+                    <h2 className="text-sm font-semibold text-gray-700">
+                        {t('carriers.newCarrier')}
+                    </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Название *
+                                {t('carriers.name')} *
                             </label>
                             <input {...register('name')} placeholder="ООО Транспорт" className={inputCls} />
-                            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
+                            {errors.name && <p className="mt-1 text-xs text-red-600">{t(`${errors.name.message}`)}</p>}
                         </div>
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Город *
+                                {t('carriers.city')} *
                             </label>
                             <select {...register('city')} className={inputCls}>
-                                <option value="">Выберите город</option>
+                                <option value="">
+                                    {t('carriers.selectCity')}
+                                </option>
                                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
-                            {errors.city && <p className="mt-1 text-xs text-red-600">{errors.city.message}</p>}
+                            {errors.city && <p className="mt-1 text-xs text-red-600">{t(`${errors.city.message}`)}</p>}
                         </div>
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Телефон *
+                                {t('carriers.phone')} *
                             </label>
                             <input {...register('phone')} placeholder="+7 777 123 4567" className={inputCls} />
-                            {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
+                            {errors.phone && <p className="mt-1 text-xs text-red-600">{t(`${errors.phone.message}`)}</p>}
                         </div>
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
-                                Тип *
+                                {t('carriers.type')} *
                             </label>
                             <select {...register('type')} className={inputCls}>
-                                <option value="AVIA">✈️ Авиа</option>
-                                <option value="RAIL">🚂 ЖД</option>
-                                <option value="TRUCK">🚛 Фура</option>
+                                <option value="AVIA">{t('carrierType.AVIA')}</option>
+                                <option value="RAIL">{t('carrierType.RAIL')}</option>
+                                <option value="TRUCK">{t('carrierType.TRUCK')}</option>
                             </select>
-                            {errors.type && <p className="mt-1 text-xs text-red-600">{errors.type.message}</p>}
+                            {errors.type && <p className="mt-1 text-xs text-red-600">{t(`${errors.type.message}`)}</p>}
                         </div>
                     </div>
                     <div className="flex gap-3">
@@ -161,7 +165,9 @@ export function AdminCarriers() {
                 </div>
             ) : Object.keys(grouped).length === 0 ? (
                 <div className="flex h-40 items-center justify-center rounded-xl border-2 border-dashed border-gray-200">
-                    <p className="text-sm text-gray-500">Нет перевозчиков</p>
+                    <p className="text-sm text-gray-500">
+                        {t('carriers.noCarriers')}
+                    </p>
                 </div>
             ) : (
                 <div className="space-y-4">
