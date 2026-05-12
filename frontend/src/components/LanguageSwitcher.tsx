@@ -14,7 +14,7 @@ export function LanguageSwitcher() {
             <button
                 onClick={() => toggle('ru')}
                 className={[
-                    'px-3 py-1.5 text-xs font-semibold transition-colors',
+                    'flex-1 px-3 py-1.5 text-xs font-semibold transition-colors',
                     i18n.language === 'ru'
                         ? 'bg-indigo-600 text-white'
                         : 'bg-white text-gray-500 hover:bg-gray-50',
@@ -25,7 +25,7 @@ export function LanguageSwitcher() {
             <button
                 onClick={() => toggle('kz')}
                 className={[
-                    'px-3 py-1.5 text-xs font-semibold transition-colors',
+                    'flex-1 px-3 py-1.5 text-xs font-semibold transition-colors',
                     i18n.language === 'kz'
                         ? 'bg-indigo-600 text-white'
                         : 'bg-white text-gray-500 hover:bg-gray-50',
