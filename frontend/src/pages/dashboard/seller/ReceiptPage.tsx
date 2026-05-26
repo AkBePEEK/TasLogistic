@@ -103,24 +103,19 @@ export function ReceiptPage() {
                 </div>
             </div>
 
-            {/* Чек 80мм */}
-            <div className="receipt-80">
-                <Receipt
-                    item={item}
-                    deliveryType={deliveryType}
-                    carriers={carriers ?? []}
-                    width={80}
-                />
-            </div>
-
-            {/* Чек 58мм */}
-            <div className="receipt-58">
-                <Receipt
-                    item={item}
-                    deliveryType={deliveryType}
-                    carriers={carriers ?? []}
-                    width={58}
-                />
+            <div id="receipt-root">
+                <div className="receipt-80">
+                    <Receipt item={item}
+                             deliveryType={deliveryType}
+                             carriers={carriers ?? []}
+                             width={80} />
+                </div>
+                <div className="receipt-58">
+                    <Receipt item={item}
+                             deliveryType={deliveryType}
+                             carriers={carriers ?? []}
+                             width={58} />
+                </div>
             </div>
         </>
     );

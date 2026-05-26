@@ -4,21 +4,35 @@
 
 /* ── Печать чека ─────────────────────────────────────── */
 @media print {
-    /* Скрываем всё кроме чека */
-    body > * {
+    body * {
+        visibility: hidden;
+    }
+
+    #receipt-root,
+    #receipt-root * {
+        visibility: visible;
+    }
+
+    #receipt-root {
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .receipt-58 {
         display: none !important;
     }
 
-    /* Показываем только нужный размер */
-    .receipt-80,
-    .receipt-58 {
-        display: block !important;
+    .receipt-80 {
+        display: none !important;
     }
 
-    /* Убираем отступы страницы */
+    .no-print {
+        display: none !important;
+    }
+
     @page {
         margin: 0;
-        padding: 0;
     }
 }
 
