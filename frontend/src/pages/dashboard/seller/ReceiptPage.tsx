@@ -103,20 +103,17 @@ export function ReceiptPage() {
                 </div>
             </div>
 
-            <div id="receipt-root">
-                <div className="receipt-80">
-                    <Receipt item={item}
-                             deliveryType={deliveryType}
-                             carriers={carriers ?? []}
-                             width={80} />
-                </div>
-                <div className="receipt-58">
-                    <Receipt item={item}
-                             deliveryType={deliveryType}
-                             carriers={carriers ?? []}
-                             width={58} />
-                </div>
-            </div>
+            {createPortal(
+                <div id="receipt-root">
+                    <div className="receipt-80">
+                        <Receipt item={item} deliveryType={deliveryType} carriers={carriers ?? []} width={80} />
+                    </div>
+                    <div className="receipt-58">
+                        <Receipt item={item} deliveryType={deliveryType} carriers={carriers ?? []} width={58} />
+                    </div>
+                </div>,
+                document.body
+            )}
         </>
     );
 }
@@ -126,6 +123,7 @@ export function ReceiptPage() {
 import { ItemDetail } from '@/api/seller';
 import {useTranslation} from "react-i18next";
 import {formatDate} from "../../../../../backend/src/utils/formatDate";
+import {createPortal} from "react-dom";
 
 function Receipt({
                      item,

@@ -4,19 +4,20 @@
 
 /* ── Печать чека ─────────────────────────────────────── */
 @media print {
-    body * {
-        visibility: hidden;
-    }
-
-    #receipt-root,
-    #receipt-root * {
-        visibility: visible;
+    body > *:not(#receipt-root) {
+        display: none !important;
     }
 
     #receipt-root {
+        display: block !important;
         position: fixed;
         top: 0;
         left: 0;
+        width: 100%;
+    }
+
+    #receipt-root * {
+        visibility: visible !important;
     }
 
     .receipt-58 {
