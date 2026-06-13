@@ -18,7 +18,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const ACCESS_COOKIE: CookieOptions = {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    sameSite: 'none',
     maxAge: 15 * 60 * 1000,
     domain: isProd ? undefined : undefined,
 };
@@ -26,7 +26,7 @@ const ACCESS_COOKIE: CookieOptions = {
 const REFRESH_COOKIE: CookieOptions = {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
     domain: isProd ? undefined : undefined,
