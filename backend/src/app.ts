@@ -61,6 +61,9 @@ export function createApp() {
         customSuccessMessage: (req, res) =>
             `${req.method} ${req.url} - ${res.statusCode}`,
     }));
+    app.get('/health', (_req, res) => {
+      res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    });
 
     // Маршруты
     app.use('/api/auth', authRoutes);
