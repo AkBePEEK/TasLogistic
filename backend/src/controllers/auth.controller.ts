@@ -180,8 +180,8 @@ export async function refresh(req: Request, res: Response): Promise<void> {
             role: stored.user.role as Role,
         });
 
-        res.cookie('accessToken', accessToken, ACCESS_COOKIE);
-        res.cookie('refreshToken', newRefreshToken, REFRESH_COOKIE);
+        res.cookie('accessToken', accessToken, domain: '.taslogistic.kz', ACCESS_COOKIE);
+        res.cookie('refreshToken', newRefreshToken, domain: '.taslogistic.kz', REFRESH_COOKIE);
 
         sendSuccess(res, {
             id: stored.user.id,
