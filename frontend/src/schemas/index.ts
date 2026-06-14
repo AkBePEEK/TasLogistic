@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 import { z } from 'zod';
 
 const CITIES = [
@@ -5,6 +7,10 @@ const CITIES = [
     'Тараз', 'Павлодар', 'Өскемен', 'Семей', 'Атырау',
     'Қостанай', 'Орал', 'Петропавл', 'Түркістан', 'Көкшетау',
     'Талдықорған', 'Екібастұз', 'Теміртау', 'Жанаозен', 'Рудный',
+] as const;
+const TO_CITIES = [
+    'Актау', "Атырау", "Актобе", "Уральск", "Куль сары", "Жанаозен",
+    "Бейнеу", "Сексеул", "Кандагаш", "Казалы" , "Шалкар", "Арал", "Шетпе", "Алга"
 ] as const;
 
 export const CreateItemSchema = z.object({
@@ -14,7 +20,7 @@ export const CreateItemSchema = z.object({
     senderName: z.string().min(2, 'Введите ФИО отправителя').max(255),
     senderPhone: z.string().min(10, 'Введите корректный номер').max(20),
     fromCity: z.enum(CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
-    toCity: z.enum(CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
+    toCity: z.enum(TO_CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
     weight: z.coerce.number().positive('Введите вес').max(10000),
     cashOnDelivery: z.coerce.number().min(0).optional(),
     comment: z.string().max(500).optional(),
