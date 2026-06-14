@@ -13,8 +13,8 @@ router.use(
 );
 
 router.get('/', adminGetItems as unknown as RequestHandler);
+router.get('/reports', adminGetReports as unknown as RequestHandler);
 router.patch('/:id/status', validate(UpdateStatusSchema), adminUpdateStatus as unknown as RequestHandler);
 router.delete('/:id', adminDeleteItem as unknown as RequestHandler);
-router.get('/reports', adminGetReports as unknown as RequestHandler);
 
 export default router;
