@@ -94,7 +94,7 @@ export function AdminReports() {
                         />
                         <MetricCard
                             label={t('reports.delivered')}
-                            value={`${data.statusCounts['DELIVERED'] ?? 0}`}
+                            value={`${(data.statusCounts?.['DELIVERED']) ?? 0}`}
                             icon="✅"
                             color="emerald"
                             sub={`${(data.deliveredAmount ?? 0).toLocaleString('ru-RU')} ₸`}
@@ -201,7 +201,7 @@ export function AdminReports() {
                                 {t('reports.byStatus')}
                             </p>
                             <div className="space-y-2">
-                                {Object.entries(data.statusCounts).map(([status, count]) => (
+                                {Object.entries((data.statusCounts) ?? 0).map(([status, count]) => (
                                     <div key={status} className="flex items-center justify-between">
                                         <span className={[
                                             'rounded-full px-2.5 py-0.5 text-xs font-medium',
