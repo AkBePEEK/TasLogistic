@@ -82,13 +82,13 @@ export function AdminReports() {
                         />
                         <MetricCard
                             label={t('reports.totalAmount')}
-                            value={`${data.totalAmount.toLocaleString('ru-RU')} ₸`}
+                            value={`${(data.totalAmount ?? 0).toLocaleString('ru-RU')} ₸`}
                             icon="💰"
                             color="green"
                         />
                         <MetricCard
                             label={t('reports.totalWeight')}
-                            value={`${data.totalWeight} кг`}
+                            value={`${(data.totalWeight ?? 0)} кг`}
                             icon="⚖️"
                             color="blue"
                         />
@@ -97,7 +97,7 @@ export function AdminReports() {
                             value={`${data.statusCounts['DELIVERED'] ?? 0}`}
                             icon="✅"
                             color="emerald"
-                            sub={`${data.deliveredAmount.toLocaleString('ru-RU')} ₸`}
+                            sub={`${(data.deliveredAmount ?? 0).toLocaleString('ru-RU')} ₸`}
                         />
                     </div>
 
@@ -114,7 +114,7 @@ export function AdminReports() {
                                         {t('reports.allOrdersAmount')}
                                     </span>
                                     <span className="font-semibold">
-                                        {data.totalAmount.toLocaleString('ru-RU')} ₸
+                                        {(data.totalAmount ?? 0).toLocaleString('ru-RU')} ₸
                                     </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
@@ -122,7 +122,7 @@ export function AdminReports() {
                                         {t('reports.receivedDelivered')}
                                     </span>
                                     <span className="font-semibold text-green-600">
-                                        {data.deliveredAmount.toLocaleString('ru-RU')} ₸
+                                        {(data.deliveredAmount ?? 0).toLocaleString('ru-RU')} ₸
                                     </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
