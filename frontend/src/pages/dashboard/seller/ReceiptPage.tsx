@@ -163,19 +163,6 @@ function Receipt({
 
             <Divider />
 
-            {/* Трек-код */}
-            <div style={{ textAlign: 'center', margin: '2mm 0' }}>
-                <div style={{ fontSize: '9px', color: '#555' }}>{t('receipt.trackCode')}</div>
-                <div style={{
-                    fontWeight: 'bold',
-                    fontSize: width === 58 ? '12px' : '14px',
-                    letterSpacing: '1px',
-                    marginTop: '1mm',
-                }}>
-                    {item.trackingCode}
-                </div>
-            </div>
-
             <Divider />
 
             {/* Маршрут + тип доставки в ряд */}
@@ -236,6 +223,13 @@ function Receipt({
             )}
 
             <Divider />
+
+            <div style={{ color: '#777', fontWeight: 'bold',
+                fontSize: width === 58 ? '12px' : '14px',
+                letterSpacing: '1px',
+                marginTop: '1mm',}}>
+                Трек-код: {item.trackingCode}
+            </div>
 
             {/* Контакты перевозчиков */}
             {filteredCarriers.length > 0 && (
