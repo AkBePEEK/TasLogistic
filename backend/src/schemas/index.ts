@@ -13,9 +13,7 @@ export const RegisterSchema = z.object({
     email: z.string().email('Некорректный email'),
     password: z
         .string()
-        .min(8, 'Минимум 8 символов')
-        .regex(/[A-Z]/, 'Должна быть хотя бы одна заглавная буква')
-        .regex(/[0-9]/, 'Должна быть хотя бы одна цифра'),
+        .min(8, 'Минимум 8 символов'),
     role: z.enum(['SELLER', 'CUSTOMER']),
 });
 

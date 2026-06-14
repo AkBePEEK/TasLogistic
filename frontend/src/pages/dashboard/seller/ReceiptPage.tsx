@@ -159,6 +159,9 @@ function Receipt({
                 <div style={{ fontSize: width === 58 ? '9px' : '10px', marginTop: '1mm' }}>
                     {t('receipt.subtitle')}
                 </div>
+                <div style={{ fontSize: width === 58 ? '9px' : '10px', marginTop: '1mm', fontWeight: 'bold' }}>
+                    ДИСПЕТЧЕР:  8(747)-033-9028
+                </div>
             </div>
 
             <Divider />
@@ -241,7 +244,7 @@ function Receipt({
                         </div>
                         {filteredCarriers.map((c) => (
                             <div key={c.id} style={{ marginBottom: '1mm' }}>
-                                <span style={{ fontWeight: 'bold' }}>{c.name}:</span> {c.phone}
+                                <span style={{ fontWeight: 'bold' }}>{c.name + " " + c.city}:</span> {c.phone}
                             </div>
                         ))}
                     </div>
