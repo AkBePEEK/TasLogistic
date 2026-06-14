@@ -70,6 +70,7 @@ export function createApp() {
     app.use('/api/track', trackRoutes);
     app.use('/api/seller/items', sellerRoutes);
     app.use('/api/admin/items', adminRoutes);
+    app.use('/api/admin/reports', adminRoutes);
     app.use('/api/customer', customerRoutes);
     app.use('/api/profile', profileRoutes);
     app.use('/api/carriers', carrierRoutes);
