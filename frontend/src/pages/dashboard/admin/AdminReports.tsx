@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/api/admin';
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const PERIODS = [
     { value: 'today', label: 'reports.today' },
@@ -31,12 +31,26 @@ const STATUS_COLORS: Record<string, string> = {
 export function AdminReports() {
     const [period, setPeriod] = useState('month');
 
+    // Берем данные напрямую из готового отчета бэкенда
     const { data, isLoading } = useQuery({
         queryKey: ['admin-reports', period],
         queryFn: () => adminApi.getReports(period).then((r) => r.data.data),
     });
 
     const { t } = useTranslation();
+
+    // Локальные безопасные переменные с фолбеками на случай, если данные еще грузятся или пусты
+    const totalOrders = data?.total ?? 0;
+    const totalAmount = data?.totalAmount ?? 0;
+    const deliveredAmount = data?.deliveredAmount ?? 0;
+    const pendingAmount = Math.max(0, totalAmount - deliveredAmount);
+
+    const totalWeight = data?.totalWeight ?? 0;
+    const deliveredWeight = data?.deliveredWeight ?? 0;
+    const pendingWeight = Math.max(0, Math.round((totalWeight - deliveredWeight) * 100) / 100);
+
+    const statusCounts = data?.statusCounts ?? {};
+    const topCities = data?.topCities ?? [];
 
     return (
         <div className="space-y-6">
@@ -76,32 +90,32 @@ export function AdminReports() {
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                         <MetricCard
                             label={t('reports.totalOrders')}
-                            value={data.total.toString()}
+                            value={totalOrders.toString()}
                             icon="📦"
                             color="indigo"
                         />
                         <MetricCard
                             label={t('reports.totalAmount')}
-                            value={`${(data.totalAmount ?? 0).toLocaleString('ru-RU')} ₸`}
+                            value={`${totalAmount.toLocaleString('ru-RU')} ₸`}
                             icon="💰"
                             color="green"
                         />
                         <MetricCard
                             label={t('reports.totalWeight')}
-                            value={`${(data.totalWeight ?? 0)} кг`}
+                            value={`${totalWeight} кг`}
                             icon="⚖️"
                             color="blue"
                         />
                         <MetricCard
                             label={t('reports.delivered')}
-                            value={`${(data.statusCounts?.['DELIVERED']) ?? 0}`}
+                            value={`${statusCounts['DELIVERED'] ?? 0}`}
                             icon="✅"
                             color="emerald"
-                            sub={`${(data.deliveredAmount ?? 0).toLocaleString('ru-RU')} ₸`}
+                            sub={`${deliveredAmount.toLocaleString('ru-RU')} ₸`}
                         />
                     </div>
 
-                    {/* Доставленные vs Общее */}
+                    {/* Финансовый итог vs Вес */}
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {/* Сумма доставленных */}
                         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -110,43 +124,25 @@ export function AdminReports() {
                             </p>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                        {t('reports.allOrdersAmount')}
-                                    </span>
-                                    <span className="font-semibold">
-                                        {(data.totalAmount ?? 0).toLocaleString('ru-RU')} ₸
-                                    </span>
+                                    <span className="text-gray-500">{t('reports.allOrdersAmount')}</span>
+                                    <span className="font-semibold">{totalAmount.toLocaleString('ru-RU')} ₸</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                        {t('reports.receivedDelivered')}
-                                    </span>
-                                    <span className="font-semibold text-green-600">
-                                        {(data.deliveredAmount ?? 0).toLocaleString('ru-RU')} ₸
-                                    </span>
+                                    <span className="text-gray-500">{t('reports.receivedDelivered')}</span>
+                                    <span className="font-semibold text-green-600">{deliveredAmount.toLocaleString('ru-RU')} ₸</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                        {t('reports.pending')}
-                                    </span>
-                                    <span className="font-semibold text-orange-600">
-                                        {(data.totalAmount - data.deliveredAmount).toLocaleString('ru-RU')} ₸
-                                    </span>
+                                    <span className="text-gray-500">{t('reports.pending')}</span>
+                                    <span className="font-semibold text-orange-600">{pendingAmount.toLocaleString('ru-RU')} ₸</span>
                                 </div>
                                 <div className="mt-2 h-2 rounded-full bg-gray-100">
                                     <div
                                         className="h-2 rounded-full bg-green-500 transition-all"
-                                        style={{
-                                            width: data.totalAmount > 0
-                                                ? `${Math.round((data.deliveredAmount / data.totalAmount) * 100)}%`
-                                                : '0%',
-                                        }}
+                                        style={{ width: totalAmount > 0 ? `${Math.round((deliveredAmount / totalAmount) * 100)}%` : '0%' }}
                                     />
                                 </div>
                                 <p className="text-right text-xs text-gray-400">
-                                    {data.totalAmount > 0
-                                        ? Math.round((data.deliveredAmount / data.totalAmount) * 100)
-                                        : 0}% {t('reports.completed')}
+                                    {totalAmount > 0 ? Math.round((deliveredAmount / totalAmount) * 100) : 0}% {t('reports.completed')}
                                 </p>
                             </div>
                         </div>
@@ -158,35 +154,22 @@ export function AdminReports() {
                             </p>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                        {t('reports.totalOrdersWeight')}
-                                    </span>
-                                    <span className="font-semibold">{data.totalWeight} кг</span>
+                                    <span className="text-gray-500">{t('reports.totalOrdersWeight')}</span>
+                                    <span className="font-semibold">{totalWeight} кг</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                        {t('reports.deliveredWeight')}
-                                    </span>
-                                    <span className="font-semibold text-green-600">
-                                        {data.deliveredWeight} кг
-                                    </span>
+                                    <span className="text-gray-500">{t('reports.deliveredWeight')}</span>
+                                    <span className="font-semibold text-green-600">{deliveredWeight} кг</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">
-                                        {t('reports.inProcessing')}
-                                    </span>
-                                    <span className="font-semibold text-orange-600">
-                                        {Math.round((data.totalWeight - data.deliveredWeight) * 100) / 100} кг
-                                    </span>
+                                    <span className="text-gray-500">{t('reports.inProcessing')}</span>
+                                    <span className="font-semibold text-orange-600">{pendingWeight} кг</span>
+                                    end
                                 </div>
                                 <div className="mt-2 h-2 rounded-full bg-gray-100">
                                     <div
                                         className="h-2 rounded-full bg-blue-500 transition-all"
-                                        style={{
-                                            width: data.totalWeight > 0
-                                                ? `${Math.round((data.deliveredWeight / data.totalWeight) * 100)}%`
-                                                : '0%',
-                                        }}
+                                        style={{ width: totalWeight > 0 ? `${Math.round((deliveredWeight / totalWeight) * 100)}%` : '0%' }}
                                     />
                                 </div>
                             </div>
@@ -200,33 +183,36 @@ export function AdminReports() {
                             <p className="mb-4 text-sm font-semibold text-gray-700">
                                 {t('reports.byStatus')}
                             </p>
-                            <div className="space-y-2">
-                                {Object.entries((data.statusCounts) ?? {}).map(([status, count]) => (
-                                    <div key={status} className="flex items-center justify-between">
-                                        <span className={[
-                                            'rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                            STATUS_COLORS[status] ?? 'bg-gray-100 text-gray-600',
-                                        ].join(' ')}>
-                                          {t(STATUS_LABELS[status] ?? status)}
-                                        </span>
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-2 w-24 rounded-full bg-gray-100">
-                                                <div
-                                                    className="h-2 rounded-full bg-indigo-400"
-                                                    style={{
-                                                        width: data.total > 0
-                                                            ? `${Math.round(((count ?? 0) / data.total) * 100)}%`
-                                                            : '0%',
-                                                    }}
-                                                />
+                            {Object.keys(statusCounts).length === 0 ? (
+                                <p className="text-sm text-gray-400">{t('common.nothingFound')}</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {Object.entries(statusCounts).map(([status, count]) => {
+                                        const normalizedStatus = status.toUpperCase();
+                                        return (
+                                            <div key={status} className="flex items-center justify-between">
+                                                <span className={[
+                                                    'rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                                    STATUS_COLORS[normalizedStatus] ?? 'bg-gray-100 text-gray-600',
+                                                ].join(' ')}>
+                                                  {t(STATUS_LABELS[normalizedStatus] ?? status)}
+                                                </span>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-2 w-24 rounded-full bg-gray-100">
+                                                        <div
+                                                            className="h-2 rounded-full bg-indigo-400"
+                                                            style={{ width: totalOrders > 0 ? `${Math.round(((count ?? 0) / totalOrders) * 100)}%` : '0%' }}
+                                                        />
+                                                    </div>
+                                                    <span className="w-6 text-right text-sm font-semibold text-gray-700">
+                                                        {count}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <span className="w-6 text-right text-sm font-semibold text-gray-700">
-                                                {count}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Топ городов */}
@@ -234,15 +220,11 @@ export function AdminReports() {
                             <p className="mb-4 text-sm font-semibold text-gray-700">
                                 {t('reports.topCities')}
                             </p>
-                            {/* 1. Added optional chaining here (?.) and fallback to empty array */}
-                            {(data.topCities?.length ?? 0) === 0 ? (
-                                <p className="text-sm text-gray-400">
-                                    {t('common.nothingFound')}
-                                </p>
+                            {topCities.length === 0 ? (
+                                <p className="text-sm text-gray-400">{t('common.nothingFound')}</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {/* 2. Added optional chaining here too */}
-                                    {data.topCities?.map(({ city, count }, idx) => (
+                                    {topCities.map(({ city, count }, idx) => (
                                         <div key={city} className="flex items-center gap-3">
                                             <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
                                                 {idx + 1}
@@ -252,12 +234,7 @@ export function AdminReports() {
                                                 <div className="h-2 w-20 rounded-full bg-gray-100">
                                                     <div
                                                         className="h-2 rounded-full bg-indigo-500"
-                                                        style={{
-                                                            /* 3. Added optional chaining here to read [0] safely */
-                                                            width: data.topCities?.[0]
-                                                                ? `${Math.round((count / data.topCities[0].count) * 100)}%`
-                                                                : '0%',
-                                                        }}
+                                                        style={{ width: topCities[0] ? `${Math.round((count / topCities[0].count) * 100)}%` : '0%' }}
                                                     />
                                                 </div>
                                                 <span className="w-6 text-right text-sm font-semibold">
@@ -277,7 +254,6 @@ export function AdminReports() {
 }
 
 // ── Карточка метрики ──────────────────────────────────────────────────────────
-
 function MetricCard({
                         label, value, icon, color, sub,
                     }: {
@@ -303,9 +279,7 @@ function MetricCard({
     return (
         <div className={`rounded-xl border p-4 shadow-sm ${colorMap[color]}`}>
             <div className="flex items-start justify-between">
-                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                    {label}
-                </p>
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">{label}</p>
                 <span className="text-xl">{icon}</span>
             </div>
             <p className={`mt-2 text-xl font-bold ${textMap[color]}`}>{value}</p>
