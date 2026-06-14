@@ -72,6 +72,8 @@ model Item {
   seller        User            @relation("SellerItems", fields: [sellerId], references: [id])
   statusHistory StatusHistory[]
   trackedBy     TrackedItem[]   @relation("TrackedBy")
+  senderName    String?
+  senderPhone   String?
 
   @@index([trackingCode])
   @@index([sellerId])

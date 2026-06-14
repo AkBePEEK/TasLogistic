@@ -186,6 +186,7 @@ export async function sellerCreateItem(
     const {
         title, description,
         recipientName, recipientPhone,
+        senderName, senderPhone,
         fromCity, toCity,
         weight, cashOnDelivery, comment,
     } = req.body;
@@ -204,6 +205,8 @@ export async function sellerCreateItem(
                     description,
                     recipientName,
                     recipientPhone,
+                    senderName,
+                    senderPhone,
                     fromCity,
                     toCity,
                     weight,

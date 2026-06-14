@@ -11,6 +11,8 @@ export const CreateItemSchema = z.object({
     title: z.string().min(2, 'Минимум 2 символа').max(255),
     recipientName: z.string().min(2, 'Введите ФИО получателя').max(255),
     recipientPhone: z.string().min(10, 'Введите корректный номер').max(20),
+    senderName: z.string().min(2, 'Введите ФИО отправителя').max(255),
+    senderPhone: z.string().min(10, 'Введите корректный номер').max(20),
     fromCity: z.enum(CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
     toCity: z.enum(CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
     weight: z.coerce.number().positive('Введите вес').max(10000),

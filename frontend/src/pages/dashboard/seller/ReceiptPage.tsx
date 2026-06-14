@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { QRCodeSVG } from 'qrcode.react';
 import { sellerApi } from '@/api/seller';
 import { carriersApi, Carrier, CarrierType } from '@/api/carrier';
 
@@ -35,10 +34,10 @@ export function ReceiptPage() {
 
     // Загружаем перевозчиков по городу назначения
     const { data: carriers } = useQuery({
-        queryKey: ['carriers', item?.toCity],
+        queryKey: ['carriers'],
         queryFn: () =>
-            carriersApi.getByCity(item?.toCity).then((r) => r.data.data ?? []),
-        enabled: !!item?.toCity,
+            carriersApi.getByCity(undefined).then((r) => r.data.data ?? []),
+        enabled: !!item,
     });
 
     useEffect(() => {
@@ -138,11 +137,10 @@ function Receipt({
 })
 {
     const fontSize = width === 58 ? '10px' : '11px';
-    const qrSize = width === 58 ? 80 : 100;
     const { i18n, t } = useTranslation();
 
     // Фильтруем перевозчиков по выбранному типу доставки
-    const filteredCarriers = carriers.filter((c) => c.type === deliveryType);
+    const filteredCarriers = carriers;
 
     return (
         <div style={{
@@ -210,6 +208,10 @@ function Receipt({
 
             <Divider />
 
+            {/* Отправитель */}
+            <Row label={t('receipt.sender')} value={item.senderName ?? '—'} />
+            <Row label={t('receipt.senderPhone')} value={item.senderPhone ?? '—'} />
+
             {/* Параметры */}
             <Row label={t('receipt.item')} value={item.title} />
             {item.weight && <Row label={t('receipt.weight')} value={`${item.weight} кг`} />}
@@ -234,14 +236,6 @@ function Receipt({
             )}
 
             <Divider />
-
-            {/* QR-код */}
-            <div style={{ textAlign: 'center', margin: '3mm 0' }}>
-                <QRCodeSVG value={item.trackingCode} size={qrSize} level="M" marginSize={0} />
-                <div style={{ fontSize: '8px', color: '#777', marginTop: '1mm' }}>
-                    Трек-код: {item.trackingCode}
-                </div>
-            </div>
 
             {/* Контакты перевозчиков */}
             {filteredCarriers.length > 0 && (

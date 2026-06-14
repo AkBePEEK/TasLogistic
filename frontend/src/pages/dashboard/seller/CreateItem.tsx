@@ -94,6 +94,29 @@ export function CreateItem() {
                     </div>
                 </div>
 
+                {/* Информация об отправителе */}
+                <div>
+                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                        {t('receipt.sender')}
+                    </h2>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label={t("createItem.senderName")} error={errors.senderName?.message} required>
+                            <input
+                                {...register('senderName')}
+                                placeholder="Иванов Иван Иванович"
+                                className={inputCls}
+                            />
+                        </Field>
+                        <Field label={t('createItem.phone')} error={errors.senderPhone?.message} required>
+                            <input
+                                {...register('senderPhone')}
+                                placeholder="+7 707 123 4567"
+                                className={inputCls}
+                            />
+                        </Field>
+                    </div>
+                </div>
+
                 {/* Маршрут */}
                 <div>
                     <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">

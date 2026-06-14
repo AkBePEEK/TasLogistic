@@ -29,6 +29,8 @@ export const CreateItemSchema = z.object({
     description: z.string().max(1000).optional(),
     recipientName: z.string().min(2).max(255),
     recipientPhone: z.string().min(10).max(20),
+    senderName: z.string().min(2).max(255),
+    senderPhone: z.string().min(10).max(20),
     fromCity: z.string().min(2).max(100),
     toCity: z.string().min(2).max(100),
     weight: z.number().positive().max(10000),
