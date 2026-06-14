@@ -17,16 +17,16 @@ const isProd = process.env.NODE_ENV === 'production';
 
 const ACCESS_COOKIE: CookieOptions = {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    secure: true,
+    sameSite: 'none',
     maxAge: 15 * 60 * 1000,
     domain: isProd ? undefined : undefined,
 };
 
 const REFRESH_COOKIE: CookieOptions = {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
+    secure: true,
+    sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/api/auth',
     domain: isProd ? undefined : undefined,
@@ -180,8 +180,8 @@ export async function refresh(req: Request, res: Response): Promise<void> {
             role: stored.user.role as Role,
         });
 
-        res.cookie('accessToken', accessToken, ACCESS_COOKIE);
-        res.cookie('refreshToken', newRefreshToken, REFRESH_COOKIE);
+        res.cookie('accessToken', accessToken, { ...ACCESS_COOKIE, domain: '.taslogistic.kz' });
+        res.cookie('refreshToken', newRefreshToken, { ...REFRESH_COOKIE, domain: '.taslogistic.kz' });
 
         sendSuccess(res, {
             id: stored.user.id,
@@ -351,6 +351,6 @@ async function setAuthCookies(
         sameSite: isProd ? 'none' : 'lax',
     });
 
-    res.cookie('accessToken', accessToken, ACCESS_COOKIE);
-    res.cookie('refreshToken', refreshToken, REFRESH_COOKIE);
+    res.cookie('accessToken', accessToken, { ...ACCESS_COOKIE, domain: isProd ? '.taslogistic.kz' : undefined });
+    res.cookie('refreshToken', refreshToken, { ...REFRESH_COOKIE, domain: isProd ? '.taslogistic.kz' : undefined });
 }

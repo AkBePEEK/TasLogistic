@@ -5,7 +5,7 @@ import { RegisterSchema, LoginSchema } from '../schemas';
 import rateLimit from 'express-rate-limit';
 import {otpRequestLimit} from "../middleware/otpRateLimit";
 
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10 });
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 29 });
 
 const router = Router();
 router.post('/register', authLimiter, validate(RegisterSchema), register);
