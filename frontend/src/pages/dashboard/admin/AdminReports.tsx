@@ -201,7 +201,7 @@ export function AdminReports() {
                                 {t('reports.byStatus')}
                             </p>
                             <div className="space-y-2">
-                                {Object.entries((data.statusCounts) ?? 0).map(([status, count]) => (
+                                {Object.entries((data.statusCounts) ?? {}).map(([status, count]) => (
                                     <div key={status} className="flex items-center justify-between">
                                         <span className={[
                                             'rounded-full px-2.5 py-0.5 text-xs font-medium',
@@ -234,13 +234,15 @@ export function AdminReports() {
                             <p className="mb-4 text-sm font-semibold text-gray-700">
                                 {t('reports.topCities')}
                             </p>
-                            {data.topCities.length === 0 ? (
+                            {/* 1. Added optional chaining here (?.) and fallback to empty array */}
+                            {(data.topCities?.length ?? 0) === 0 ? (
                                 <p className="text-sm text-gray-400">
                                     {t('common.nothingFound')}
                                 </p>
                             ) : (
                                 <div className="space-y-3">
-                                    {data.topCities.map(({ city, count }, idx) => (
+                                    {/* 2. Added optional chaining here too */}
+                                    {data.topCities?.map(({ city, count }, idx) => (
                                         <div key={city} className="flex items-center gap-3">
                                             <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
                                                 {idx + 1}
@@ -251,7 +253,8 @@ export function AdminReports() {
                                                     <div
                                                         className="h-2 rounded-full bg-indigo-500"
                                                         style={{
-                                                            width: data.topCities[0]
+                                                            /* 3. Added optional chaining here to read [0] safely */
+                                                            width: data.topCities?.[0]
                                                                 ? `${Math.round((count / data.topCities[0].count) * 100)}%`
                                                                 : '0%',
                                                         }}
