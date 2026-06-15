@@ -166,8 +166,6 @@ function Receipt({
 
             <Divider />
 
-            <Divider />
-
             {/* Маршрут + тип доставки в ряд */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
@@ -201,6 +199,8 @@ function Receipt({
             {/* Отправитель */}
             <Row label={t('receipt.sender')} value={item.senderName ?? '—'} />
             <Row label={t('receipt.senderPhone')} value={item.senderPhone ?? '—'} />
+
+            <Divider />
 
             {/* Параметры */}
             <Row label={t('receipt.item')} value={item.title} />
