@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { sellerApi } from '@/api/seller';
 import toast from "react-hot-toast";
-import {CITY_LIST, CreateItemSchema} from "@/schemas";
+import {CITY_LIST, CreateItemSchema, TO_CITY_LIST} from "@/schemas";
 import {useTranslation} from "react-i18next";
 
 z.object({
@@ -138,7 +138,7 @@ export function CreateItem() {
                                 <option value="">
                                     {t('createItem.selectCity')}
                                 </option>
-                                {CITY_LIST.map((c) => (
+                                {TO_CITY_LIST.map((c) => (
                                     <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>

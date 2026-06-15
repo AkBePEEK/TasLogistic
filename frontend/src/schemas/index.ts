@@ -27,6 +27,7 @@ export const CreateItemSchema = z.object({
 });
 
 export const CITY_LIST = CITIES;
+export const TO_CITY_LIST = TO_CITIES;
 
 const StatusEnum = z.enum([
     'CREATED',
