@@ -240,7 +240,7 @@ function Receipt({
                     <Divider />
                     <div style={{ fontSize: '9px' }}>
                         <div style={{ fontWeight: 'bold', marginBottom: '1mm' }}>
-                            {t('receipt.carriers')} ({item.toCity}):
+                            {t('receipt.carriers')}:
                         </div>
                         {filteredCarriers.map((c) => (
                             <div key={c.id} style={{ marginBottom: '1mm' }}>
