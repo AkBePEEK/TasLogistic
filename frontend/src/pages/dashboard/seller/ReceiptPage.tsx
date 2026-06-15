@@ -145,7 +145,7 @@ function Receipt({
     return (
         <div style={{
             width: `${width}mm`,
-            fontFamily: 'monospace',
+            fontFamily: '"Courier New", "DejaVu Sans Mono", monospace',
             fontSize,
             padding: '4mm 3mm',
             color: '#000',

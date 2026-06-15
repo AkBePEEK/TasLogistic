@@ -15,6 +15,12 @@
 
 /* При печати */
 @media print {
+    * {
+        font-family: "Courier New", "DejaVu Sans Mono", monospace !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
     body > *:not(#receipt-root) {
         display: none !important;
     }
