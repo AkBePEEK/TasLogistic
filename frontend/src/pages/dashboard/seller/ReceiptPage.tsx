@@ -420,13 +420,13 @@ export function ReceiptPage() {
                     onClick={() => handlePrint(80)}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
                 >
-                    🖨 80 мм
+                    🖨 80 мм {t("receipt.print")}
                 </button>
                 <button
                     onClick={() => handlePrint(58)}
                     className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
                 >
-                    🖨 58 мм
+                    🖨 58 мм {t("receipt.print")}
                 </button>
             </div>
 
