@@ -329,15 +329,19 @@ export function ReceiptPage() {
         enabled: !!item,
     });
 
+    const uniqueCarriers = carriers.filter(
+        (c, i, arr) => arr.findIndex((x) => x.phone === c.phone) === i
+    );
+
     // Рисуем canvas при изменении данных или типа доставки
     useEffect(() => {
         if (!item) return;
         const lang = i18n.language ?? 'ru';
         if (canvas80Ref.current) {
-            drawReceipt(canvas80Ref.current, item, deliveryType, carriers, 80, t, lang);
+            drawReceipt(canvas80Ref.current, item, deliveryType, uniqueCarriers, 80, t, lang);
         }
         if (canvas58Ref.current) {
-            drawReceipt(canvas58Ref.current, item, deliveryType, carriers, 58, t, lang);
+            drawReceipt(canvas58Ref.current, item, deliveryType, uniqueCarriers, 58, t, lang);
         }
     }, [item, deliveryType, carriers, t, i18n.language]);
 
