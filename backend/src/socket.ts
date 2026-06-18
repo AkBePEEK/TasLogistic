@@ -8,7 +8,7 @@ export let io: Server; // ← экспортируем для использов
 export const initSocket = (server: any) => {
     io = new Server(server, {
         cors: {
-            origin: process.env.FRONTEND_URL, // https://taslogistic.kz
+            origin: 'https://api.taslogistic.kz',
             credentials: true,
         },
     });
