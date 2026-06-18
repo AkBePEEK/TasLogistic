@@ -11,7 +11,7 @@ import {LogoLink} from "@/components/LogoLink";
 import { useSocket } from '@/hooks/useSocket';
 import {LanguageSwitcher} from "@/components/LanguageSwitcher";
 import {useTranslation} from "react-i18next";
-import {formatDate} from "../../../backend/src/utils/formatDate";
+import { formatDate } from '@/utils/formatDate';
 
 const Schema = z.object({
     code: z
@@ -45,13 +45,13 @@ export function TrackPage() {
         <div className="flex min-h-screen flex-col bg-gray-50">
             {/* Header */}
             <header className="relative flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-                {/* Логотип — по центру на десктопе, слева на мобильном */}
-                <div className="flex items-center lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+                {/* Логотип — по центру на десктопе через absolute, на мобильном просто первый элемент в flex */}
+                <div className="lg:absolute lg:left-1/2 lg:-translate-x-1/2">
                     <LogoLink clickable={true} size="lg" />
                 </div>
 
-                {/* Пустой div для выравнивания flex на мобильном */}
-                <div className="lg:invisible">
+                {/* Невидимый дубль ТОЛЬКО для десктопа — чтобы flex остался выровнен по краям */}
+                <div className="hidden lg:invisible lg:block">
                     <LogoLink clickable={false} size="lg" />
                 </div>
 
