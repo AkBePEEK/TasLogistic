@@ -375,51 +375,23 @@ export function ReceiptPage() {
     };
 
     const handlePrintRawBT = async (width: 58 | 80) => {
-  const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
-  if (!canvas) return;
-
-  // Экспортируем canvas в максимальном разрешении
-  const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
-  
-  // Открываем чистое изображение в новом окне
-  const win = window.open('', '_blank');
-  if (!win) return;
-
-  const style = win.document.createElement('style');
-  style.textContent = `
-    * { margin: 0; padding: 0; }
-    body { 
-      background: #fff; 
-      display: flex; 
-      justify-content: center; 
-      align-items: flex-start;
-    }
-    img { 
-      display: block; 
-      width: 100vw; /* Растягиваем картинку строго на всю ширину области печати */
-      height: auto;
-    }
-    @media print {
-      @page { 
-        margin: 0; 
-        size: ${width}mm auto; 
-      }
-      img { width: 100%; }
-    }
-  `;
-  win.document.head.appendChild(style);
-
-  const img = win.document.createElement('img');
-  img.src = dataUrl;
-  img.alt = 'receipt';
-  
-  img.onload = () => { 
-    win.print(); 
-    win.close(); 
-  };
-  
-  win.document.body.appendChild(img);
-};
+      const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
+      if (!canvas) return;
+    
+      // 1. Берем чистый base64 из canvas без сжатия артефактов
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // 2. Отсекаем заголовок "data:image/png;base64,"
+      const base64Image = dataUrl.split(',')[1];
+    
+      // 3. Формируем специальную прямую ссылку для RawBT.
+      // Префикс base64,png говорит приложению, что это чистый графический бандл.
+      // RawBT примет его напрямую на термоголовку и растянет от края до края ленты.
+      const rawbtUrl = `rawbt:base64,png:${base64Image}`;
+    
+      // 4. Мгновенно перенаправляем в приложение RawBT
+      window.location.href = rawbtUrl;
+    };
 
     if (isLoading) {
         return (
