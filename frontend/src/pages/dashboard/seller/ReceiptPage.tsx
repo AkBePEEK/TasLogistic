@@ -27,55 +27,6 @@ const DELIVERY_LABEL: Record<CarrierType, string> = {
     TRUCK: '🚛 ФУРА',
 };
 
-function convertCanvasToEscPos(canvas: HTMLCanvasElement): Uint8Array {
-  const ctx = canvas.getContext('2d')!;
-  const width = canvas.width;
-  const height = canvas.height;
-  
-  const widthBytes = Math.ceil(width / 8);
-  const imgData = ctx.getImageData(0, 0, width, height).data;
-  
-  const bytes: number[] = [];
-
-  // Инициализация принтера
-  bytes.push(0x1B, 0x40);
-
-  // Команда печати растрового изображения
-  bytes.push(0x1D, 0x76, 0x30, 0x00);
-  bytes.push(widthBytes & 0xFF, (widthBytes >> 8) & 0xFF);
-  
-  // ФИКС ОШИБКИ TS2588: убрал присвоение (было height = height & 0xFF)
-  bytes.push(height & 0xFF, (height >> 8) & 0xFF);
-
-  for (let y = 0; y < height; y++) {
-    for (let b = 0; b < widthBytes; b++) {
-      let byteVal = 0;
-      for (let bit = 0; bit < 8; bit++) {
-        const x = b * 8 + bit;
-        if (x < width) {
-          const idx = (y * width + x) * 4;
-          
-          // ФИКС ОШИБКИ TS18048: добавляем || 0 на случай выхода за пределы массива
-          const r = imgData[idx] || 0;
-          const g = imgData[idx + 1] || 0;
-          const bVal = imgData[idx + 2] || 0;
-          const a = imgData[idx + 3] || 0;
-          
-          const luma = 0.299 * r + 0.587 * g + 0.114 * bVal;
-          if (a > 128 && luma < 128) {
-            byteVal |= (1 << (7 - bit));
-          }
-        }
-      }
-      bytes.push(byteVal);
-    }
-  }
-
-  // Прокрутка ленты вперед
-  bytes.push(0x1B, 0x64, 0x03); 
-  
-  return new Uint8Array(bytes);
-}
 // ── Canvas receipt renderer ───────────────────────────────────────────────────
 
 function drawReceipt(
@@ -423,65 +374,6 @@ export function ReceiptPage() {
         win.document.body.appendChild(img);
     };
 
-    const handleDirectBluetoothPrint = async (width: 58 | 80) => {
-      const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
-      if (!canvas) return;
-    
-      try {
-        // ФИКС ОШИБКИ TS2339: кастим navigator к any, чтобы TS не ругался на отсутствие .bluetooth
-        const nav = navigator as any;
-        if (!nav.bluetooth) {
-          throw new Error('Ваш браузер не поддерживает прямую печать по Bluetooth. Используйте Google Chrome.');
-        }
-    
-        const device = await nav.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
-        });
-    
-        const server = await device.gatt?.connect();
-        if (!server) throw new Error('Не удалось подключиться к GATT серверу принтера');
-    
-        const services = await server.getPrimaryServices();
-        if (services.length === 0) throw new Error('Сервисы печати не найдены');
-        const service = services[0];
-    
-        const characteristics = await service.getCharacteristics();
-        if (characteristics.length === 0) throw new Error('Характеристика записи не найдена');
-        const characteristic = characteristics[0];
-    
-        const escPosBytes = convertCanvasToEscPos(canvas);
-    
-        const chunkSize = 16; 
-
-        for (let i = 0; i < escPosBytes.length; i += chunkSize) {
-          const chunk = escPosBytes.slice(i, i + chunkSize);
-          
-          // Отправляем пакет БЕЗ ожидания подтверждения от принтера, если это возможно
-          // Это сильно снижает нагрузку на GATT-сервер
-          try {
-            await characteristic.writeValue(chunk);
-          } catch (e) {
-            // Если падает, пробуем альтернативный метод записи для старых принтеров
-            if (characteristic.writeValueWithoutResponse) {
-              await characteristic.writeValueWithoutResponse(chunk);
-            } else {
-              throw e;
-            }
-          }
-          
-          // УВЕЛИЧИВАЕМ ПАУЗУ. 5 миллисекунд было мало, чип принтера не успевал.
-          // Ставим 30-40 мс — печать пойдет чуть медленнее визуально, зато стабильно и без падений.
-          await new Promise((resolve) => setTimeout(resolve, 35));
-        }
-    
-        alert('Чек успешно отправлен на печать!');
-      } catch (error: any) {
-        console.error('Ошибка Bluetooth-печати:', error);
-        alert(`Ошибка печати: ${error.message || error}`);
-      }
-    };
-
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center">
@@ -540,20 +432,6 @@ export function ReceiptPage() {
                     className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
                 >
                     🖨 58 мм {t("receipt.print")}
-                </button>
-
-                {/* ← RawBT кнопки для Bluetooth-принтеров */}
-                <button
-                  onClick={() => handleDirectBluetoothPrint(80)}
-                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700"
-                >
-                  📶 80 мм Bluetooth
-                </button>
-                <button
-                  onClick={() => handleDirectBluetoothPrint(58)}
-                  className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600"
-                >
-                  📶 58 мм Bluetooth
                 </button>
             </div>
 
