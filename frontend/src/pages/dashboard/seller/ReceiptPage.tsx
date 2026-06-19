@@ -38,20 +38,18 @@ function drawReceipt(
   t: (key: string) => string,
   lang: string,
 ) {
-  const DPI = 203;
-  const MM_TO_PX = DPI / 25.4;
-  const W = Math.round(widthMm * MM_TO_PX);
-  const PADDING = Math.round(3 * MM_TO_PX);
+  const W = widthMm === 80 ? 576 : 384;
+  const PADDING = widthMm === 80 ? 20 : 14;
   const CONTENT_W = W - PADDING * 2;
 
   // ← Увеличенные размеры шрифта
-  const BASE_FONT = widthMm === 58 ? 34 : 38;
+  const BASE_FONT = widthMm === 58 ? 24 : 28;
   const SMALL_FONT = BASE_FONT - 4;
-  const TITLE_FONT = BASE_FONT + 12;
-  const TRACK_FONT = BASE_FONT + 8;
-    
-    const LINE_H = BASE_FONT + 14;
-    const SMALL_LINE_H = SMALL_FONT + 12;
+  const TITLE_FONT = BASE_FONT + 10;
+  const TRACK_FONT = BASE_FONT + 6;
+
+  const LINE_H = BASE_FONT + 12;
+  const SMALL_LINE_H = SMALL_FONT + 10;
 
     // Первый проход — считаем высоту
     const ctx = canvas.getContext('2d')!;
