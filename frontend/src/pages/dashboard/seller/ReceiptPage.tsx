@@ -452,11 +452,27 @@ export function ReceiptPage() {
     
         const escPosBytes = convertCanvasToEscPos(canvas);
     
-        const chunkSize = 20;
+        const chunkSize = 16; 
+
         for (let i = 0; i < escPosBytes.length; i += chunkSize) {
           const chunk = escPosBytes.slice(i, i + chunkSize);
-          await characteristic.writeValue(chunk);
-          await new Promise((resolve) => setTimeout(resolve, 5));
+          
+          // Отправляем пакет БЕЗ ожидания подтверждения от принтера, если это возможно
+          // Это сильно снижает нагрузку на GATT-сервер
+          try {
+            await characteristic.writeValue(chunk);
+          } catch (e) {
+            // Если падает, пробуем альтернативный метод записи для старых принтеров
+            if (characteristic.writeValueWithoutResponse) {
+              await characteristic.writeValueWithoutResponse(chunk);
+            } else {
+              throw e;
+            }
+          }
+          
+          // УВЕЛИЧИВАЕМ ПАУЗУ. 5 миллисекунд было мало, чип принтера не успевал.
+          // Ставим 30-40 мс — печать пойдет чуть медленнее визуально, зато стабильно и без падений.
+          await new Promise((resolve) => setTimeout(resolve, 35));
         }
     
         alert('Чек успешно отправлен на печать!');
