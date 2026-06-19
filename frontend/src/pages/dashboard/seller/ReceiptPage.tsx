@@ -38,17 +38,19 @@ function drawReceipt(
   t: (key: string) => string,
   lang: string,
 ) {
-  const W = widthMm === 80 ? 576 : 384;
-  const PADDING = widthMm === 80 ? 20 : 14;
+  // Задаем ширину с запасом под максимальные физические точки термоголовок
+  const W = widthMm === 80 ? 720 : 432; 
+  // Уменьшаем отступы до минимума (2-3 мм в пикселях), чтобы печаталось до краев
+  const PADDING = widthMm === 80 ? 12 : 8; 
   const CONTENT_W = W - PADDING * 2;
 
-  // ← Увеличенные размеры шрифта
-  const BASE_FONT = widthMm === 58 ? 24 : 28;
+  // Пропорционально увеличиваем шрифты под новую ширину Canvas, чтобы текст не обмельчал
+  const BASE_FONT = widthMm === 58 ? 26 : 32;
   const SMALL_FONT = BASE_FONT - 4;
-  const TITLE_FONT = BASE_FONT + 10;
+  const TITLE_FONT = BASE_FONT + 12;
   const TRACK_FONT = BASE_FONT + 6;
 
-  const LINE_H = BASE_FONT + 12;
+  const LINE_H = BASE_FONT + 14;
   const SMALL_LINE_H = SMALL_FONT + 10;
 
     // Первый проход — считаем высоту
@@ -387,7 +389,7 @@ export function ReceiptPage() {
           window.location.href = `rawbt:${base64}`;
         };
         reader.readAsDataURL(blob);
-      }, 'image/png');
+      }, 'image/jpeg', 0.9);
     };
 
     if (isLoading) {
