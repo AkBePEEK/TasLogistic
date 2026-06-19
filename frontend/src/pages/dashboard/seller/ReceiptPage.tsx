@@ -45,13 +45,13 @@ function drawReceipt(
   const CONTENT_W = W - PADDING * 2;
 
   // ← Увеличенные размеры шрифта
-  const BASE_FONT = widthMm === 58 ? 28 : 32;   // было 20/22
-  const SMALL_FONT = BASE_FONT - 4;              // было -3
-  const TITLE_FONT = BASE_FONT + 10;             // было +6
-  const TRACK_FONT = BASE_FONT + 6;              // было +4
-
-  const LINE_H = BASE_FONT + 12;                 // было +8
-  const SMALL_LINE_H = SMALL_FONT + 10; 
+  const BASE_FONT = widthMm === 58 ? 34 : 38;
+  const SMALL_FONT = BASE_FONT - 4;
+  const TITLE_FONT = BASE_FONT + 12;
+  const TRACK_FONT = BASE_FONT + 8;
+    
+    const LINE_H = BASE_FONT + 14;
+    const SMALL_LINE_H = SMALL_FONT + 12;
 
     // Первый проход — считаем высоту
     const ctx = canvas.getContext('2d')!;
@@ -211,23 +211,23 @@ function drawReceipt(
               break;
             }
             case 'row': {
-                c.textAlign = 'left';
-                c.font = fontStr(BASE_FONT, b.bold);
-                c.fillStyle = '#666';
-                c.fillText(b.label + ':', PADDING, y);
-
-                c.fillStyle = '#000';
-                c.font = fontStr(BASE_FONT, b.bold);
-                c.textAlign = 'right';
-
-                const valW = CONTENT_W / 2;
-                const lines = measureLines(b.value, fontStr(BASE_FONT, b.bold), valW);
-                for (const line of lines) {
-                    c.fillText(line, W - PADDING, y);
-                    y += LINE_H;
-                }
-                if (lines.length === 0) y += LINE_H;
-                break;
+              c.textAlign = 'left';
+              c.font = fontStr(BASE_FONT, b.bold);
+              c.fillStyle = '#666';
+              c.fillText(b.label + ':', PADDING, y);
+            
+              c.fillStyle = '#000';
+              c.font = fontStr(BASE_FONT, true); // ← всегда bold для значений, не только когда b.bold
+              c.textAlign = 'right';
+            
+              const valW = CONTENT_W / 2;
+              const lines = measureLines(b.value, fontStr(BASE_FONT, true), valW);
+              for (const line of lines) {
+                c.fillText(line, W - PADDING, y);
+                y += LINE_H;
+              }
+              if (lines.length === 0) y += LINE_H;
+              break;
             }
             case 'delivery': {
               c.font = fontStr(BASE_FONT, true);
