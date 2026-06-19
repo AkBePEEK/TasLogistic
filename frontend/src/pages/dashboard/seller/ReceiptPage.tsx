@@ -30,27 +30,28 @@ const DELIVERY_LABEL: Record<CarrierType, string> = {
 // ── Canvas receipt renderer ───────────────────────────────────────────────────
 
 function drawReceipt(
-    canvas: HTMLCanvasElement,
-    item: ItemDetail,
-    deliveryType: CarrierType,
-    carriers: Carrier[],
-    widthMm: 58 | 80,
-    t: (key: string) => string,
-    lang: string,
+  canvas: HTMLCanvasElement,
+  item: ItemDetail,
+  deliveryType: CarrierType,
+  carriers: Carrier[],
+  widthMm: 58 | 80,
+  t: (key: string) => string,
+  lang: string,
 ) {
-    const DPI = 203; // типичный DPI термопринтера
-    const MM_TO_PX = DPI / 25.4;
-    const W = Math.round(widthMm * MM_TO_PX);
-    const PADDING = Math.round(3 * MM_TO_PX);
-    const CONTENT_W = W - PADDING * 2;
+  const DPI = 203;
+  const MM_TO_PX = DPI / 25.4;
+  const W = Math.round(widthMm * MM_TO_PX);
+  const PADDING = Math.round(3 * MM_TO_PX);
+  const CONTENT_W = W - PADDING * 2;
 
-    const BASE_FONT = widthMm === 58 ? 20 : 22; // px при 203dpi
-    const SMALL_FONT = BASE_FONT - 3;
-    const TITLE_FONT = BASE_FONT + 6;
-    const TRACK_FONT = BASE_FONT + 4;
+  // ← Увеличенные размеры шрифта
+  const BASE_FONT = widthMm === 58 ? 28 : 32;   // было 20/22
+  const SMALL_FONT = BASE_FONT - 4;              // было -3
+  const TITLE_FONT = BASE_FONT + 10;             // было +6
+  const TRACK_FONT = BASE_FONT + 6;              // было +4
 
-    const LINE_H = BASE_FONT + 8;
-    const SMALL_LINE_H = SMALL_FONT + 6;
+  const LINE_H = BASE_FONT + 12;                 // было +8
+  const SMALL_LINE_H = SMALL_FONT + 10; 
 
     // Первый проход — считаем высоту
     const ctx = canvas.getContext('2d')!;
@@ -198,16 +199,16 @@ function drawReceipt(
                 break;
             }
             case 'divider': {
-                c.setLineDash([4, 4]);
-                c.strokeStyle = '#aaa';
-                c.lineWidth = 1;
-                c.beginPath();
-                c.moveTo(PADDING, y + 5);
-                c.lineTo(W - PADDING, y + 5);
-                c.stroke();
-                c.setLineDash([]);
-                y += 12;
-                break;
+              c.setLineDash([6, 6]);        // было [4, 4]
+              c.strokeStyle = '#888';       // было #aaa — темнее для контраста
+              c.lineWidth = 2;              // было 1
+              c.beginPath();
+              c.moveTo(PADDING, y + 5);
+              c.lineTo(W - PADDING, y + 5);
+              c.stroke();
+              c.setLineDash([]);
+              y += 14;
+              break;
             }
             case 'row': {
                 c.textAlign = 'left';
@@ -229,18 +230,18 @@ function drawReceipt(
                 break;
             }
             case 'delivery': {
-                c.font = fontStr(BASE_FONT, true);
-                c.textAlign = 'center';
-                c.strokeStyle = '#000';
-                c.lineWidth = 1.5;
-                c.setLineDash([]);
-                const tw = c.measureText(b.text).width + 20;
-                const bx = W - PADDING - tw;
-                c.strokeRect(bx, y - 2, tw, LINE_H + 4);
-                c.fillStyle = '#000';
-                c.fillText(b.text, bx + tw / 2, y);
-                y += LINE_H + 4;
-                break;
+              c.font = fontStr(BASE_FONT, true);
+              c.textAlign = 'center';
+              c.strokeStyle = '#000';
+              c.lineWidth = 2.5;            // было 1.5
+              c.setLineDash([]);
+              const tw = c.measureText(b.text).width + 24;
+              const bx = W - PADDING - tw;
+              c.strokeRect(bx, y - 2, tw, LINE_H + 6);
+              c.fillStyle = '#000';
+              c.fillText(b.text, bx + tw / 2, y + 2);
+              y += LINE_H + 6;
+              break;
             }
             case 'track': {
                 c.font = fontStr(TRACK_FONT, true);
