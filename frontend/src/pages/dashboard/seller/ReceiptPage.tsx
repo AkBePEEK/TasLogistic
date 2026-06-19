@@ -32,22 +32,21 @@ function convertCanvasToEscPos(canvas: HTMLCanvasElement): Uint8Array {
   const width = canvas.width;
   const height = canvas.height;
   
-  // Ширина в байтах должна быть кратна 8 (1 байт = 8 точек)
   const widthBytes = Math.ceil(width / 8);
   const imgData = ctx.getImageData(0, 0, width, height).data;
   
   const bytes: number[] = [];
 
-  // Инициализация принтера: ESC @
+  // Инициализация принтера
   bytes.push(0x1B, 0x40);
 
-  // Команда печати растрового изображения: GS v 0 m xL xH yL yH
-  // m = 0 (нормальный режим)
+  // Команда печати растрового изображения
   bytes.push(0x1D, 0x76, 0x30, 0x00);
   bytes.push(widthBytes & 0xFF, (widthBytes >> 8) & 0xFF);
-  bytes.push(height = height & 0xFF, (height >> 8) & 0xFF);
+  
+  // ФИКС ОШИБКИ TS2588: убрал присвоение (было height = height & 0xFF)
+  bytes.push(height & 0xFF, (height >> 8) & 0xFF);
 
-  // Переводим пиксели (RGBA) в биты (Черный/Белый)
   for (let y = 0; y < height; y++) {
     for (let b = 0; b < widthBytes; b++) {
       let byteVal = 0;
@@ -55,15 +54,16 @@ function convertCanvasToEscPos(canvas: HTMLCanvasElement): Uint8Array {
         const x = b * 8 + bit;
         if (x < width) {
           const idx = (y * width + x) * 4;
-          const r = imgData[idx];
-          const g = imgData[idx + 1];
-          const bVal = imgData[idx + 2];
-          const a = imgData[idx + 3];
           
-          // Считаем яркость пикселя. Если прозрачный или светлый — белый.
+          // ФИКС ОШИБКИ TS18048: добавляем || 0 на случай выхода за пределы массива
+          const r = imgData[idx] || 0;
+          const g = imgData[idx + 1] || 0;
+          const bVal = imgData[idx + 2] || 0;
+          const a = imgData[idx + 3] || 0;
+          
           const luma = 0.299 * r + 0.587 * g + 0.114 * bVal;
           if (a > 128 && luma < 128) {
-            byteVal |= (1 << (7 - bit)); // Ставим бит в 1 (черная точка)
+            byteVal |= (1 << (7 - bit));
           }
         }
       }
@@ -71,12 +71,11 @@ function convertCanvasToEscPos(canvas: HTMLCanvasElement): Uint8Array {
     }
   }
 
-  // Прокрутка ленты вперед на 3 строки после печати и частичный отрез (если есть автоотрезчик)
+  // Прокрутка ленты вперед
   bytes.push(0x1B, 0x64, 0x03); 
   
   return new Uint8Array(bytes);
 }
-
 // ── Canvas receipt renderer ───────────────────────────────────────────────────
 
 function drawReceipt(
@@ -429,36 +428,34 @@ export function ReceiptPage() {
       if (!canvas) return;
     
       try {
-        // 1. Запрашиваем любое доступное Bluetooth-устройство, поддерживающее стандартный профиль передачи данных (SPP)
-        const device = await navigator.bluetooth.requestDevice({
+        // ФИКС ОШИБКИ TS2339: кастим navigator к any, чтобы TS не ругался на отсутствие .bluetooth
+        const nav = navigator as any;
+        if (!nav.bluetooth) {
+          throw new Error('Ваш браузер не поддерживает прямую печать по Bluetooth. Используйте Google Chrome.');
+        }
+    
+        const device = await nav.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] // Дефолтный сервис китайских термопринтеров
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
         });
     
-        // 2. Подключаемся к GATT-серверу устройства
         const server = await device.gatt?.connect();
         if (!server) throw new Error('Не удалось подключиться к GATT серверу принтера');
     
-        // 3. Получаем основной сервис печати
-        // Если UUID отличается, можно попробовать перебрать основные сервисы
         const services = await server.getPrimaryServices();
         if (services.length === 0) throw new Error('Сервисы печати не найдены');
         const service = services[0];
     
-        // 4. Получаем характеристику для записи данных
         const characteristics = await service.getCharacteristics();
         if (characteristics.length === 0) throw new Error('Характеристика записи не найдена');
         const characteristic = characteristics[0];
     
-        // 5. Конвертируем наш Canvas в ESC/POS байты
         const escPosBytes = convertCanvasToEscPos(canvas);
     
-        // 6. Нарезаем массив байт на куски по 20 байт (ограничение стандартного BLE пакета), чтобы принтер не захлебнулся
         const chunkSize = 20;
         for (let i = 0; i < escPosBytes.length; i += chunkSize) {
           const chunk = escPosBytes.slice(i, i + chunkSize);
           await characteristic.writeValue(chunk);
-          // Крошечная пауза, чтобы принтер успевал переваривать и жечь бумагу
           await new Promise((resolve) => setTimeout(resolve, 5));
         }
     
