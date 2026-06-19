@@ -415,18 +415,19 @@ export function ReceiptPage() {
                     ))}
                 </div>
 
-                {/* Кнопки печати */}
+                {/* Кнопки скачивания чеков */}
                 <button
                     onClick={() => handleDownloadReceipt(80)}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
                 >
-                    🖨 80 мм {t("receipt.print")}
+                    💾 Скачать чек 80 мм
                 </button>
+                
                 <button
                     onClick={() => handleDownloadReceipt(58)}
                     className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
                 >
-                    🖨 58 мм {t("receipt.print")}
+                    💾 Скачать чек 58 мм
                 </button>
             </div>
 
