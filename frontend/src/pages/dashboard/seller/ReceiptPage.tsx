@@ -378,19 +378,18 @@ export function ReceiptPage() {
       const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
       if (!canvas) return;
     
-      // 1. Берем чистый base64 из canvas без сжатия артефактов
-      const dataUrl = canvas.toDataURL('image/png');
+      // Генерируем чистый JPEG в максимальном качестве
+      const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       
-      // 2. Отсекаем заголовок "data:image/png;base64,"
-      const base64Image = dataUrl.split(',')[1];
-    
-      // 3. Формируем специальную прямую ссылку для RawBT.
-      // Префикс base64,png говорит приложению, что это чистый графический бандл.
-      // RawBT примет его напрямую на термоголовку и растянет от края до края ленты.
-      const rawbtUrl = `rawbt:base64,png:${base64Image}`;
-    
-      // 4. Мгновенно перенаправляем в приложение RawBT
-      window.location.href = rawbtUrl;
+      // Создаем виртуальную ссылку для скачивания файла
+      const link = document.createElement('a');
+      link.download = `receipt-${item?.trackingCode || 'order'}-${width}mm.jpg`;
+      link.href = dataUrl;
+      
+      // Инициируем скачивание
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     };
 
     if (isLoading) {
