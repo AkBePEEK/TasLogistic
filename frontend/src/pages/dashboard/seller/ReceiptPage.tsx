@@ -378,18 +378,24 @@ export function ReceiptPage() {
       const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
       if (!canvas) return;
     
-      // RawBT принимает изображение через intent с base64
       canvas.toBlob((blob) => {
         if (!blob) return;
     
         const reader = new FileReader();
         reader.onloadend = () => {
-          const base64 = reader.result as string;
-          // RawBT image intent
-          window.location.href = `rawbt:${base64}`;
+          const rawBase64 = reader.result as string;
+          
+          // Очищаем префикс "data:image/jpeg;base64,", оставляя только чистую строку байт
+          const pureBase64 = rawBase64.split(',')[1];
+          
+          // Формируем продвинутую ссылку для RawBT с параметрами сжатия и растягивания
+          // g=0 (без отступов по краям), f=1 (насильное растягивание до краев бумаги)
+          const rawbtUrl = `rawbt:base64?g=0&f=1&img=${pureBase64}`;
+          
+          window.location.href = rawbtUrl;
         };
         reader.readAsDataURL(blob);
-      }, 'image/jpeg', 0.9);
+      }, 'image/jpeg', 0.95); // Оставляем JPEG для лучшей бинаризации
     };
 
     if (isLoading) {
