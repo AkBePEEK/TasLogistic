@@ -374,26 +374,109 @@ export function ReceiptPage() {
         win.document.body.appendChild(img);
     };
 
-    const handlePrintRawBT = async (width: 58 | 80) => {
-      const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
-      if (!canvas) return;
+    const handlePrintRawBTText = (widthMm: 58 | 80) => {
+      if (!item) return;
     
-      canvas.toBlob((blob) => {
-        if (!blob) return;
+      // 1. Определяем макс. количество символов в одной строке принтера
+      // Для 58мм стандарт — 32 символа, для 80мм — 48 символов
+      const maxChars = widthMm === 58 ? 32 : 48;
     
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64Data = reader.result as string;
-          
-          // Используем стандартную рабочую схему, но меняем mime-type на специальный для RawBT.
-          // Замена "image/jpeg" на "image/x-rawbt-jpeg" заставляет приложение принудительно 
-          // растянуть картинку на всю ширину ленты и убрать системные отступы!
-          const forcedRawBTData = base64Data.replace('image/jpeg', 'image/x-rawbt-jpeg');
-          
-          window.location.href = `rawbt:${forcedRawBTData}`;
-        };
-        reader.readAsDataURL(blob);
-      }, 'image/jpeg', 0.95);
+      // Вспомогательная функция для красивых разделителей
+      const separator = '-'.repeat(maxChars) + '\n';
+    
+      // Вспомогательная функция для выравнивания текста по краям (слева и справа)
+      const formatRow = (left: string, right: string): string => {
+        const leftStr = String(left);
+        const rightStr = String(right);
+        const spaceAvailable = maxChars - leftStr.length - rightStr.length;
+        
+        if (spaceAvailable > 0) {
+          return leftStr + ' '.repeat(spaceAvailable) + rightStr + '\n';
+        }
+        // Если не влезает в одну строку, просто переносим
+        return `${leftStr}\n${' '.repeat(maxChars - rightStr.length)}${rightStr}\n`;
+      };
+    
+      // 2. Сборка текстового тела чека
+      let text = '';
+    
+      // Шапка (по центру)
+      const title = t('receipt.title').toUpperCase();
+      text += ' '.repeat(Math.max(0, Math.floor((maxChars - title.length) / 2))) + title + '\n';
+      
+      const subtitle = t('receipt.subtitle');
+      text += ' '.repeat(Math.max(0, Math.floor((maxChars - subtitle.length) / 2))) + subtitle + '\n';
+      
+      const disp = 'ДИСПЕТЧЕР: 8(747)-033-9028';
+      text += ' '.repeat(Math.max(0, Math.floor((maxChars - disp.length) / 2))) + disp + '\n';
+      
+      text += separator;
+    
+      // Основные данные
+      text += formatRow(t('receipt.from') + ':', item.fromCity ?? '—');
+      text += formatRow(t('receipt.to') + ':', item.toCity ?? '—');
+      
+      const deliveryStr = DELIVERY_LABEL[deliveryType];
+      text += ' '.repeat(Math.max(0, Math.floor((maxChars - deliveryStr.length) / 2))) + deliveryStr + '\n';
+      
+      text += separator;
+    
+      text += formatRow(t('receipt.recipient') + ':', item.recipientName ?? '—');
+      text += formatRow(t('receipt.phone') + ':', item.recipientPhone ?? '—');
+      
+      text += separator;
+    
+      text += formatRow(t('receipt.sender') + ':', item.senderName ?? '—');
+      text += formatRow(t('receipt.senderPhone') + ':', item.senderPhone ?? '—');
+      
+      text += separator;
+    
+      text += formatRow(t('receipt.item') + ':', item.title);
+      if (item.weight) {
+        text += formatRow(t('receipt.weight') + ':', `${item.weight} кг`);
+      }
+      if (item.cashOnDelivery && item.cashOnDelivery > 0) {
+        text += formatRow(t('receipt.cod') + ':', `${item.cashOnDelivery.toLocaleString('ru-RU')} KZT`);
+      }
+      
+      text += formatRow(t('receipt.status') + ':', t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus));
+      text += formatRow(t('receipt.date') + ':', formatDate(item.createdAt, i18n.language ?? 'ru'));
+    
+      if (item.comment) {
+        text += separator;
+        text += `${t('receipt.comment')}:\n${item.comment}\n`;
+      }
+    
+      text += separator;
+      
+      // Трек-код
+      const trackStr = `ТРЕК: ${item.trackingCode}`;
+      text += ' '.repeat(Math.max(0, Math.floor((maxChars - trackStr.length) / 2))) + trackStr + '\n';
+    
+      if (uniqueCarriers.length > 0) {
+        text += separator;
+        text += `${t('receipt.carriers')}:\n`;
+        uniqueCarriers.forEach((c) => {
+          text += formatRow(` ${c.name} ${c.city}:`, c.phone);
+        });
+      }
+    
+      text += separator;
+      
+      // Дисклеймер (простой перенос строк)
+      const disclaimer = t('receipt.disclaimer');
+      text += disclaimer + '\n';
+      
+      // Делаем несколько пустых строк в конце, чтобы чек вылез из принтера и его можно было оторвать
+      text += '\n\n\n';
+    
+      // 3. Кодируем в UTF-8, а затем в Base64 для передачи через URL
+      const utf8Bytes = new TextEncoder().encode(text);
+      // Преобразование байтов в base64, безопасное для кириллицы
+      const base64Text = btoa(String.fromCharCode(...utf8Bytes));
+    
+      // Отправляем текстовый интент в RawBT
+      window.location.href = `rawbt:text/plain;base64,${base64Text}`;
     };
 
     if (isLoading) {
@@ -458,13 +541,13 @@ export function ReceiptPage() {
 
                 {/* ← RawBT кнопки для Bluetooth-принтеров */}
                 <button
-                  onClick={() => handlePrintRawBT(80)}
+                  onClick={() => handlePrintRawBTText(80)}
                   className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700"
                 >
                   📶 80 мм RawBT
                 </button>
                 <button
-                  onClick={() => handlePrintRawBT(58)}
+                  onClick={() => handlePrintRawBTText(58)}
                   className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600"
                 >
                   📶 58 мм RawBT
