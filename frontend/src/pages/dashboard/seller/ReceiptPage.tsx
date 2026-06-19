@@ -383,19 +383,17 @@ export function ReceiptPage() {
     
         const reader = new FileReader();
         reader.onloadend = () => {
-          const rawBase64 = reader.result as string;
+          const base64Data = reader.result as string;
           
-          // Очищаем префикс "data:image/jpeg;base64,", оставляя только чистую строку байт
-          const pureBase64 = rawBase64.split(',')[1];
+          // Используем стандартную рабочую схему, но меняем mime-type на специальный для RawBT.
+          // Замена "image/jpeg" на "image/x-rawbt-jpeg" заставляет приложение принудительно 
+          // растянуть картинку на всю ширину ленты и убрать системные отступы!
+          const forcedRawBTData = base64Data.replace('image/jpeg', 'image/x-rawbt-jpeg');
           
-          // Формируем продвинутую ссылку для RawBT с параметрами сжатия и растягивания
-          // g=0 (без отступов по краям), f=1 (насильное растягивание до краев бумаги)
-          const rawbtUrl = `rawbt:base64?g=0&f=1&img=${pureBase64}`;
-          
-          window.location.href = rawbtUrl;
+          window.location.href = `rawbt:${forcedRawBTData}`;
         };
         reader.readAsDataURL(blob);
-      }, 'image/jpeg', 0.95); // Оставляем JPEG для лучшей бинаризации
+      }, 'image/jpeg', 0.95);
     };
 
     if (isLoading) {
