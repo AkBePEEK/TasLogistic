@@ -347,31 +347,26 @@ export function ReceiptPage() {
     }, [item, deliveryType, carriers, t, i18n.language]);
 
     // Функция печати через canvas → изображение
-    const handlePrint = (width: 58 | 80) => {
-        const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
-        if (!canvas) return;
-
-        const dataUrl = canvas.toDataURL('image/png');
-        const win = window.open('', '_blank');
-        if (!win) return;
-
-        const style = win.document.createElement('style');
-        style.textContent = `
-            * { margin: 0; padding: 0; }
-            body { background: #fff; }
-            img { display: block; width: 100%; }
-            @media print {
-                @page { margin: 0; size: ${width}mm auto; }
-                img { width: 100%; }
-            }
-        `;
-        win.document.head.appendChild(style);
-
-        const img = win.document.createElement('img');
-        img.src = dataUrl;
-        img.alt = 'receipt';
-        img.onload = () => { win.print(); win.close(); };
-        win.document.body.appendChild(img);
+    const handleDownloadReceipt = async (width: 58 | 80) => {
+      const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
+      if (!canvas) return;
+    
+      // Генерируем JPEG в максимальном качестве (1.0)
+      const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+      
+      // Создаем скрытую ссылку для скачивания
+      const link = document.createElement('a');
+      
+      // Имя файла будет содержать трек-код и ширину ленты, чтобы менеджеры не путались
+      const filename = `Чек_${item?.trackingCode || 'order'}_${width}mm.jpg`;
+      
+      link.download = filename;
+      link.href = dataUrl;
+      
+      // Триггерим скачивание
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     };
 
     if (isLoading) {
@@ -422,13 +417,13 @@ export function ReceiptPage() {
 
                 {/* Кнопки печати */}
                 <button
-                    onClick={() => handlePrint(80)}
+                    onClick={() => handleDownloadReceipt(80)}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
                 >
                     🖨 80 мм {t("receipt.print")}
                 </button>
                 <button
-                    onClick={() => handlePrint(58)}
+                    onClick={() => handleDownloadReceipt(58)}
                     className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
                 >
                     🖨 58 мм {t("receipt.print")}
