@@ -140,7 +140,7 @@ export const ru = {
         },
         receipt: {
             title:       'TAS LOGISTIC',
-            subtitle:    'Логистическая служба',
+            subtitle:    'Логистическая компания',
             trackCode:   'Трек-код',
             from:        'Откуда',
             to:          'Куда',
@@ -150,7 +150,7 @@ export const ru = {
             phone:       'Телефон',
             item:        'Товар',
             weight:      'Вес',
-            cod:         'Наложенный платёж',
+            cod:         'Итого к сумме',
             status:      'Статус',
             date:        'Дата',
             comment:     'Комментарий',

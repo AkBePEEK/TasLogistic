@@ -133,7 +133,7 @@ export const kz = {
         },
         receipt: {
             title:       'TAS LOGISTIC',
-            subtitle:    'Логистикалық қызмет',
+            subtitle:    'Логистикалық компания',
             trackCode:   'Трек-код',
             from:        'Қайдан',
             to:          'Қайда',
@@ -143,7 +143,7 @@ export const kz = {
             phone:       'Телефон',
             item:        'Тауар',
             weight:      'Салмақ',
-            cod:         'Төлем сомасы',
+            cod:         'Төлемге соммасы',
             status:      'Мәртебе',
             date:        'Күні',
             comment:     'Түсініктеме',
