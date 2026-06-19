@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { sellerApi, ItemDetail } from '@/api/seller';
 import { carriersApi, Carrier, CarrierType } from '@/api/carrier';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../../../../../backend/src/utils/formatDate';
+import { formatDate } from '@/utils/formatDate';
 
 const STATUS_LABEL: Record<string, string> = {
     CREATED:    'status.CREATED',
@@ -373,6 +373,24 @@ export function ReceiptPage() {
         win.document.body.appendChild(img);
     };
 
+    const handlePrintRawBT = async (width: 58 | 80) => {
+      const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
+      if (!canvas) return;
+    
+      // RawBT принимает изображение через intent с base64
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+    
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          // RawBT image intent
+          window.location.href = `rawbt:${base64}`;
+        };
+        reader.readAsDataURL(blob);
+      }, 'image/png');
+    };
+
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center">
@@ -431,6 +449,20 @@ export function ReceiptPage() {
                     className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
                 >
                     🖨 58 мм {t("receipt.print")}
+                </button>
+
+                {/* ← RawBT кнопки для Bluetooth-принтеров */}
+                <button
+                  onClick={() => handlePrintRawBT(80)}
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700"
+                >
+                  📶 80 мм RawBT
+                </button>
+                <button
+                  onClick={() => handlePrintRawBT(58)}
+                  className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600"
+                >
+                  📶 58 мм RawBT
                 </button>
             </div>
 
