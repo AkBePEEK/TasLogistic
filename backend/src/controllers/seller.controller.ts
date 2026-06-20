@@ -189,6 +189,7 @@ export async function sellerCreateItem(
         senderName, senderPhone,
         fromCity, toCity,
         weight, cashOnDelivery, comment,
+        deliveryType,
     } = req.body;
 
     const sellerId = req.user.userId;
@@ -212,6 +213,7 @@ export async function sellerCreateItem(
                     weight,
                     cashOnDelivery,
                     comment,
+                    deliveryType,
                     sellerId,
                 },
             });

@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import {ApiResponse, Status} from '@/types';
+import {CarrierType} from './carrier';
 
 export interface AdminItem {
     id: string;
@@ -11,7 +12,10 @@ export interface AdminItem {
     fromCity?: string;
     toCity?: string;
     recipientName?: string;
+    recipientPhone?: string;
     cashOnDelivery?: number;
+    weight?: number;
+    deliveryType?: CarrierType;
     seller: { email: string };
 }
 
@@ -44,8 +48,12 @@ export const adminApi = {
         toCity?: string;
         dateFrom?: string;
         dateTo?: string;
+        deliveryType?: string;
     } = {}) =>
         apiClient.get<ApiResponse<AdminPaginatedItems>>('/admin/items', { params }),
+
+    getDailyList: (params: { date?: string; deliveryType?: string } = {}) =>
+        apiClient.get<ApiResponse<{ items: AdminItem[]; date: string }>>('/admin/items/daily', { params }),
 
     updateStatus: (id: string, status: string) =>
         apiClient.patch<ApiResponse<AdminItem>>(`/admin/items/${id}/status`, { status }),

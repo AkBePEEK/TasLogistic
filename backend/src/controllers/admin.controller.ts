@@ -16,6 +16,7 @@ export async function adminGetItems(
     const toCity = typeof req.query.toCity === 'string' ? req.query.toCity : undefined;
     const dateFrom = typeof req.query.dateFrom === 'string' ? req.query.dateFrom : undefined;
     const dateTo = typeof req.query.dateTo === 'string' ? req.query.dateTo : undefined;
+    const deliveryType = typeof req.query.deliveryType === 'string' ? req.query.deliveryType : undefined;
 
     try {
         const where: Record<string, unknown> = {};
@@ -31,6 +32,7 @@ export async function adminGetItems(
         if (status) where.currentStatus = status;
         if (fromCity) where.fromCity = { contains: fromCity, mode: 'insensitive' };
         if (toCity) where.toCity = { contains: toCity, mode: 'insensitive' };
+        if (deliveryType) where.deliveryType = deliveryType;
 
         if (dateFrom || dateTo) {
             where.createdAt = {
@@ -56,6 +58,7 @@ export async function adminGetItems(
                     toCity: true,
                     recipientName: true,
                     cashOnDelivery: true,
+                    deliveryType: true,
                     seller: { select: { email: true } },
                 },
             }),
@@ -156,9 +159,51 @@ export async function adminDeleteItem(
 }
 
 /**
- * GET /api/admin/reports
- * Отчёты: сумма, вес, количество по статусам, фильтр по периоду
+ * GET /api/admin/items/daily
+ * Полный список товаров за конкретный день — для печати (без пагинации)
  */
+export async function adminGetDailyList(
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> {
+    const dateParam = typeof req.query.date === 'string' ? req.query.date : undefined;
+    const deliveryType = typeof req.query.deliveryType === 'string' ? req.query.deliveryType : undefined;
+
+    const day = dateParam ? new Date(dateParam) : new Date();
+    const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+    try {
+        const where: Record<string, unknown> = {
+            createdAt: { gte: dayStart, lt: dayEnd },
+        };
+        if (deliveryType) where.deliveryType = deliveryType;
+
+        const items = await prisma.item.findMany({
+            where,
+            orderBy: { createdAt: 'asc' },
+            select: {
+                id: true,
+                trackingCode: true,
+                title: true,
+                currentStatus: true,
+                createdAt: true,
+                fromCity: true,
+                toCity: true,
+                recipientName: true,
+                recipientPhone: true,
+                cashOnDelivery: true,
+                weight: true,
+                deliveryType: true,
+                seller: { select: { email: true } },
+            },
+        });
+
+        sendSuccess(res, { items, date: dayStart.toISOString().slice(0, 10) });
+    } catch {
+        sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}
 export async function adminGetReports(
     req: AuthenticatedRequest,
     res: Response

@@ -42,7 +42,7 @@ export function CreateItem() {
 
     const {register, handleSubmit, formState: {errors}} = useForm<Form>({
         resolver: zodResolver(CreateItemSchema),
-        defaultValues: {cashOnDelivery: 0},
+        defaultValues: {cashOnDelivery: 0, deliveryType: 'TRUCK'},
     });
 
     const mutation = useMutation({
@@ -144,6 +144,20 @@ export function CreateItem() {
                             </select>
                         </Field>
                     </div>
+                </div>
+
+                {/* Тип доставки */}
+                <div>
+                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
+                        {t('carriers.type')}
+                    </h2>
+                    <Field label={t('carriers.type')} error={errors.deliveryType?.message} required>
+                        <select {...register('deliveryType')} className={inputCls}>
+                            <option value="TRUCK">{t('carrierType.TRUCK')}</option>
+                            <option value="AVIA">{t('carrierType.AVIA')}</option>
+                            <option value="RAIL">{t('carrierType.RAIL')}</option>
+                        </select>
+                    </Field>
                 </div>
 
                 {/* Параметры */}

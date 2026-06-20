@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { adminApi, AdminItem } from '@/api/admin';
+import { CarrierType } from '@/api/carrier';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import {useSocket} from "@/hooks/useSocket";
@@ -13,6 +14,10 @@ const CITIES = [
     'Тараз', 'Павлодар', 'Өскемен', 'Семей', 'Атырау',
     'Қостанай', 'Орал', 'Петропавл', 'Түркістан', 'Көкшетау',
 ];
+const TO_CITIES = [
+    'Актау', "Атырау", "Актобе", "Уральск", "Куль сары", "Жанаозен",
+    "Бейнеу", "Сексеул", "Кандагаш", "Казалы" , "Шалкар", "Арал", "Шетпе", "Алга"
+];
 
 
 const STATUS_OPTIONS = [
@@ -23,6 +28,14 @@ const STATUS_OPTIONS = [
     { value: 'IN_TRANSIT', label: 'status.IN_TRANSIT' },
     { value: 'DELIVERED',  label: 'status.DELIVERED' },
     { value: 'CANCELLED',  label: 'status.CANCELLED' },
+];
+
+// Тип транспорта — пустое значение = все
+const DELIVERY_TYPE_OPTIONS: { value: '' | CarrierType; label: string }[] = [
+    { value: '',      label: 'carriers.allTypes' },
+    { value: 'AVIA',  label: 'carrierType.AVIA' },
+    { value: 'RAIL',  label: 'carrierType.RAIL' },
+    { value: 'TRUCK', label: 'carrierType.TRUCK' },
 ];
 
 export function AdminItems() {
@@ -40,8 +53,13 @@ export function AdminItems() {
     const [toCity, setToCity] = useState('');
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
+    const [deliveryType, setDeliveryType] = useState<'' | CarrierType>('');
 
-    const hasActiveFilters = status || fromCity || toCity || dateFrom || dateTo;
+    // Дата для печати дневного списка — по умолчанию сегодня
+    const [printDate, setPrintDate] = useState(() => new Date().toISOString().slice(0, 10));
+    const [isPrinting, setIsPrinting] = useState(false);
+
+    const hasActiveFilters = status || fromCity || toCity || dateFrom || dateTo || deliveryType;
 
     const resetFilters = () => {
         setStatus('');
@@ -49,11 +67,12 @@ export function AdminItems() {
         setToCity('');
         setDateFrom('');
         setDateTo('');
+        setDeliveryType('');
         setPage(1);
     };
 
     const { data, isLoading } = useQuery({
-        queryKey: ['admin-items', page, search, status, fromCity, toCity, dateFrom, dateTo],
+        queryKey: ['admin-items', page, search, status, fromCity, toCity, dateFrom, dateTo, deliveryType],
         queryFn: () =>
             adminApi.getItems({
                 page, limit: 20,
@@ -63,6 +82,7 @@ export function AdminItems() {
                 toCity: toCity || undefined,
                 dateFrom: dateFrom || undefined,
                 dateTo: dateTo || undefined,
+                deliveryType: deliveryType || undefined,
             }).then((r) => r.data.data),
         placeholderData: (prev) => prev,
     });
@@ -88,6 +108,114 @@ export function AdminItems() {
     });
 
     const totalPages = data ? Math.ceil(data.total / 20) : 1;
+
+    // ── Печать списка за день ──────────────────────────────────────────────────
+
+    const handlePrintDaily = async () => {
+        setIsPrinting(true);
+        try {
+            const res = await adminApi.getDailyList({
+                date: printDate,
+                deliveryType: deliveryType || undefined,
+            });
+            const { items, date } = res.data.data!;
+
+            const win = window.open('', '_blank');
+            if (!win) {
+                toast.error(t('common.popupBlocked'));
+                return;
+            }
+
+            const deliveryLabel = deliveryType
+                ? t(`carrierType.${deliveryType}`)
+                : t('carriers.allTypes');
+
+            const rowsHtml = items.map((item, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${item.trackingCode}</td>
+                    <td>${item.recipientName ?? '—'}</td>
+                    <td>${item.recipientPhone ?? '—'}</td>
+                    <td>${item.fromCity ?? '—'} → ${item.toCity ?? '—'}</td>
+                    <td>${item.weight ? item.weight + ' кг' : '—'}</td>
+                    <td>${item.cashOnDelivery ? item.cashOnDelivery.toLocaleString('ru-RU') + ' ₸' : '—'}</td>
+                    <td>${item.deliveryType ? t(`carrierType.${item.deliveryType}`) : '—'}</td>
+                    <td>${t(STATUS_OPTIONS.find((s) => s.value === item.currentStatus)?.label ?? '')}</td>
+                </tr>
+            `).join('');
+
+            const totalWeight = items.reduce((sum, it) => sum + (it.weight ?? 0), 0);
+            const totalAmount = items.reduce((sum, it) => sum + (it.cashOnDelivery ?? 0), 0);
+
+            const html = `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="utf-8" />
+                    <title>Список заказов ${date}</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
+                        h1 { font-size: 18px; margin-bottom: 4px; }
+                        .subtitle { font-size: 13px; color: #555; margin-bottom: 16px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                        th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; }
+                        th { background: #f0f0f0; font-weight: bold; }
+                        tfoot td { font-weight: bold; background: #fafafa; }
+                        @media print {
+                            @page { size: A4; margin: 12mm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Список заказов за ${date}</h1>
+                    <p class="subtitle">Тип транспорта: ${deliveryLabel} · Всего заказов: ${items.length}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Трек-код</th>
+                                <th>Получатель</th>
+                                <th>Телефон</th>
+                                <th>Маршрут</th>
+                                <th>Вес</th>
+                                <th>Наложенный платёж</th>
+                                <th>Транспорт</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml || '<tr><td colspan="9" style="text-align:center;">Нет заказов за выбранную дату</td></tr>'}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5">Итого</td>
+                                <td>${totalWeight.toFixed(1)} кг</td>
+                                <td>${totalAmount.toLocaleString('ru-RU')} ₸</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const styleAndBody = win.document;
+            styleAndBody.open();
+            styleAndBody.write(html);
+            styleAndBody.close();
+
+            // Печатаем после полной загрузки разметки
+            win.onload = () => {
+                win.focus();
+                win.print();
+            };
+        } catch {
+            toast.error(t('common.printError'));
+        } finally {
+            setIsPrinting(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -118,6 +246,36 @@ export function AdminItems() {
               !
             </span>
                     )}
+                </button>
+            </div>
+
+            {/* Панель печати списка за день */}
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
+                <span className="text-sm font-medium text-indigo-700">
+                    🖨 {t('common.printDailyList')}
+                </span>
+                <input
+                    type="date"
+                    value={printDate}
+                    onChange={(e) => setPrintDate(e.target.value)}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                />
+                {/* Тип транспорта применяется и к печати, фильтр общий */}
+                <select
+                    value={deliveryType}
+                    onChange={(e) => { setDeliveryType(e.target.value as '' | CarrierType); setPage(1); }}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                    {DELIVERY_TYPE_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{t(o.label)}</option>
+                    ))}
+                </select>
+                <button
+                    onClick={handlePrintDaily}
+                    disabled={isPrinting}
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                >
+                    {isPrinting ? t('common.printing') : `🖨 ${t('common.print')}`}
                 </button>
             </div>
 
@@ -158,6 +316,22 @@ export function AdminItems() {
                             </select>
                         </div>
 
+                        {/* Тип транспорта */}
+                        <div>
+                            <label className="mb-1 block text-xs font-medium text-gray-600">
+                                {t('carriers.type')}
+                            </label>
+                            <select
+                                value={deliveryType}
+                                onChange={(e) => { setDeliveryType(e.target.value as '' | CarrierType); setPage(1); }}
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            >
+                                {DELIVERY_TYPE_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>{t(o.label)}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         {/* Город отправки */}
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-600">
@@ -184,7 +358,7 @@ export function AdminItems() {
                                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                             >
                                 <option value="">{t("common.allCities")}</option>
-                                {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                                {TO_CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
 
@@ -333,6 +507,11 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                     <span>{item.fromCity ?? '—'}</span>
                     <span className="text-gray-300">→</span>
                     <span className="font-medium text-gray-700">{item.toCity ?? '—'}</span>
+                    {item.deliveryType && (
+                        <span className="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+                            {t(`carrierType.${item.deliveryType}`)}
+                        </span>
+                    )}
                 </div>
 
                 {/* Статус */}
@@ -407,6 +586,11 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
                         <span>{item.fromCity ?? '—'}</span>
                         <span>→</span>
                         <span className="font-medium text-gray-700">{item.toCity ?? '—'}</span>
+                        {item.deliveryType && (
+                            <span className="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">
+                                {t(`carrierType.${item.deliveryType}`)}
+                            </span>
+                        )}
                     </div>
                 )}
 

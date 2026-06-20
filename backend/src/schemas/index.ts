@@ -9,6 +9,8 @@ const StatusEnum = z.enum([
     'CANCELLED',
 ]);
 
+const DeliveryTypeEnum = z.enum(['AVIA', 'RAIL', 'TRUCK']);
+
 export const RegisterSchema = z.object({
     email: z.string().email('Некорректный email'),
     password: z
@@ -34,6 +36,7 @@ export const CreateItemSchema = z.object({
     weight: z.number().positive().max(10000),
     cashOnDelivery: z.number().min(0).optional(),
     comment: z.string().max(500).optional(),
+    deliveryType: DeliveryTypeEnum.default('TRUCK'),
 });
 
 export const UpdateStatusSchema = z.object({

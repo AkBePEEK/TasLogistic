@@ -13,6 +13,8 @@ const TO_CITIES = [
     "Бейнеу", "Сексеул", "Кандагаш", "Казалы" , "Шалкар", "Арал", "Шетпе", "Алга"
 ] as const;
 
+const DELIVERY_TYPES = ['AVIA', 'RAIL', 'TRUCK'] as const;
+
 export const CreateItemSchema = z.object({
     title: z.string().min(2, 'Минимум 2 символа').max(255),
     recipientName: z.string().min(2, 'Введите ФИО получателя').max(255),
@@ -24,6 +26,7 @@ export const CreateItemSchema = z.object({
     weight: z.coerce.number().positive('Введите вес').max(10000),
     cashOnDelivery: z.coerce.number().min(0).optional(),
     comment: z.string().max(500).optional(),
+    deliveryType: z.enum(DELIVERY_TYPES).default('TRUCK'),
 });
 
 export const CITY_LIST = CITIES;
