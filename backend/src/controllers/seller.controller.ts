@@ -188,7 +188,7 @@ export async function sellerCreateItem(
         recipientName, recipientPhone,
         senderName, senderPhone,
         fromCity, toCity,
-        weight, cashOnDelivery, comment,
+        weight, itemsCount, cashOnDelivery, comment,
         deliveryType,
     } = req.body;
 
@@ -211,6 +211,7 @@ export async function sellerCreateItem(
                     fromCity,
                     toCity,
                     weight,
+                    itemsCount,
                     cashOnDelivery,
                     comment,
                     deliveryType,

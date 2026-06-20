@@ -94,7 +94,7 @@ function drawReceipt(
     const blocks: Block[] = [
         { type: 'title', text: t('receipt.title') },
         { type: 'subtitle', text: t('receipt.subtitle') },
-        { type: 'dispatcher', text: 'ДИСПЕТЧЕР: 8(747)-033-9028' },
+        { type: 'dispatcher', text: 'ДИСПЕТЧЕР(Алматы): 8(747)-033-9028' },
         { type: 'divider' },
         { type: 'row', label: t('receipt.from'), value: item.fromCity ?? '—' },
         { type: 'row', label: t('receipt.to'), value: item.toCity ?? '—' },
@@ -107,6 +107,8 @@ function drawReceipt(
         { type: 'row', label: t('receipt.senderPhone'), value: item.senderPhone ?? '—' },
         { type: 'divider' },
         { type: 'row', label: t('receipt.item'), value: item.title },
+        // Количество мест — между товаром и весом
+        ...(item.itemsCount ? [{ type: 'row' as const, label: t('receipt.itemsCount'), value: String(item.itemsCount) }] : []),
         ...(item.weight ? [{ type: 'row' as const, label: t('receipt.weight'), value: `${item.weight} кг` }] : []),
         ...(item.cashOnDelivery && item.cashOnDelivery > 0
             ? [{ type: 'row' as const, label: t('receipt.cod'), value: `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`, bold: true }]

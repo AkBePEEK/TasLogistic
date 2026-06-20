@@ -21,9 +21,10 @@ export const CreateItemSchema = z.object({
     recipientPhone: z.string().min(10, 'Введите корректный номер').max(20),
     senderName: z.string().min(2, 'Введите ФИО отправителя').max(255),
     senderPhone: z.string().min(10, 'Введите корректный номер').max(20),
-    fromCity: z.enum(CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
+    fromCity: z.literal('Алматы').default('Алматы'),
     toCity: z.enum(TO_CITIES, { errorMap: () => ({ message: 'Выберите город' }) }),
     weight: z.coerce.number().positive('Введите вес').max(10000),
+    itemsCount: z.coerce.number().int().positive('Введите количество мест').max(10000).default(1),
     cashOnDelivery: z.coerce.number().min(0).optional(),
     comment: z.string().max(500).optional(),
     deliveryType: z.enum(DELIVERY_TYPES).default('TRUCK'),
@@ -31,6 +32,7 @@ export const CreateItemSchema = z.object({
 
 export const CITY_LIST = CITIES;
 export const TO_CITY_LIST = TO_CITIES;
+export const DELIVERY_TYPE_LIST = DELIVERY_TYPES;
 
 const StatusEnum = z.enum([
     'CREATED',

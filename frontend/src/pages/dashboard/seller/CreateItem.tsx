@@ -6,13 +6,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { sellerApi } from '@/api/seller';
 import toast from "react-hot-toast";
-import {CITY_LIST, CreateItemSchema, TO_CITY_LIST} from "@/schemas";
+import {CreateItemSchema, TO_CITY_LIST} from "@/schemas";
 import {useTranslation} from "react-i18next";
 
-z.object({
-    title: z.string().min(2, 'Минимум 2 символа').max(255),
-    description: z.string().max(1000).optional(),
-});
 type Form = z.infer<typeof CreateItemSchema>;
 
 function Field({label, error, required = false, children,}: {
@@ -42,7 +38,7 @@ export function CreateItem() {
 
     const {register, handleSubmit, formState: {errors}} = useForm<Form>({
         resolver: zodResolver(CreateItemSchema),
-        defaultValues: {cashOnDelivery: 0, deliveryType: 'TRUCK'},
+        defaultValues: {cashOnDelivery: 0, deliveryType: 'TRUCK', fromCity: 'Алматы', itemsCount: 1},
     });
 
     const mutation = useMutation({
@@ -123,15 +119,15 @@ export function CreateItem() {
                         {t('createItem.routeSection')}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {/* Откуда — фиксировано на "Алматы", выбор отключён */}
                         <Field label={t('createItem.fromCity')} error={errors.fromCity?.message} required>
-                            <select {...register('fromCity')} className={inputCls}>
-                                <option value="">
-                                    {t('createItem.selectCity')}
-                                </option>
-                                {CITY_LIST.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
-                            </select>
+                            <input
+                                {...register('fromCity')}
+                                value="Алматы"
+                                readOnly
+                                disabled
+                                className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`}
+                            />
                         </Field>
                         <Field label={t('createItem.toCity')} error={errors.toCity?.message} required>
                             <select {...register('toCity')} className={inputCls}>
@@ -160,12 +156,34 @@ export function CreateItem() {
                     </Field>
                 </div>
 
-                {/* Параметры */}
+                {/* Название и комментарий */}
+                <div className="space-y-4">
+                    <Field label={t('createItem.itemTitle')}  error={errors.title?.message} required>
+                        <input
+                            {...register('title')}
+                            placeholder={t('createItem.titlePlaceholder')}
+                            className={inputCls}
+                        />
+                    </Field>
+                </div>
+
+                {/* Параметры — количество мест, вес, наложенный платёж */}
                 <div>
                     <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-400">
                         {t('createItem.paramsSection')}
                     </h2>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        {/* Количество мест — между товаром и весом по требованию чека */}
+                        <Field label={t('createItem.itemsCount')} error={errors.itemsCount?.message} required>
+                            <input
+                                {...register('itemsCount')}
+                                type="number"
+                                step="1"
+                                min="1"
+                                placeholder={t('createItem.itemsCountPlaceholder')}
+                                className={inputCls}
+                            />
+                        </Field>
                         <Field label={t('createItem.weight')} error={errors.weight?.message} required>
                             <input
                                 {...register('weight')}
@@ -186,15 +204,8 @@ export function CreateItem() {
                     </div>
                 </div>
 
-                {/* Название и комментарий */}
+                {/* Комментарий */}
                 <div className="space-y-4">
-                    <Field label={t('createItem.itemTitle')}  error={errors.title?.message} required>
-                        <input
-                            {...register('title')}
-                            placeholder={t('createItem.titlePlaceholder')}
-                            className={inputCls}
-                        />
-                    </Field>
                     <Field label={t('createItem.comment')}  error={errors.comment?.message}>
                         <textarea
                             {...register('comment')}
