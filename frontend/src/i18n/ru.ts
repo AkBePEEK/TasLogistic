@@ -200,6 +200,7 @@ export const ru = {
             inProcessing: 'В обработке',
             byStatus: 'По статусам',
             topCities: 'Топ городов назначения',
+            weightByTransport: 'Вес по транспорту',
         },
         createItem: {
             title: 'Создать новую отправку',

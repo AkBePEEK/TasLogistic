@@ -28,6 +28,13 @@ const STATUS_COLORS: Record<string, string> = {
     CANCELLED:  'bg-red-100 text-red-700',
 };
 
+// Тип транспорта → иконка и цвет (для блока веса по транспорту)
+const DELIVERY_TYPE_META: Record<'AVIA' | 'RAIL' | 'TRUCK', { icon: string; bar: string }> = {
+    AVIA:  { icon: '✈️', bar: 'bg-sky-500' },
+    RAIL:  { icon: '🚂', bar: 'bg-amber-500' },
+    TRUCK: { icon: '🚛', bar: 'bg-indigo-500' },
+};
+
 export function AdminReports() {
     const [period, setPeriod] = useState('month');
 
@@ -47,10 +54,16 @@ export function AdminReports() {
 
     const totalWeight = data?.totalWeight ?? 0;
     const deliveredWeight = data?.deliveredWeight ?? 0;
-    const pendingWeight = Math.max(0, Math.round((totalWeight - deliveredWeight) * 100) / 100);
-
+    Math.max(0, Math.round((totalWeight - deliveredWeight) * 100) / 100);
     const statusCounts = data?.statusCounts ?? {};
     const topCities = data?.topCities ?? [];
+
+    // Вес по типам транспорта — с фолбеком на нули, чтобы все три типа всегда отображались
+    const weightByDeliveryType = {
+        AVIA: 0, RAIL: 0, TRUCK: 0,
+        ...(data?.weightByDeliveryType ?? {}),
+    };
+    const maxDeliveryWeight = Math.max(...Object.values(weightByDeliveryType), 1);
 
     return (
         <div className="space-y-6">
@@ -106,13 +119,29 @@ export function AdminReports() {
                             icon="⚖️"
                             color="blue"
                         />
-                        <MetricCard
-                            label={t('reports.delivered')}
-                            value={`${statusCounts['DELIVERED'] ?? 0}`}
-                            icon="✅"
-                            color="emerald"
-                            sub={`${deliveredAmount.toLocaleString('ru-RU')} ₸`}
-                        />
+
+                        {/* Вместо карточки "Доставлено: количество" — вес по типам транспорта */}
+                        <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+                                    {t('reports.weightByTransport')}
+                                </p>
+                                <span className="text-xl">🚚</span>
+                            </div>
+                            <div className="mt-2 space-y-1.5">
+                                {(['AVIA', 'RAIL', 'TRUCK'] as const).map((dt) => (
+                                    <div key={dt} className="flex items-center justify-between gap-2">
+                                        <span className="flex items-center gap-1 text-xs text-gray-600">
+                                            <span>{DELIVERY_TYPE_META[dt].icon}</span>
+                                            {t(`carrierType.${dt}`)}
+                                        </span>
+                                        <span className="text-xs font-semibold text-emerald-700">
+                                            {weightByDeliveryType[dt]} кг
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Финансовый итог vs Вес */}
@@ -147,31 +176,33 @@ export function AdminReports() {
                             </div>
                         </div>
 
-                        {/* Вес */}
+                        {/* Вес по транспорту — подробная разбивка с прогресс-барами */}
                         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                             <p className="mb-4 text-sm font-semibold text-gray-700">
-                                {t('reports.weightStats')}
+                                {t('reports.weightByTransport')}
                             </p>
                             <div className="space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">{t('reports.totalOrdersWeight')}</span>
-                                    <span className="font-semibold">{totalWeight} кг</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">{t('reports.deliveredWeight')}</span>
-                                    <span className="font-semibold text-green-600">{deliveredWeight} кг</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">{t('reports.inProcessing')}</span>
-                                    <span className="font-semibold text-orange-600">{pendingWeight} кг</span>
-                                    end
-                                </div>
-                                <div className="mt-2 h-2 rounded-full bg-gray-100">
-                                    <div
-                                        className="h-2 rounded-full bg-blue-500 transition-all"
-                                        style={{ width: totalWeight > 0 ? `${Math.round((deliveredWeight / totalWeight) * 100)}%` : '0%' }}
-                                    />
-                                </div>
+                                {(['AVIA', 'RAIL', 'TRUCK'] as const).map((dt) => (
+                                    <div key={dt} className="flex items-center gap-3">
+                                        <span className="flex w-20 flex-shrink-0 items-center gap-1 text-sm text-gray-600">
+                                            <span>{DELIVERY_TYPE_META[dt].icon}</span>
+                                            {t(`carrierType.${dt}`)}
+                                        </span>
+                                        <div className="h-2 flex-1 rounded-full bg-gray-100">
+                                            <div
+                                                className={`h-2 rounded-full transition-all ${DELIVERY_TYPE_META[dt].bar}`}
+                                                style={{ width: `${Math.round((weightByDeliveryType[dt] / maxDeliveryWeight) * 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className="w-16 flex-shrink-0 text-right text-sm font-semibold text-gray-700">
+                                            {weightByDeliveryType[dt]} кг
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-3 border-t border-gray-100 pt-3 flex justify-between text-xs text-gray-400">
+                                <span>{t('common.total')}</span>
+                                <span className="font-semibold text-gray-600">{totalWeight} кг</span>
                             </div>
                         </div>
                     </div>
