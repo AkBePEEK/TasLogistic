@@ -256,9 +256,9 @@ export const ru = {
             confirmDelete: 'Удалить {{name}}?',
         },
         carrierType: {
-            AVIA: '✈️ Авиа',
-            RAIL: '🚂 ЖД',
-            TRUCK: '🚛 Фура',
+            AVIA: 'Авиа',
+            RAIL: 'ЖД',
+            TRUCK: 'Фура',
         },
         profile: {
             subtitle: 'Управление данными аккаунта',

@@ -249,9 +249,9 @@ export const kz = {
             confirmDelete: '{{name}} жойылсын ба?',
         },
         carrierType: {
-            AVIA: '✈️ Әуе',
-            RAIL: '🚂 Теміржол',
-            TRUCK: '🚛 Жүк көлігі',
+            AVIA: 'Әуе',
+            RAIL: 'Теміржол',
+            TRUCK: 'Жүк көлігі',
         },
         profile: {
             subtitle: 'Аккаунт деректерін басқару',
