@@ -145,6 +145,7 @@ export const kz = {
             recipient:   'Алушы',
             sender:      'Жіберуші',
             senderPhone: 'Жіберуші тел.',
+            operator:    'Оператор',
             phone:       'Телефон',
             item:        'Тауар',
             itemsCount:  'Орын саны',
@@ -222,6 +223,9 @@ export const kz = {
             trackingCodeInfo: 'Трек-код автоматты түрде {{format}} форматында жасалады',
             creating: 'Жасалуда...',
             createButton: 'Жөнелтім жасау',
+            operatorSection: 'Оператор',
+            operatorName: 'Оператордың аты',
+            operatorNamePlaceholder: 'Айдос',
         },
         item: {
             notFound: 'Тауар табылмады',

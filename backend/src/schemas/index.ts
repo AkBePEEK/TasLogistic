@@ -37,6 +37,7 @@ export const CreateItemSchema = z.object({
     itemsCount: z.number().int().positive().max(10000).default(1),
     cashOnDelivery: z.number().min(0).optional(),
     comment: z.string().max(500).optional(),
+    operatorName: z.string().min(2).max(255).optional(),
     deliveryType: DeliveryTypeEnum.default('TRUCK'),
 });
 

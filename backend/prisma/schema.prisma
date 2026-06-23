@@ -71,6 +71,7 @@ model Item {
   comment        String?
   senderName     String?
   senderPhone    String?
+  operatorName   String?
   deliveryType   CarrierType? @default(TRUCK)
 
   seller        User            @relation("SellerItems", fields: [sellerId], references: [id])

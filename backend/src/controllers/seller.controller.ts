@@ -189,6 +189,7 @@ export async function sellerCreateItem(
         senderName, senderPhone,
         fromCity, toCity,
         weight, itemsCount, cashOnDelivery, comment,
+        operatorName,
         deliveryType,
     } = req.body;
 
@@ -214,6 +215,7 @@ export async function sellerCreateItem(
                     itemsCount,
                     cashOnDelivery,
                     comment,
+                    operatorName,
                     deliveryType,
                     sellerId,
                 },

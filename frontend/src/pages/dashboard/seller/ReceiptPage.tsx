@@ -94,7 +94,7 @@ function drawReceipt(
     const blocks: Block[] = [
         { type: 'title', text: t('receipt.title') },
         { type: 'subtitle', text: t('receipt.subtitle') },
-        { type: 'dispatcher', text: 'ДИСПЕТЧЕР(Алматы): 8(747)-033-9028' },
+        { type: 'dispatcher', text: 'ДИСПЕТЧЕР: 8(747)-033-9028' },
         { type: 'divider' },
         { type: 'row', label: t('receipt.from'), value: item.fromCity ?? '—' },
         { type: 'row', label: t('receipt.to'), value: item.toCity ?? '—' },
@@ -105,6 +105,9 @@ function drawReceipt(
         { type: 'divider' },
         { type: 'row', label: t('receipt.sender'), value: item.senderName ?? '—' },
         { type: 'row', label: t('receipt.senderPhone'), value: item.senderPhone ?? '—' },
+        { type: 'divider' },
+        // Оператор — кто принял заказ
+        { type: 'row', label: t('receipt.operator'), value: item.operatorName ?? '—' },
         { type: 'divider' },
         { type: 'row', label: t('receipt.item'), value: item.title },
         // Количество мест — между товаром и весом

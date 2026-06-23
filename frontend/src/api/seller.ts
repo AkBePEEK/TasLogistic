@@ -24,6 +24,7 @@ export interface ItemDetail extends Item {
     itemsCount?: number;
     cashOnDelivery?: number;
     comment?: string;
+    operatorName?: string;
     statusHistory: StatusHistoryEntry[];
 }
 

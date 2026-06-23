@@ -27,6 +27,7 @@ export const CreateItemSchema = z.object({
     itemsCount: z.coerce.number().int().positive('Введите количество мест').max(10000).default(1),
     cashOnDelivery: z.coerce.number().min(0).optional(),
     comment: z.string().max(500).optional(),
+    operatorName: z.string().min(2, 'Введите имя оператора').max(255),
     deliveryType: z.enum(DELIVERY_TYPES).default('TRUCK'),
 });
 

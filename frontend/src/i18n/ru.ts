@@ -152,6 +152,7 @@ export const ru = {
             recipient:   'Получатель',
             sender:      'Отправитель',
             senderPhone: 'Тел. отправителя',
+            operator:    'Оператор',
             phone:       'Телефон',
             item:        'Товар',
             itemsCount:  'Количество мест',
@@ -229,6 +230,9 @@ export const ru = {
             trackingCodeInfo: 'Трек-код будет сгенерирован автоматически в формате {{format}}',
             creating: 'Создание...',
             createButton: 'Создать отправку',
+            operatorSection: 'Оператор',
+            operatorName: 'Имя оператора',
+            operatorNamePlaceholder: 'Айдос',
         },
         item: {
             notFound: 'Товар не найден',
