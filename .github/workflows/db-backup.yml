@@ -1,0 +1,56 @@
+name: Daily Database Backup
+
+# Бэкап БД раз в день в 03:00 UTC (08:00 по Алматы) + возможность запустить вручную
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout backups branch
+        uses: actions/checkout@v4
+        with:
+          ref: db-backups
+          fetch-depth: 1
+        continue-on-error: true
+        id: checkout-backups
+
+      # Если ветки db-backups еще не существует — создаем её с нуля
+      - name: Create backups branch if missing
+        if: steps.checkout-backups.outcome == 'failure'
+        run: |
+          git checkout --orphan db-backups
+          git rm -rf . || true
+          mkdir -p backups
+          echo "# Database backups" > README.md
+          git add README.md
+          git -c user.name="backup-bot" -c user.email="backup-bot@users.noreply.github.com" commit -m "init backups branch"
+
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          mkdir -p backups
+          STAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges -F c -f "backups/backup_${STAMP}.dump"
+          echo "BACKUP_FILE=backups/backup_${STAMP}.dump" >> $GITHUB_ENV
+
+      # Храним только последние 30 бэкапов, чтобы репозиторий не разрастался бесконечно
+      - name: Prune old backups
+        run: |
+          cd backups
+          ls -1t backup_*.dump | tail -n +31 | xargs -r rm -f
+          cd ..
+
+      - name: Commit and push backup
+        run: |
+          git add backups/
+          git -c user.name="backup-bot" -c user.email="backup-bot@users.noreply.github.com" \
+              commit -m "backup: ${{ env.BACKUP_FILE }}" || echo "Nothing to commit"
+          git push origin db-backups
