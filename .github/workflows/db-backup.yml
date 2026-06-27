@@ -29,8 +29,12 @@ jobs:
           git add README.md
           git -c user.name="backup-bot" -c user.email="backup-bot@users.noreply.github.com" commit -m "init backups branch"
 
-      - name: Install postgresql-client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Install postgresql-client 17
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
 
       - name: Dump database
         env:
@@ -38,7 +42,7 @@ jobs:
         run: |
           mkdir -p backups
           STAMP=$(date -u +"%Y-%m-%d_%H-%M-%S")
-          pg_dump "$DATABASE_URL" --no-owner --no-privileges -F c -f "backups/backup_${STAMP}.dump"
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" --no-owner --no-privileges -F c -f "backups/backup_${STAMP}.dump"
           echo "BACKUP_FILE=backups/backup_${STAMP}.dump" >> $GITHUB_ENV
 
       # Храним только последние 30 бэкапов, чтобы репозиторий не разрастался бесконечно
