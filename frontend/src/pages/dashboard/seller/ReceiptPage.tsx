@@ -5,6 +5,7 @@ import {ItemDetail, sellerApi} from '@/api/seller';
 import {CarrierType} from '@/api/carrier';
 import {useTranslation} from 'react-i18next';
 import {formatDate} from '@/utils/formatDate';
+import jsPDF from 'jspdf';
 
 const STATUS_LABEL: Record<string, string> = {
     CREATED:    'status.CREATED',
@@ -329,24 +330,22 @@ export function ReceiptPage() {
     }, [item, deliveryType, t, i18n.language]);
 
     // Функция скачивания чека как изображения
-    const handleDownloadReceipt = async (width: 58 | 80) => {
+    const handleDownloadReceipt = (width: 58 | 80) => {
         const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
         if (!canvas) return;
 
-        // Генерируем JPEG в максимальном качестве (1.0)
-        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        const dataUrl = canvas.toDataURL('image/png');
+        const widthMm = width;
+        const heightMm = (canvas.height / canvas.width) * widthMm;
 
-        // Создаем скрытую ссылку для скачивания
-        const link = document.createElement('a');
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [widthMm, heightMm],
+        });
 
-        // Имя файла будет содержать трек-код и ширину ленты, чтобы менеджеры не путались
-        link.download = `Чек_${item?.trackingCode || 'order'}_${width}mm.jpg`;
-        link.href = dataUrl;
-
-        // Триггерим скачивание
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        pdf.addImage(dataUrl, 'PNG', 0, 0, widthMm, heightMm);
+        pdf.save(`Чек_${item?.trackingCode || 'order'}_${width}mm.pdf`);
     };
 
     if (isLoading) {
@@ -374,7 +373,7 @@ export function ReceiptPage() {
                     onClick={() => navigate(-1)}
                     className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50"
                 >
-                    ← {t('receipt.back')}
+                    {t('receipt.back')}
                 </button>
 
                 {/* Тип доставки */}
