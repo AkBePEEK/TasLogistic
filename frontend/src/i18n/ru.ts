@@ -241,7 +241,7 @@ export const ru = {
             createdAt: 'Создан',
             updatedAt: 'Обновлён',
             changeStatus: 'Сменить статус',
-            printReceipt: '🖨 Печать чека',
+            Receipt: '🖨 Чек',
             historyTitle: 'История изменений — {{count}} событий',
             historyEmpty: 'История пуста',
         },

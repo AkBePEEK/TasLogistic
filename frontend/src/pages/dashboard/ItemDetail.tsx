@@ -90,7 +90,7 @@ export function ItemDetail() {
                     onClick={() => navigate(`/dashboard/seller/items/${item.id}/receipt`)}
                     className="flex-shrink-0 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-50 transition-colors"
                 >
-                    {t('item.printReceipt')}
+                    {t('item.Receipt')}
                 </button>
             </div>
 

@@ -234,7 +234,7 @@ export const kz = {
             createdAt: 'Жасалған',
             updatedAt: 'Жаңартылған',
             changeStatus: 'Мәртебені өзгерту',
-            printReceipt: '🖨 Чек басып шығару',
+            Receipt: '🖨 Чек',
             historyTitle: 'Өзгерістер тарихы — {{count}} оқиға',
             historyEmpty: 'Тарих бос',
         },
