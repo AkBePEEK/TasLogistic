@@ -38,7 +38,7 @@ function drawReceipt(
     lang: string,
 ) {
     // Задаем ширину с запасом под максимальные физические точки термоголовок
-    const W = widthMm === 80 ? 720 : 432;
+    const W = widthMm === 80 ? 945 : 685;
     // Уменьшаем отступы до минимума (2-3 мм в пикселях), чтобы печаталось до краев
     const PADDING = widthMm === 80 ? 12 : 8;
     const CONTENT_W = W - PADDING * 2;
@@ -76,7 +76,7 @@ function drawReceipt(
     // Шрифт без явного "Courier New" — браузер использует системный monospace,
     // который рендерится чище на низком DPI термопринтера (как на референсе B-Express)
     function fontStr(size: number, bold = false) {
-        return `${bold ? 'bold ' : ''}${size}px monospace`;
+        return `${bold ? 'bold ' : ''}${size}px Arial, Helvetica, sans-serif`;
     }
 
     // Собираем строки чека
@@ -195,9 +195,9 @@ function drawReceipt(
                 break;
             }
             case 'divider': {
-                c.setLineDash([6, 6]);
-                c.strokeStyle = '#888';
-                c.lineWidth = 2;
+                c.setLineDash([8, 6]);
+                c.strokeStyle = '#555';
+                c.lineWidth = 2.5;
                 c.beginPath();
                 c.moveTo(PADDING, y + 5);
                 c.lineTo(W - PADDING, y + 5);
