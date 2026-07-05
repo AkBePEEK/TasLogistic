@@ -37,20 +37,18 @@ function drawReceipt(
     t: (key: string) => string,
     lang: string,
 ) {
-    // Задаем ширину с запасом под максимальные физические точки термоголовок
-    const W = widthMm === 80 ? 945 : 685;
-    // Уменьшаем отступы до минимума (2-3 мм в пикселях), чтобы печаталось до краев
-    const PADDING = widthMm === 80 ? 12 : 8;
+    const SCALE = 3;
+    const W = (widthMm === 80 ? 945 : 685) * SCALE;
+    const PADDING = (widthMm === 80 ? 12 : 8) * SCALE;
     const CONTENT_W = W - PADDING * 2;
 
-    // Пропорционально увеличиваем шрифты под новую ширину Canvas, чтобы текст не обмельчал
-    const BASE_FONT = widthMm === 58 ? 26 : 32;
-    const SMALL_FONT = BASE_FONT - 4;
-    const TITLE_FONT = BASE_FONT + 12;
-    const TRACK_FONT = BASE_FONT + 6;
+    const BASE_FONT = (widthMm === 58 ? 26 : 32) * SCALE;
+    const SMALL_FONT = BASE_FONT - 4 * SCALE;
+    const TITLE_FONT = BASE_FONT + 12 * SCALE;
+    const TRACK_FONT = BASE_FONT + 6 * SCALE;
 
-    const LINE_H = BASE_FONT + 14;
-    const SMALL_LINE_H = SMALL_FONT + 10;
+    const LINE_H = BASE_FONT + 14 * SCALE;
+    const SMALL_LINE_H = SMALL_FONT + 10 * SCALE;
 
     // Первый проход — считаем высоту
     const ctx = canvas.getContext('2d')!;
@@ -161,6 +159,8 @@ function drawReceipt(
 
     canvas.width = W;
     canvas.height = totalH;
+    canvas.style.width = `${W / SCALE}px`;
+    canvas.style.height = `${totalH / SCALE}px`;
 
     // Рисуем
     const c = canvas.getContext('2d')!;
