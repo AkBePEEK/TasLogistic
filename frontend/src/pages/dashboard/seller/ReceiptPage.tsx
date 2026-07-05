@@ -75,7 +75,7 @@ function drawReceipt(
 
     // Шрифт без явного "Courier New" — браузер использует системный monospace,
     // который рендерится чище на низком DPI термопринтера (как на референсе B-Express)
-    function fontStr(size: number, bold = false) {
+    function fontStr(size: number, bold = true) {
         return `${bold ? 'bold ' : ''}${size}px Arial, Helvetica, sans-serif`;
     }
 
