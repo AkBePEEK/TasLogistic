@@ -329,22 +329,115 @@ export function ReceiptPage() {
         }
     }, [item, deliveryType, t, i18n.language]);
 
-    // Функция скачивания чека как изображения
     const handleDownloadReceipt = (width: 58 | 80) => {
-        const canvas = width === 80 ? canvas80Ref.current : canvas58Ref.current;
-        if (!canvas) return;
-
-        const dataUrl = canvas.toDataURL('image/png');
-        const widthMm = width;
-        const heightMm = (canvas.height / canvas.width) * widthMm;
-
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: [widthMm, heightMm],
+            format: [width, 200],
         });
 
-        pdf.addImage(dataUrl, 'PNG', 0, 0, widthMm, heightMm);
+        const x = 3;
+        let y = 5;
+        const lineH = 5;
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(width === 58 ? 10 : 12);
+        pdf.text('TAS LOGISTIC', width / 2, y, { align: 'center' }); y += lineH;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(width === 58 ? 7 : 8);
+        pdf.text(t('receipt.subtitle'), width / 2, y, { align: 'center' }); y += lineH;
+        pdf.text('ДИСПЕТЧЕР: 8(747)-033-9028', width / 2, y, { align: 'center' }); y += lineH + 1;
+
+        // Разделитель
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.line(x, y, width - x, y); y += 3;
+        pdf.setLineDashPattern([], 0);
+
+        const row = (label: string, value: string) => {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(width === 58 ? 7 : 8);
+            pdf.text(label + ':', x, y);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(value, width - x, y, { align: 'right' });
+            y += lineH;
+        };
+
+        row(t('receipt.from'), item!.fromCity ?? '—');
+        row(t('receipt.to'), item!.toCity ?? '—');
+
+        // Бокс типа доставки
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(width === 58 ? 7 : 8);
+        const dlabel = DELIVERY_LABEL[deliveryType];
+        pdf.rect(width - x - 20, y - 4, 20, 5);
+        pdf.text(dlabel, width - x - 10, y, { align: 'center' });
+        y += lineH;
+
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.line(x, y, width - x, y); y += 3;
+        pdf.setLineDashPattern([], 0);
+
+        row(t('receipt.recipient'), item!.recipientName ?? '—');
+        row(t('receipt.phone'), item!.recipientPhone ?? '—');
+
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.line(x, y, width - x, y); y += 3;
+        pdf.setLineDashPattern([], 0);
+
+        row(t('receipt.sender'), item!.senderName ?? '—');
+        row(t('receipt.senderPhone'), item!.senderPhone ?? '—');
+
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.line(x, y, width - x, y); y += 3;
+        pdf.setLineDashPattern([], 0);
+
+        row(t('receipt.item'), item!.title);
+        if (item!.weight) row(t('receipt.weight'), `${item!.weight} кг`);
+        if (item!.cashOnDelivery && item!.cashOnDelivery > 0) {
+            row(t('receipt.cod'), `${item!.cashOnDelivery.toLocaleString('ru-RU')} ₸`);
+        }
+        row(t('receipt.status'), t(STATUS_LABEL[item!.currentStatus] ?? item!.currentStatus));
+        row(t('receipt.date'), formatDate(item!.createdAt, i18n.language));
+
+        if (item!.comment) {
+            pdf.setLineDashPattern([1, 1], 0);
+            pdf.line(x, y, width - x, y); y += 3;
+            pdf.setLineDashPattern([], 0);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(width === 58 ? 6 : 7);
+            pdf.text(`${t('receipt.comment')}: ${item!.comment}`, x, y); y += lineH;
+        }
+
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.line(x, y, width - x, y); y += 3;
+        pdf.setLineDashPattern([], 0);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(width === 58 ? 9 : 11);
+        pdf.text(`Трек-код: ${item!.trackingCode}`, x, y); y += lineH + 1;
+
+        pdf.setLineDashPattern([1, 1], 0);
+        pdf.line(x, y, width - x, y); y += 3;
+        pdf.setLineDashPattern([], 0);
+
+        // Дисклеймер
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(width === 58 ? 5 : 6);
+        const disclaimer = pdf.splitTextToSize(t('receipt.disclaimer'), width - x * 2);
+        pdf.text(disclaimer, x, y);
+        y += disclaimer.length * 3 + 2;
+
+        // Обрезаем PDF по реальной высоте
+        const finalPdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [width, y + 3],
+        });
+        finalPdf.addPage();
+        // Копируем содержимое
+        finalPdf.deletePage(2);
+
         pdf.save(`Чек_${item?.trackingCode || 'order'}_${width}mm.pdf`);
     };
 
