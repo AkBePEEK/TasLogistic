@@ -48,10 +48,10 @@ function drawReceipt(
     const CONTENT_W = W - PADDING * 2;
 
     // Шрифты подобраны под физический DPI принтера
-    const BASE_FONT   = (widthMm === 58 ? 14 : 17) * SCALE;
+    const BASE_FONT   = (widthMm === 58 ? 22 : 26) * SCALE;
     const SMALL_FONT  = BASE_FONT - 2 * SCALE;
-    const TITLE_FONT  = BASE_FONT + 6 * SCALE;
-    const TRACK_FONT  = BASE_FONT + 3 * SCALE;
+    const TITLE_FONT  = BASE_FONT + 16 * SCALE;
+    const TRACK_FONT  = BASE_FONT + 8 * SCALE;
 
     const LINE_H       = BASE_FONT + 7 * SCALE;
     const SMALL_LINE_H = SMALL_FONT + 5 * SCALE;
