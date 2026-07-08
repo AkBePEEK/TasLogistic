@@ -27,9 +27,9 @@ const DELIVERY_LABEL: Record<CarrierType, string> = {
     TRUCK: '🚛 ФУРА',
 };
 
-// Физическая ширина в пикселях для термопринтера 203 DPI:
-// 80мм → 576px, 58мм → 384px
-const PRINTER_PX: Record<58 | 80, number> = { 80: 576, 58: 384 };
+// Увеличенное разрешение — ESCPOS приложение уменьшает до физического,
+// и при downscale получается чётче чем при upscale
+const PRINTER_PX: Record<58 | 80, number> = { 80: 1152, 58: 768 };
 
 function drawReceipt(
     canvas: HTMLCanvasElement,
@@ -48,13 +48,16 @@ function drawReceipt(
     const CONTENT_W = W - PADDING * 2;
 
     // Шрифты подобраны под физический DPI принтера
-    const BASE_FONT   = (widthMm === 58 ? 22 : 26) * SCALE;
-    const SMALL_FONT  = BASE_FONT - 2 * SCALE;
-    const TITLE_FONT  = BASE_FONT + 16 * SCALE;
-    const TRACK_FONT  = BASE_FONT + 8 * SCALE;
+    // forPrinter=true — крупнее для чёткой читаемости на термобумаге
+    const BASE_FONT   = forPrinter
+        ? (widthMm === 58 ? 44 : 52)
+        : (widthMm === 58 ? 14 : 17) * SCALE;
+    const SMALL_FONT  = forPrinter ? BASE_FONT - 6 : BASE_FONT - 2 * SCALE;
+    const TITLE_FONT  = forPrinter ? BASE_FONT + 20 : BASE_FONT + 6 * SCALE;
+    const TRACK_FONT  = forPrinter ? BASE_FONT + 10 : BASE_FONT + 3 * SCALE;
 
-    const LINE_H       = BASE_FONT + 7 * SCALE;
-    const SMALL_LINE_H = SMALL_FONT + 5 * SCALE;
+    const LINE_H       = forPrinter ? BASE_FONT + 20 : BASE_FONT + 7 * SCALE;
+    const SMALL_LINE_H = forPrinter ? SMALL_FONT + 14 : SMALL_FONT + 5 * SCALE;
 
     const ctx = canvas.getContext('2d')!;
 
