@@ -5,7 +5,6 @@ import {ItemDetail, sellerApi} from '@/api/seller';
 import {CarrierType} from '@/api/carrier';
 import {useTranslation} from 'react-i18next';
 import {formatDate} from '@/utils/formatDate';
-import jsPDF from 'jspdf';
 
 const STATUS_LABEL: Record<string, string> = {
     CREATED:    'status.CREATED',
@@ -28,7 +27,9 @@ const DELIVERY_LABEL: Record<CarrierType, string> = {
     TRUCK: '🚛 ФУРА',
 };
 
-// ── Canvas receipt renderer ───────────────────────────────────────────────────
+// Физическая ширина в пикселях для термопринтера 203 DPI:
+// 80мм → 576px, 58мм → 384px
+const PRINTER_PX: Record<58 | 80, number> = { 80: 576, 58: 384 };
 
 function drawReceipt(
     canvas: HTMLCanvasElement,
@@ -37,21 +38,24 @@ function drawReceipt(
     widthMm: 58 | 80,
     t: (key: string) => string,
     lang: string,
+    forPrinter = false, // true = точный размер для печати, false = увеличенный для экрана
 ) {
-    const SCALE = 3;
-    const W = (widthMm === 80 ? 945 : 685) * SCALE;
+    // При forPrinter=true используем точный физический размер принтера (576 или 384px)
+    // При forPrinter=false умножаем на SCALE для нормального отображения на экране
+    const SCALE = forPrinter ? 1 : 2;
+    const W = PRINTER_PX[widthMm] * SCALE;
     const PADDING = (widthMm === 80 ? 12 : 8) * SCALE;
     const CONTENT_W = W - PADDING * 2;
 
-    const BASE_FONT = (widthMm === 58 ? 26 : 32) * SCALE;
-    const SMALL_FONT = BASE_FONT - 4 * SCALE;
-    const TITLE_FONT = BASE_FONT + 12 * SCALE;
-    const TRACK_FONT = BASE_FONT + 6 * SCALE;
+    // Шрифты подобраны под физический DPI принтера
+    const BASE_FONT   = (widthMm === 58 ? 14 : 17) * SCALE;
+    const SMALL_FONT  = BASE_FONT - 2 * SCALE;
+    const TITLE_FONT  = BASE_FONT + 6 * SCALE;
+    const TRACK_FONT  = BASE_FONT + 3 * SCALE;
 
-    const LINE_H = BASE_FONT + 14 * SCALE;
-    const SMALL_LINE_H = SMALL_FONT + 10 * SCALE;
+    const LINE_H       = BASE_FONT + 7 * SCALE;
+    const SMALL_LINE_H = SMALL_FONT + 5 * SCALE;
 
-    // Первый проход — считаем высоту
     const ctx = canvas.getContext('2d')!;
 
     function measureLines(text: string, font: string, maxW: number): string[] {
@@ -72,13 +76,10 @@ function drawReceipt(
         return lines;
     }
 
-    // Шрифт без явного "Courier New" — браузер использует системный monospace,
-    // который рендерится чище на низком DPI термопринтера (как на референсе B-Express)
-    function fontStr(size: number, bold = true) {
+    function fontStr(size: number, bold = false) {
         return `${bold ? 'bold ' : ''}${size}px Arial, Helvetica, sans-serif`;
     }
 
-    // Собираем строки чека
     type Block =
         | { type: 'title'; text: string }
         | { type: 'subtitle'; text: string }
@@ -91,33 +92,34 @@ function drawReceipt(
         | { type: 'disclaimer'; text: string };
 
     const blocks: Block[] = [
-        { type: 'title', text: t('receipt.title') },
-        { type: 'subtitle', text: t('receipt.subtitle') },
+        { type: 'title',      text: t('receipt.title') },
+        { type: 'subtitle',   text: t('receipt.subtitle') },
         { type: 'dispatcher', text: 'ДИСПЕТЧЕР: 8(747)-033-9028' },
         { type: 'divider' },
         { type: 'row', label: t('receipt.from'), value: item.fromCity ?? '—' },
-        { type: 'row', label: t('receipt.to'), value: item.toCity ?? '—' },
+        { type: 'row', label: t('receipt.to'),   value: item.toCity   ?? '—' },
         { type: 'delivery', text: DELIVERY_LABEL[deliveryType] },
         { type: 'divider' },
-        { type: 'row', label: t('receipt.recipient'), value: item.recipientName ?? '—' },
-        { type: 'row', label: t('receipt.phone'), value: item.recipientPhone ?? '—' },
+        { type: 'row', label: t('receipt.recipient'),   value: item.recipientName  ?? '—' },
+        { type: 'row', label: t('receipt.phone'),       value: item.recipientPhone ?? '—' },
         { type: 'divider' },
-        { type: 'row', label: t('receipt.sender'), value: item.senderName ?? '—' },
+        { type: 'row', label: t('receipt.sender'),      value: item.senderName  ?? '—' },
         { type: 'row', label: t('receipt.senderPhone'), value: item.senderPhone ?? '—' },
         { type: 'divider' },
-        // Оператор — кто принял заказ
-        { type: 'row', label: t('receipt.operator'), value: item.operatorName ?? '—' },
+        { type: 'row', label: t('receipt.operator'),    value: item.operatorName ?? '—' },
         { type: 'divider' },
         { type: 'row', label: t('receipt.item'), value: item.title },
-        // Количество мест — между товаром и весом
-        ...(item.itemsCount ? [{ type: 'row' as const, label: t('receipt.itemsCount'), value: String(item.itemsCount) }] : []),
-        ...(item.weight ? [{ type: 'row' as const, label: t('receipt.weight'), value: `${item.weight} кг` }] : []),
+        ...(item.itemsCount
+            ? [{ type: 'row' as const, label: t('receipt.itemsCount'), value: String(item.itemsCount) }]
+            : []),
+        ...(item.weight
+            ? [{ type: 'row' as const, label: t('receipt.weight'), value: `${item.weight} кг` }]
+            : []),
         ...(item.cashOnDelivery && item.cashOnDelivery > 0
             ? [{ type: 'row' as const, label: t('receipt.cod'), value: `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`, bold: true }]
             : []),
         { type: 'row', label: t('receipt.status'), value: t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus) },
-        // Полная дата с секундами, без сокращений
-        { type: 'row', label: t('receipt.date'), value: formatFullDate(item.createdAt, lang) },
+        { type: 'row', label: t('receipt.date'),   value: formatFullDate(item.createdAt, lang) },
         ...(item.comment
             ? [
                 { type: 'divider' as const },
@@ -134,12 +136,12 @@ function drawReceipt(
     let totalH = PADDING * 2;
     for (const b of blocks) {
         switch (b.type) {
-            case 'title':       totalH += TITLE_FONT + 10; break;
-            case 'subtitle':    totalH += SMALL_FONT + 6; break;
-            case 'dispatcher':  totalH += SMALL_FONT + 8; break;
-            case 'divider':     totalH += 14; break;
-            case 'delivery':    totalH += LINE_H + 6; break;
-            case 'track':       totalH += TRACK_FONT + 10; break;
+            case 'title':      totalH += TITLE_FONT + 6 * SCALE; break;
+            case 'subtitle':   totalH += SMALL_FONT + 4 * SCALE; break;
+            case 'dispatcher': totalH += SMALL_FONT + 5 * SCALE; break;
+            case 'divider':    totalH += 8 * SCALE; break;
+            case 'delivery':   totalH += LINE_H + 4 * SCALE; break;
+            case 'track':      totalH += TRACK_FONT + 6 * SCALE; break;
             case 'row': {
                 const lines = measureLines(b.value, fontStr(BASE_FONT, true), CONTENT_W / 2);
                 totalH += Math.max(1, lines.length) * LINE_H;
@@ -147,23 +149,25 @@ function drawReceipt(
             }
             case 'comment': {
                 const lines = measureLines(b.text, fontStr(SMALL_FONT), CONTENT_W - ctx.measureText(b.label + ': ').width);
-                totalH += Math.max(1, lines.length) * SMALL_LINE_H + 4;
+                totalH += Math.max(1, lines.length) * SMALL_LINE_H + 3 * SCALE;
                 break;
             }
             case 'disclaimer': {
-                const lines = measureLines(b.text, fontStr(SMALL_FONT - 2), CONTENT_W);
-                totalH += lines.length * (SMALL_FONT - 2 + 5) + 4;
+                const lines = measureLines(b.text, fontStr(SMALL_FONT - SCALE), CONTENT_W);
+                totalH += lines.length * (SMALL_FONT - SCALE + 4 * SCALE) + 3 * SCALE;
                 break;
             }
         }
     }
 
-    canvas.width = W;
+    canvas.width  = W;
     canvas.height = totalH;
-    canvas.style.width = `${W / SCALE}px`;
-    canvas.style.height = `${totalH / SCALE}px`;
+    // Для экранного превью масштабируем CSS-размер
+    if (!forPrinter) {
+        canvas.style.width  = `${W / SCALE}px`;
+        canvas.style.height = `${totalH / SCALE}px`;
+    }
 
-    // Рисуем
     const c = canvas.getContext('2d')!;
     c.fillStyle = '#fff';
     c.fillRect(0, 0, W, totalH);
@@ -178,43 +182,43 @@ function drawReceipt(
                 c.font = fontStr(TITLE_FONT, true);
                 c.textAlign = 'center';
                 c.fillText(b.text, W / 2, y);
-                y += TITLE_FONT + 10;
+                y += TITLE_FONT + 6 * SCALE;
                 break;
             }
             case 'subtitle': {
                 c.font = fontStr(SMALL_FONT);
                 c.textAlign = 'center';
                 c.fillText(b.text, W / 2, y);
-                y += SMALL_FONT + 6;
+                y += SMALL_FONT + 4 * SCALE;
                 break;
             }
             case 'dispatcher': {
                 c.font = fontStr(SMALL_FONT, true);
                 c.textAlign = 'center';
                 c.fillText(b.text, W / 2, y);
-                y += SMALL_FONT + 8;
+                y += SMALL_FONT + 5 * SCALE;
                 break;
             }
             case 'divider': {
-                c.setLineDash([8, 6]);
+                c.setLineDash([4 * SCALE, 3 * SCALE]);
                 c.strokeStyle = '#555';
-                c.lineWidth = 2.5;
+                c.lineWidth = SCALE;
                 c.beginPath();
-                c.moveTo(PADDING, y + 5);
-                c.lineTo(W - PADDING, y + 5);
+                c.moveTo(PADDING, y + 3 * SCALE);
+                c.lineTo(W - PADDING, y + 3 * SCALE);
                 c.stroke();
                 c.setLineDash([]);
-                y += 14;
+                y += 8 * SCALE;
                 break;
             }
             case 'row': {
                 c.textAlign = 'left';
-                c.font = fontStr(BASE_FONT, b.bold);
-                c.fillStyle = '#666';
+                c.font = fontStr(BASE_FONT);
+                c.fillStyle = '#555';
                 c.fillText(b.label + ':', PADDING, y);
 
                 c.fillStyle = '#000';
-                c.font = fontStr(BASE_FONT, true); // значения всегда bold для лучшей читаемости при печати
+                c.font = fontStr(BASE_FONT, true);
                 c.textAlign = 'right';
 
                 const valW = CONTENT_W / 2;
@@ -230,22 +234,22 @@ function drawReceipt(
                 c.font = fontStr(BASE_FONT, true);
                 c.textAlign = 'center';
                 c.strokeStyle = '#000';
-                c.lineWidth = 2.5;
+                c.lineWidth = SCALE;
                 c.setLineDash([]);
-                const tw = c.measureText(b.text).width + 24;
+                const tw = c.measureText(b.text).width + 12 * SCALE;
                 const bx = W - PADDING - tw;
-                c.strokeRect(bx, y - 2, tw, LINE_H + 6);
+                c.strokeRect(bx, y - SCALE, tw, LINE_H + 3 * SCALE);
                 c.fillStyle = '#000';
-                c.fillText(b.text, bx + tw / 2, y + 2);
-                y += LINE_H + 6;
+                c.fillText(b.text, bx + tw / 2, y + SCALE);
+                y += LINE_H + 4 * SCALE;
                 break;
             }
             case 'track': {
                 c.font = fontStr(TRACK_FONT, true);
                 c.textAlign = 'left';
-                c.fillStyle = '#555';
+                c.fillStyle = '#333';
                 c.fillText(b.text, PADDING, y);
-                y += TRACK_FONT + 10;
+                y += TRACK_FONT + 6 * SCALE;
                 break;
             }
             case 'comment': {
@@ -263,20 +267,20 @@ function drawReceipt(
                     }
                     y += SMALL_LINE_H;
                 }
-                y += 4;
+                y += 3 * SCALE;
                 break;
             }
             case 'disclaimer': {
-                const fSize = SMALL_FONT - 2;
+                const fSize = SMALL_FONT - SCALE;
                 c.font = fontStr(fSize);
                 c.textAlign = 'left';
                 c.fillStyle = '#444';
                 const lines = measureLines(b.text, fontStr(fSize), CONTENT_W);
                 for (const line of lines) {
                     c.fillText(line, PADDING, y);
-                    y += fSize + 5;
+                    y += fSize + 4 * SCALE;
                 }
-                y += 4;
+                y += 3 * SCALE;
                 break;
             }
         }
@@ -285,22 +289,17 @@ function drawReceipt(
     }
 }
 
-// Полная дата в формате ДД.ММ.ГГГГ, ЧЧ:ММ:СС (вместо сокращённого "17 июн., 23:05")
 function formatFullDate(dateInput: string | Date, lang: string): string {
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     if (isNaN(date.getTime())) return formatDate(dateInput as string, lang);
-
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd  = String(date.getDate()).padStart(2, '0');
+    const mm  = String(date.getMonth() + 1).padStart(2, '0');
     const yyyy = date.getFullYear();
-    const hh = String(date.getHours()).padStart(2, '0');
+    const hh  = String(date.getHours()).padStart(2, '0');
     const min = String(date.getMinutes()).padStart(2, '0');
-    const ss = String(date.getSeconds()).padStart(2, '0');
-
+    const ss  = String(date.getSeconds()).padStart(2, '0');
     return `${dd}.${mm}.${yyyy}, ${hh}:${min}:${ss}`;
 }
-
-// ── Страница ──────────────────────────────────────────────────────────────────
 
 export function ReceiptPage() {
     const { id } = useParams<{ id: string }>();
@@ -317,118 +316,29 @@ export function ReceiptPage() {
         enabled: !!id,
     });
 
-    // Рисуем canvas при изменении данных или типа доставки
     useEffect(() => {
         if (!item) return;
         const lang = i18n.language ?? 'ru';
-        if (canvas80Ref.current) {
-            drawReceipt(canvas80Ref.current, item, deliveryType, 80, t, lang);
-        }
-        if (canvas58Ref.current) {
-            drawReceipt(canvas58Ref.current, item, deliveryType, 58, t, lang);
-        }
+        if (canvas80Ref.current) drawReceipt(canvas80Ref.current, item, deliveryType, 80, t, lang, false);
+        if (canvas58Ref.current) drawReceipt(canvas58Ref.current, item, deliveryType, 58, t, lang, false);
     }, [item, deliveryType, t, i18n.language]);
 
+    // Скачиваем PNG точного физического размера под принтер (forPrinter=true)
     const handleDownloadReceipt = (width: 58 | 80) => {
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [width, 200],
-        });
+        if (!item) return;
+        const lang = i18n.language ?? 'ru';
 
-        const x = 3;
-        let y = 5;
-        const lineH = 5;
+        // Создаём off-screen canvas с точным размером для принтера
+        const offscreen = document.createElement('canvas');
+        drawReceipt(offscreen, item, deliveryType, width, t, lang, true);
 
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(width === 58 ? 10 : 12);
-        pdf.text('TAS LOGISTIC', width / 2, y, { align: 'center' }); y += lineH;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(width === 58 ? 7 : 8);
-        pdf.text(t('receipt.subtitle'), width / 2, y, { align: 'center' }); y += lineH;
-        pdf.text('ДИСПЕТЧЕР: 8(747)-033-9028', width / 2, y, { align: 'center' }); y += lineH + 1;
-
-        // Разделитель
-        pdf.setLineDashPattern([1, 1], 0);
-        pdf.line(x, y, width - x, y); y += 3;
-        pdf.setLineDashPattern([], 0);
-
-        const row = (label: string, value: string) => {
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(width === 58 ? 7 : 8);
-            pdf.text(label + ':', x, y);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(value, width - x, y, { align: 'right' });
-            y += lineH;
-        };
-
-        row(t('receipt.from'), item!.fromCity ?? '—');
-        row(t('receipt.to'), item!.toCity ?? '—');
-
-        // Бокс типа доставки
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(width === 58 ? 7 : 8);
-        const dlabel = DELIVERY_LABEL[deliveryType];
-        pdf.rect(width - x - 20, y - 4, 20, 5);
-        pdf.text(dlabel, width - x - 10, y, { align: 'center' });
-        y += lineH;
-
-        pdf.setLineDashPattern([1, 1], 0);
-        pdf.line(x, y, width - x, y); y += 3;
-        pdf.setLineDashPattern([], 0);
-
-        row(t('receipt.recipient'), item!.recipientName ?? '—');
-        row(t('receipt.phone'), item!.recipientPhone ?? '—');
-
-        pdf.setLineDashPattern([1, 1], 0);
-        pdf.line(x, y, width - x, y); y += 3;
-        pdf.setLineDashPattern([], 0);
-
-        row(t('receipt.sender'), item!.senderName ?? '—');
-        row(t('receipt.senderPhone'), item!.senderPhone ?? '—');
-
-        pdf.setLineDashPattern([1, 1], 0);
-        pdf.line(x, y, width - x, y); y += 3;
-        pdf.setLineDashPattern([], 0);
-
-        row(t('receipt.item'), item!.title);
-        if (item!.weight) row(t('receipt.weight'), `${item!.weight} кг`);
-        if (item!.cashOnDelivery && item!.cashOnDelivery > 0) {
-            row(t('receipt.cod'), `${item!.cashOnDelivery.toLocaleString('ru-RU')} ₸`);
-        }
-        row(t('receipt.status'), t(STATUS_LABEL[item!.currentStatus] ?? item!.currentStatus));
-        row(t('receipt.date'), formatDate(item!.createdAt, i18n.language));
-
-        if (item!.comment) {
-            pdf.setLineDashPattern([1, 1], 0);
-            pdf.line(x, y, width - x, y); y += 3;
-            pdf.setLineDashPattern([], 0);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(width === 58 ? 6 : 7);
-            pdf.text(`${t('receipt.comment')}: ${item!.comment}`, x, y); y += lineH;
-        }
-
-        pdf.setLineDashPattern([1, 1], 0);
-        pdf.line(x, y, width - x, y); y += 3;
-        pdf.setLineDashPattern([], 0);
-
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(width === 58 ? 9 : 11);
-        pdf.text(`Трек-код: ${item!.trackingCode}`, x, y); y += lineH + 1;
-
-        pdf.setLineDashPattern([1, 1], 0);
-        pdf.line(x, y, width - x, y); y += 3;
-        pdf.setLineDashPattern([], 0);
-
-        // Дисклеймер
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(width === 58 ? 5 : 6);
-        const disclaimer = pdf.splitTextToSize(t('receipt.disclaimer'), width - x * 2);
-        pdf.text(disclaimer, x, y);
-        y += disclaimer.length * 3 + 2;
-
-        pdf.save(`Чек_${item?.trackingCode || 'order'}_${width}mm.pdf`);
+        const dataUrl = offscreen.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `Чек_${item.trackingCode}_${width}mm.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     if (isLoading) {
@@ -450,7 +360,6 @@ export function ReceiptPage() {
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
-            {/* Панель управления */}
             <div className="mb-6 flex flex-wrap items-center gap-3">
                 <button
                     onClick={() => navigate(-1)}
@@ -459,7 +368,6 @@ export function ReceiptPage() {
                     {t('receipt.back')}
                 </button>
 
-                {/* Тип доставки */}
                 <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
                     {DELIVERY_TYPES.map((dt) => (
                         <button
@@ -477,7 +385,6 @@ export function ReceiptPage() {
                     ))}
                 </div>
 
-                {/* Кнопки скачивания чеков */}
                 <button
                     onClick={() => handleDownloadReceipt(80)}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
@@ -493,7 +400,6 @@ export function ReceiptPage() {
                 </button>
             </div>
 
-            {/* Превью чеков */}
             <div className="flex flex-wrap gap-6">
                 <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wider">80 мм</p>
