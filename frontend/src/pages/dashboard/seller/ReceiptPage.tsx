@@ -428,16 +428,6 @@ export function ReceiptPage() {
         pdf.text(disclaimer, x, y);
         y += disclaimer.length * 3 + 2;
 
-        // Обрезаем PDF по реальной высоте
-        const finalPdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [width, y + 3],
-        });
-        finalPdf.addPage();
-        // Копируем содержимое
-        finalPdf.deletePage(2);
-
         pdf.save(`Чек_${item?.trackingCode || 'order'}_${width}mm.pdf`);
     };
 
