@@ -68,7 +68,7 @@ function renderReceiptContent(
     const smallFont = baseFont - 1.2;
     const titleFont = baseFont + 4;
     const trackFont = baseFont + 2;
-    const disclaimerFont = Math.max(smallFont, 7);
+    const disclaimerFont = Math.max(smallFont, 7.5);
 
     let y = margin + 2;
 
@@ -178,8 +178,6 @@ function renderReceiptContent(
     y += trackFont * 0.45 + 2.5;
     pdf.setTextColor(0);
     divider();
-
-
 
     pdf.setFont('PTSans', 'bold');
     pdf.setFontSize(disclaimerFont);
