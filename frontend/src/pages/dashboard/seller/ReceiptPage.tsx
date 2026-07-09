@@ -94,7 +94,7 @@ function renderReceiptContent(
     const row = (label: string, value: string) => {
         pdf.setFont('PTSans', 'normal');
         pdf.setFontSize(baseFont);
-        pdf.setTextColor(90);
+        pdf.setTextColor(0);
         setSemiBold(pdf, 0.08); // подпись (label) — чуть жирнее обычного
         textSemiBold(pdf, label + ':', margin, y);
 
@@ -156,7 +156,7 @@ function renderReceiptContent(
         divider();
         pdf.setFont('PTSans', 'normal');
         pdf.setFontSize(smallFont);
-        pdf.setTextColor(90);
+        pdf.setTextColor(0);
         const label = t('receipt.comment') + ': ';
         const labelW = pdf.getTextWidth(label);
         pdf.text(label, margin, y);
@@ -172,7 +172,7 @@ function renderReceiptContent(
     divider();
     pdf.setFont('PTSans', 'bold');
     pdf.setFontSize(trackFont);
-    pdf.setTextColor(60);
+    pdf.setTextColor(0);
     pdf.text(`Трек-код: ${item.trackingCode}`, margin, y);
     y += trackFont * 0.45 + 2.5;
     pdf.setTextColor(0);
@@ -180,7 +180,7 @@ function renderReceiptContent(
 
     pdf.setFont('PTSans', 'normal');
     pdf.setFontSize(smallFont - 0.5);
-    pdf.setTextColor(70);
+    pdf.setTextColor(0);
     setSemiBold(pdf, 0.06); // едва заметное утолщение, дисклеймер должен оставаться мельче остального
     const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
     disclaimerLines.forEach((line) => {
