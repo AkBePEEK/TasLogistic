@@ -41,6 +41,16 @@ function formatFullDate(dateInput: string | Date, lang: string): string {
     return `${dd}.${mm}.${yyyy}, ${hh}:${min}:${ss}`;
 }
 
+function setSemiBold(pdf: jsPDF, strokeWidth = 0.12) {
+    pdf.setLineWidth(strokeWidth);
+    pdf.setDrawColor(0); // цвет обводки — под цвет текущей заливки текста
+}
+
+function textSemiBold(pdf: jsPDF, text: string, x: number, y: number, opts: any = {}) {
+    pdf.text(text, x, y, { ...opts, renderingMode: 'fillThenStroke' });
+}
+
+
 // ── Отрисовка контента чека на уже созданном pdf, возвращает финальный Y (нужную высоту) ──
 function renderReceiptContent(
     pdf: jsPDF,
@@ -65,7 +75,12 @@ function renderReceiptContent(
         pdf.setFont('PTSans', bold ? 'bold' : 'normal');
         pdf.setFontSize(size);
         pdf.setTextColor(0);
-        pdf.text(text, widthMm / 2, y, { align: 'center' });
+        if (bold) {
+            pdf.text(text, widthMm / 2, y, { align: 'center' });
+        } else {
+            setSemiBold(pdf, 0.1);
+            textSemiBold(pdf, text, widthMm / 2, y, { align: 'center' });
+        }
     };
 
     const divider = () => {
@@ -80,9 +95,10 @@ function renderReceiptContent(
         pdf.setFont('PTSans', 'normal');
         pdf.setFontSize(baseFont);
         pdf.setTextColor(90);
-        pdf.text(label + ':', margin, y);
+        setSemiBold(pdf, 0.08); // подпись (label) — чуть жирнее обычного
+        textSemiBold(pdf, label + ':', margin, y);
 
-        pdf.setFont('PTSans', 'bold'); // значения всегда bold
+        pdf.setFont('PTSans', 'bold'); // значения остаются полностью bold
         pdf.setTextColor(0);
         const valueMaxW = contentW * 0.58;
         const lines = pdf.splitTextToSize(value, valueMaxW) as string[];
@@ -95,7 +111,7 @@ function renderReceiptContent(
 
     center(t('receipt.title'), titleFont, true);
     y += titleFont * 0.45 + 1.2;
-    center(t('receipt.subtitle'), smallFont, false);
+    center(t('receipt.subtitle'), smallFont, false); // теперь будет semi-bold
     y += smallFont * 0.45 + 1;
     center('ДИСПЕТЧЕР: 8(747)-033-9028', smallFont, true);
     y += smallFont * 0.45 + 1.5;
@@ -165,9 +181,10 @@ function renderReceiptContent(
     pdf.setFont('PTSans', 'normal');
     pdf.setFontSize(smallFont - 0.5);
     pdf.setTextColor(70);
+    setSemiBold(pdf, 0.06); // едва заметное утолщение, дисклеймер должен оставаться мельче остального
     const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
     disclaimerLines.forEach((line) => {
-        pdf.text(line, margin, y);
+        textSemiBold(pdf, line, margin, y);
         y += (smallFont - 0.5) * 0.45 + 1.4;
     });
     y += 2;
