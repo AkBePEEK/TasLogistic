@@ -179,12 +179,12 @@ function renderReceiptContent(
     divider();
 
     pdf.setFont('PTSans', 'bold');
-    pdf.setFontSize(smallFont - 0.4);
+    pdf.setFontSize(smallFont);
     pdf.setTextColor(0);
     const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
     disclaimerLines.forEach((line) => {
         pdf.text(line, margin, y);
-        y += (smallFont - 0.4) * 0.45 + 1.4;
+        y += (smallFont) * 0.45 + 1.4;
     });
     y += 2;
 
