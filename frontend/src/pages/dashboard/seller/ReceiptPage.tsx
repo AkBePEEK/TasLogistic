@@ -41,15 +41,15 @@ function formatFullDate(dateInput: string | Date, lang: string): string {
     return `${dd}.${mm}.${yyyy}, ${hh}:${min}:${ss}`;
 }
 
-// ── Чистая генерация PDF, без canvas и без картинок ──────────────────────────
-function buildReceiptPdf(
+// ── Отрисовка контента чека на уже созданном pdf, возвращает финальный Y (нужную высоту) ──
+function renderReceiptContent(
+    pdf: jsPDF,
     item: ItemDetail,
     deliveryType: CarrierType,
     widthMm: 58 | 80,
     t: (key: string) => string,
     lang: string,
-): jsPDF {
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [widthMm, 300] });
+): number {
     registerCyrillicFont(pdf);
 
     const margin = widthMm === 80 ? 4 : 3;
@@ -64,6 +64,7 @@ function buildReceiptPdf(
     const center = (text: string, size: number, bold: boolean) => {
         pdf.setFont('PTSans', bold ? 'bold' : 'normal');
         pdf.setFontSize(size);
+        pdf.setTextColor(0);
         pdf.text(text, widthMm / 2, y, { align: 'center' });
     };
 
@@ -75,13 +76,13 @@ function buildReceiptPdf(
         y += 2.5;
     };
 
-    const row = (label: string, value: string, bold = false) => {
+    const row = (label: string, value: string) => {
         pdf.setFont('PTSans', 'normal');
         pdf.setFontSize(baseFont);
         pdf.setTextColor(90);
         pdf.text(label + ':', margin, y);
 
-        pdf.setFont('PTSans', bold ? 'bold' : 'bold'); // значения всегда bold
+        pdf.setFont('PTSans', 'bold'); // значения всегда bold
         pdf.setTextColor(0);
         const valueMaxW = contentW * 0.58;
         const lines = pdf.splitTextToSize(value, valueMaxW) as string[];
@@ -92,7 +93,6 @@ function buildReceiptPdf(
         pdf.setTextColor(0);
     };
 
-    // Заголовок
     center(t('receipt.title'), titleFont, true);
     y += titleFont * 0.45 + 1.2;
     center(t('receipt.subtitle'), smallFont, false);
@@ -104,9 +104,9 @@ function buildReceiptPdf(
     row(t('receipt.from'), item.fromCity ?? '—');
     row(t('receipt.to'), item.toCity ?? '—');
 
-    // Бокс с типом доставки
     pdf.setFont('PTSans', 'bold');
     pdf.setFontSize(baseFont);
+    pdf.setTextColor(0);
     const dLabel = DELIVERY_LABEL[deliveryType];
     const dW = pdf.getTextWidth(dLabel) + 6;
     const boxX = widthMm - margin - dW;
@@ -131,7 +131,7 @@ function buildReceiptPdf(
     if (item.itemsCount) row(t('receipt.itemsCount'), String(item.itemsCount));
     if (item.weight) row(t('receipt.weight'), `${item.weight} кг`);
     if (item.cashOnDelivery && item.cashOnDelivery > 0) {
-        row(t('receipt.cod'), `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`, true);
+        row(t('receipt.cod'), `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`);
     }
     row(t('receipt.status'), t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus));
     row(t('receipt.date'), formatFullDate(item.createdAt, lang));
@@ -172,10 +172,24 @@ function buildReceiptPdf(
     });
     y += 2;
 
-    // Обрезаем страницу по фактической высоте контента
-    const finalHeight = y + margin;
-    pdf.internal.pageSize.height = finalHeight;
-    pdf.internal.pageSize.getHeight = () => finalHeight;
+    return y + margin;
+}
+
+// ── Публичная функция: два прохода — черновой (замер) и финальный (отрисовка) ──
+function buildReceiptPdf(
+    item: ItemDetail,
+    deliveryType: CarrierType,
+    widthMm: 58 | 80,
+    t: (key: string) => string,
+    lang: string,
+): jsPDF {
+    // Проход 1: черновик на заведомо высокой странице — только чтобы узнать нужную высоту
+    const draft = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [widthMm, 500] });
+    const neededHeight = renderReceiptContent(draft, item, deliveryType, widthMm, t, lang);
+
+    // Проход 2: финальный PDF сразу с правильной высотой страницы
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [widthMm, neededHeight] });
+    renderReceiptContent(pdf, item, deliveryType, widthMm, t, lang);
 
     return pdf;
 }
