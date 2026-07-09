@@ -68,6 +68,7 @@ function renderReceiptContent(
     const smallFont = baseFont - 1.2;
     const titleFont = baseFont + 4;
     const trackFont = baseFont + 2;
+    const disclaimerFont = Math.max(smallFont, 7);
 
     let y = margin + 2;
 
@@ -178,13 +179,15 @@ function renderReceiptContent(
     pdf.setTextColor(0);
     divider();
 
+
+
     pdf.setFont('PTSans', 'bold');
-    pdf.setFontSize(smallFont);
+    pdf.setFontSize(disclaimerFont);
     pdf.setTextColor(0);
     const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
     disclaimerLines.forEach((line) => {
         pdf.text(line, margin, y);
-        y += (smallFont) * 0.45 + 1.4;
+        y += disclaimerFont * 0.45 + 1.4;
     });
     y += 2;
 
