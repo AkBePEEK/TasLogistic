@@ -178,13 +178,12 @@ function renderReceiptContent(
     pdf.setTextColor(0);
     divider();
 
-    pdf.setFont('PTSans', 'normal');
+    pdf.setFont('PTSans', 'bold');
     pdf.setFontSize(smallFont - 0.5);
     pdf.setTextColor(0);
-    setSemiBold(pdf, 0.06); // едва заметное утолщение, дисклеймер должен оставаться мельче остального
     const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
     disclaimerLines.forEach((line) => {
-        textSemiBold(pdf, line, margin, y);
+        pdf.text(line, margin, y);
         y += (smallFont - 0.5) * 0.45 + 1.4;
     });
     y += 2;
