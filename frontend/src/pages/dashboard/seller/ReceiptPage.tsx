@@ -83,14 +83,6 @@ function renderReceiptContent(
         }
     };
 
-    const divider = () => {
-        pdf.setLineDashPattern([0.8, 0.8], 0);
-        pdf.setDrawColor(120);
-        pdf.line(margin, y, widthMm - margin, y);
-        pdf.setLineDashPattern([], 0);
-        y += 2.5;
-    };
-
     const row = (label: string, value: string) => {
         pdf.setFont('PTSans', 'normal');
         pdf.setFontSize(baseFont);
@@ -115,7 +107,6 @@ function renderReceiptContent(
     y += smallFont * 0.45 + 1;
     center('ДИСПЕТЧЕР: 8(747)-033-9028', smallFont, true);
     y += smallFont * 0.45 + 1.5;
-    divider();
 
     row(t('receipt.from'), item.fromCity ?? '—');
     row(t('receipt.to'), item.toCity ?? '—');
@@ -130,18 +121,14 @@ function renderReceiptContent(
     pdf.rect(boxX, y - baseFont * 0.35, dW, baseFont * 0.5 + 3);
     pdf.text(dLabel, boxX + dW / 2, y, { align: 'center' });
     y += baseFont * 0.45 + 3;
-    divider();
 
     row(t('receipt.recipient'), item.recipientName ?? '—');
     row(t('receipt.phone'), item.recipientPhone ?? '—');
-    divider();
 
     row(t('receipt.sender'), item.senderName ?? '—');
     row(t('receipt.senderPhone'), item.senderPhone ?? '—');
-    divider();
 
     row(t('receipt.operator'), item.operatorName ?? '—');
-    divider();
 
     row(t('receipt.item'), item.title);
     if (item.itemsCount) row(t('receipt.itemsCount'), String(item.itemsCount));
@@ -153,7 +140,6 @@ function renderReceiptContent(
     row(t('receipt.date'), formatFullDate(item.createdAt, lang));
 
     if (item.comment) {
-        divider();
         pdf.setFont('PTSans', 'normal');
         pdf.setFontSize(smallFont);
         pdf.setTextColor(0);
@@ -169,14 +155,12 @@ function renderReceiptContent(
         y += 1;
     }
 
-    divider();
     pdf.setFont('PTSans', 'bold');
     pdf.setFontSize(trackFont);
     pdf.setTextColor(0);
     pdf.text(`Трек-код: ${item.trackingCode}`, margin, y);
     y += trackFont * 0.45 + 2.5;
     pdf.setTextColor(0);
-    divider();
 
     pdf.setFont('PTSans', 'bold');
     pdf.setFontSize(baseFont);
