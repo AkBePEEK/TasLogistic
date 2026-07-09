@@ -1,30 +1,32 @@
-import React, {useState} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
-import {useQuery} from '@tanstack/react-query';
-import {ItemDetail, sellerApi} from '@/api/seller';
-import {CarrierType} from '@/api/carrier';
-import {useTranslation} from 'react-i18next';
-import {formatDate} from '@/utils/formatDate';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { ItemDetail, sellerApi } from '@/api/seller';
+import { CarrierType } from '@/api/carrier';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/utils/formatDate';
+import { jsPDF } from 'jspdf';
+import { registerCyrillicFont } from '@/utils/registerPdfFont';
 
 const STATUS_LABEL: Record<string, string> = {
-    CREATED:    'status.CREATED',
+    CREATED: 'status.CREATED',
     PROCESSING: 'status.PROCESSING',
-    SHIPPED:    'status.SHIPPED',
+    SHIPPED: 'status.SHIPPED',
     IN_TRANSIT: 'status.IN_TRANSIT',
-    DELIVERED:  'status.DELIVERED',
-    CANCELLED:  'status.CANCELLED',
+    DELIVERED: 'status.DELIVERED',
+    CANCELLED: 'status.CANCELLED',
 };
 
 const DELIVERY_TYPES: { value: CarrierType; label: string }[] = [
-    { value: 'AVIA',  label: '✈️ Авиа' },
-    { value: 'RAIL',  label: '🚂 ЖД' },
+    { value: 'AVIA', label: '✈️ Авиа' },
+    { value: 'RAIL', label: '🚂 ЖД' },
     { value: 'TRUCK', label: '🚛 Фура' },
 ];
 
 const DELIVERY_LABEL: Record<CarrierType, string> = {
-    AVIA:  '✈ АВИА',
-    RAIL:  '🚂 ЖД',
-    TRUCK: '🚛 ФУРА',
+    AVIA: 'АВИА',
+    RAIL: 'ЖД',
+    TRUCK: 'ФУРА',
 };
 
 function formatFullDate(dateInput: string | Date, lang: string): string {
@@ -39,82 +41,146 @@ function formatFullDate(dateInput: string | Date, lang: string): string {
     return `${dd}.${mm}.${yyyy}, ${hh}:${min}:${ss}`;
 }
 
-// ── Чистый генератор HTML, БЕЗ window.open / window.print ──────────────────
-function buildReceiptHtml(
+// ── Чистая генерация PDF, без canvas и без картинок ──────────────────────────
+function buildReceiptPdf(
     item: ItemDetail,
     deliveryType: CarrierType,
-    width: 58 | 80,
+    widthMm: 58 | 80,
     t: (key: string) => string,
     lang: string,
-): string {
-    const row = (label: string, value: string, bold = false) =>
-        `<tr><td class="label">${label}:</td><td class="value${bold ? ' bold' : ''}">${value}</td></tr>`;
+): jsPDF {
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [widthMm, 300] });
+    registerCyrillicFont(pdf);
 
-    const divider = () => `<tr><td colspan="2"><hr></td></tr>`;
+    const margin = widthMm === 80 ? 4 : 3;
+    const contentW = widthMm - margin * 2;
+    const baseFont = widthMm === 80 ? 9 : 7.5;
+    const smallFont = baseFont - 1.2;
+    const titleFont = baseFont + 4;
+    const trackFont = baseFont + 2;
 
-    let rows = '';
-    rows += row(t('receipt.from'), item.fromCity ?? '—');
-    rows += row(t('receipt.to'), item.toCity ?? '—');
-    rows += `<tr><td colspan="2" style="text-align:right"><span class="delivery-box">${DELIVERY_LABEL[deliveryType]}</span></td></tr>`;
-    rows += divider();
-    rows += row(t('receipt.recipient'), item.recipientName ?? '—');
-    rows += row(t('receipt.phone'), item.recipientPhone ?? '—');
-    rows += divider();
-    rows += row(t('receipt.sender'), item.senderName ?? '—');
-    rows += row(t('receipt.senderPhone'), item.senderPhone ?? '—');
-    rows += divider();
-    if (item.operatorName) rows += row(t('receipt.operator'), item.operatorName);
-    rows += divider();
-    rows += row(t('receipt.item'), item.title);
-    if (item.itemsCount) rows += row(t('receipt.itemsCount'), String(item.itemsCount));
-    if (item.weight) rows += row(t('receipt.weight'), `${item.weight} кг`);
-    if (item.cashOnDelivery && item.cashOnDelivery > 0)
-        rows += row(t('receipt.cod'), `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`, true);
-    rows += row(t('receipt.status'), t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus));
-    rows += row(t('receipt.date'), formatFullDate(item.createdAt, lang));
-    if (item.comment) {
-        rows += divider();
-        rows += `<tr><td colspan="2"><span class="label">${t('receipt.comment')}:</span> ${item.comment}</td></tr>`;
+    let y = margin + 2;
+
+    const center = (text: string, size: number, bold: boolean) => {
+        pdf.setFont('PTSans', bold ? 'bold' : 'normal');
+        pdf.setFontSize(size);
+        pdf.text(text, widthMm / 2, y, { align: 'center' });
+    };
+
+    const divider = () => {
+        pdf.setLineDashPattern([0.8, 0.8], 0);
+        pdf.setDrawColor(120);
+        pdf.line(margin, y, widthMm - margin, y);
+        pdf.setLineDashPattern([], 0);
+        y += 2.5;
+    };
+
+    const row = (label: string, value: string, bold = false) => {
+        pdf.setFont('PTSans', 'normal');
+        pdf.setFontSize(baseFont);
+        pdf.setTextColor(90);
+        pdf.text(label + ':', margin, y);
+
+        pdf.setFont('PTSans', bold ? 'bold' : 'bold'); // значения всегда bold
+        pdf.setTextColor(0);
+        const valueMaxW = contentW * 0.58;
+        const lines = pdf.splitTextToSize(value, valueMaxW) as string[];
+        for (const line of lines) {
+            pdf.text(line, widthMm - margin, y, { align: 'right' });
+            y += baseFont * 0.45 + 1.6;
+        }
+        pdf.setTextColor(0);
+    };
+
+    // Заголовок
+    center(t('receipt.title'), titleFont, true);
+    y += titleFont * 0.45 + 1.2;
+    center(t('receipt.subtitle'), smallFont, false);
+    y += smallFont * 0.45 + 1;
+    center('ДИСПЕТЧЕР: 8(747)-033-9028', smallFont, true);
+    y += smallFont * 0.45 + 1.5;
+    divider();
+
+    row(t('receipt.from'), item.fromCity ?? '—');
+    row(t('receipt.to'), item.toCity ?? '—');
+
+    // Бокс с типом доставки
+    pdf.setFont('PTSans', 'bold');
+    pdf.setFontSize(baseFont);
+    const dLabel = DELIVERY_LABEL[deliveryType];
+    const dW = pdf.getTextWidth(dLabel) + 6;
+    const boxX = widthMm - margin - dW;
+    pdf.setDrawColor(0);
+    pdf.rect(boxX, y - baseFont * 0.35, dW, baseFont * 0.5 + 3);
+    pdf.text(dLabel, boxX + dW / 2, y, { align: 'center' });
+    y += baseFont * 0.45 + 3;
+    divider();
+
+    row(t('receipt.recipient'), item.recipientName ?? '—');
+    row(t('receipt.phone'), item.recipientPhone ?? '—');
+    divider();
+
+    row(t('receipt.sender'), item.senderName ?? '—');
+    row(t('receipt.senderPhone'), item.senderPhone ?? '—');
+    divider();
+
+    row(t('receipt.operator'), item.operatorName ?? '—');
+    divider();
+
+    row(t('receipt.item'), item.title);
+    if (item.itemsCount) row(t('receipt.itemsCount'), String(item.itemsCount));
+    if (item.weight) row(t('receipt.weight'), `${item.weight} кг`);
+    if (item.cashOnDelivery && item.cashOnDelivery > 0) {
+        row(t('receipt.cod'), `${item.cashOnDelivery.toLocaleString('ru-RU')} ₸`, true);
     }
-    rows += divider();
-    rows += `<tr><td colspan="2" class="track">Трек-код: ${item.trackingCode}</td></tr>`;
-    rows += divider();
-    rows += `<tr><td colspan="2" class="disclaimer">${t('receipt.disclaimer')}</td></tr>`;
+    row(t('receipt.status'), t(STATUS_LABEL[item.currentStatus] ?? item.currentStatus));
+    row(t('receipt.date'), formatFullDate(item.createdAt, lang));
 
-    const isNarrow = width === 58;
+    if (item.comment) {
+        divider();
+        pdf.setFont('PTSans', 'normal');
+        pdf.setFontSize(smallFont);
+        pdf.setTextColor(90);
+        const label = t('receipt.comment') + ': ';
+        const labelW = pdf.getTextWidth(label);
+        pdf.text(label, margin, y);
+        pdf.setTextColor(0);
+        const lines = pdf.splitTextToSize(item.comment, contentW - labelW) as string[];
+        lines.forEach((line, i) => {
+            pdf.text(line, margin + (i === 0 ? labelW : 0), y);
+            y += smallFont * 0.45 + 1.4;
+        });
+        y += 1;
+    }
 
-    return `<!doctype html><html lang="ru"><head><meta charset="utf-8">
-<title>Чек ${item.trackingCode}</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-@page { margin:0; size:${width}mm auto; }
-body {
-    width:${width}mm;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: ${isNarrow ? 'small' : 'medium'};
-    color:#000;
-    background:#fff;
-    padding:2mm 3mm;
+    divider();
+    pdf.setFont('PTSans', 'bold');
+    pdf.setFontSize(trackFont);
+    pdf.setTextColor(60);
+    pdf.text(`Трек-код: ${item.trackingCode}`, margin, y);
+    y += trackFont * 0.45 + 2.5;
+    pdf.setTextColor(0);
+    divider();
+
+    pdf.setFont('PTSans', 'normal');
+    pdf.setFontSize(smallFont - 0.5);
+    pdf.setTextColor(70);
+    const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
+    disclaimerLines.forEach((line) => {
+        pdf.text(line, margin, y);
+        y += (smallFont - 0.5) * 0.45 + 1.4;
+    });
+    y += 2;
+
+    // Обрезаем страницу по фактической высоте контента
+    const finalHeight = y + margin;
+    pdf.internal.pageSize.height = finalHeight;
+    pdf.internal.pageSize.getHeight = () => finalHeight;
+
+    return pdf;
 }
-.title { text-align:center; font-size:large; font-weight:bold; margin-bottom:1mm; }
-.subtitle { text-align:center; font-size:x-small; margin-bottom:0.5mm; }
-.dispatcher { text-align:center; font-size:x-small; font-weight:bold; margin-bottom:1mm; }
-table { width:100%; border-collapse:collapse; }
-td { padding:0.5mm 0; vertical-align:top; font-size:${isNarrow ? 'small' : 'medium'}; }
-td.label { color:#444; white-space:nowrap; width:45%; }
-td.value { text-align:right; font-weight:bold; }
-hr { border:none; border-top:1px dashed #555; margin:1.5mm 0; }
-.delivery-box { display:inline-block; border:1.5px solid #000; padding:0.5mm 2mm; font-weight:bold; }
-.track { font-size:medium; font-weight:bold; color:#333; }
-.disclaimer { font-size:xx-small; color:#444; text-align:justify; line-height:1.3; }
-</style></head>
-<body>
-<div class="title">TAS LOGISTIC</div>
-<div class="subtitle">${t('receipt.subtitle')}</div>
-<div class="dispatcher">ДИСПЕТЧЕР: 8(747)-033-9028</div>
-<table>${rows}</table>
-</body></html>`;
-}
+
+// ── Страница ──────────────────────────────────────────────────────────────────
 
 export function ReceiptPage() {
     const { id } = useParams<{ id: string }>();
@@ -128,14 +194,21 @@ export function ReceiptPage() {
         enabled: !!id,
     });
 
-    // ── Печать через App Link ESC/POS-приложения, БЕЗ canvas и БЕЗ window.print() ──
-    const handlePrintReceipt = (width: 58 | 80) => {
-        if (!item) return;
-        const lang = i18n.language ?? 'ru';
-        const html = buildReceiptHtml(item, deliveryType, width, t, lang);
+    // Собираем PDF-превью для обоих форматов (реальный PDF в iframe — WYSIWYG, без canvas)
+    const previewUrl80 = useMemo(() => {
+        if (!item) return null;
+        return buildReceiptPdf(item, deliveryType, 80, t, i18n.language ?? 'ru').output('datauristring');
+    }, [item, deliveryType, t, i18n.language]);
 
-        window.location.href = `print://escpos.org/escpos/bt/print?srcTp=uri&srcObj=html` +
-            `&src='data:text/html,${encodeURIComponent(html)}'`;
+    const previewUrl58 = useMemo(() => {
+        if (!item) return null;
+        return buildReceiptPdf(item, deliveryType, 58, t, i18n.language ?? 'ru').output('datauristring');
+    }, [item, deliveryType, t, i18n.language]);
+
+    const handleDownloadReceipt = (width: 58 | 80) => {
+        if (!item) return;
+        const pdf = buildReceiptPdf(item, deliveryType, width, t, i18n.language ?? 'ru');
+        pdf.save(`Чек_${item.trackingCode || 'order'}_${width}mm.pdf`);
     };
 
     if (isLoading) {
@@ -155,10 +228,6 @@ export function ReceiptPage() {
         );
     }
 
-    const lang = i18n.language ?? 'ru';
-    const previewHtml80 = buildReceiptHtml(item, deliveryType, 80, t, lang);
-    const previewHtml58 = buildReceiptHtml(item, deliveryType, 58, t, lang);
-
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -176,9 +245,7 @@ export function ReceiptPage() {
                             onClick={() => setDeliveryType(dt.value)}
                             className={[
                                 'px-3 py-2 text-sm font-medium transition-colors',
-                                deliveryType === dt.value
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'text-gray-600 hover:bg-gray-50',
+                                deliveryType === dt.value ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50',
                             ].join(' ')}
                         >
                             {dt.label}
@@ -187,31 +254,35 @@ export function ReceiptPage() {
                 </div>
 
                 <button
-                    onClick={() => handlePrintReceipt(80)}
+                    onClick={() => handleDownloadReceipt(80)}
                     className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
                 >
-                    🖨️ Печать 80 мм
+                    💾 Скачать чек 80 мм
                 </button>
 
                 <button
-                    onClick={() => handlePrintReceipt(58)}
+                    onClick={() => handleDownloadReceipt(58)}
                     className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
                 >
-                    🖨️ Печать 58 мм
+                    💾 Скачать чек 58 мм
                 </button>
             </div>
 
             <div className="flex flex-wrap gap-6">
                 <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wider">80 мм</p>
-                    <div className="inline-block border border-dashed border-gray-300 bg-white shadow" style={{ width: '80mm' }}>
-                        <iframe srcDoc={previewHtml80} style={{ width: '100%', height: '600px', border: 'none' }} />
+                    <div className="inline-block border border-dashed border-gray-300 bg-white shadow">
+                        {previewUrl80 && (
+                            <iframe title="receipt-80" src={previewUrl80} style={{ width: 320, height: 500, border: 'none' }} />
+                        )}
                     </div>
                 </div>
                 <div>
                     <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wider">58 мм</p>
-                    <div className="inline-block border border-dashed border-gray-300 bg-white shadow" style={{ width: '58mm' }}>
-                        <iframe srcDoc={previewHtml58} style={{ width: '100%', height: '600px', border: 'none' }} />
+                    <div className="inline-block border border-dashed border-gray-300 bg-white shadow">
+                        {previewUrl58 && (
+                            <iframe title="receipt-58" src={previewUrl58} style={{ width: 240, height: 500, border: 'none' }} />
+                        )}
                     </div>
                 </div>
             </div>
