@@ -166,10 +166,11 @@ function renderReceiptContent(
     pdf.setFontSize(baseFont);
     pdf.setTextColor(0);
     const disclaimerLines = pdf.splitTextToSize(t('receipt.disclaimer'), contentW) as string[];
-    disclaimerLines.forEach((line) => {
-        pdf.text(line, margin, y);
-        y += baseFont * 0.45 + 1.4;
+    pdf.text(disclaimerLines, margin, y, {
+        maxWidth: contentW,
+        align: 'justify',
     });
+    y += disclaimerLines.length * (baseFont * 0.45 + 1.4);
     y += 2;
 
     return y + margin;
