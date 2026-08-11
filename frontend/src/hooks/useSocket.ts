@@ -7,9 +7,10 @@ export const useSocket = (trackingCode?: string | null) => {
     const qc = useQueryClient();
 
     useEffect(() => {
-        socketRef.current = io(import.meta.env.VITE_API_URL, {
+        socketRef.current = io(import.meta.env.VITE_SOCKET_URL ?? import.meta.env.VITE_API_URL, {
             withCredentials: true,
             transports: ['websocket', 'polling'],
+            path: '/socket.io',
         });
 
         const socket = socketRef.current;
