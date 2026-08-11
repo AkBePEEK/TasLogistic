@@ -56,8 +56,6 @@ export function AdminReports() {
     const deliveredWeight = data?.deliveredWeight ?? 0;
     Math.max(0, Math.round((totalWeight - deliveredWeight) * 100) / 100);
     const statusCounts = data?.statusCounts ?? {};
-    const topCities = data?.topCities ?? [];
-
     // Вес по типам транспорта — с фолбеком на нули, чтобы все три типа всегда отображались
     const weightByDeliveryType = {
         AVIA: 0, RAIL: 0, TRUCK: 0,
@@ -298,38 +296,6 @@ export function AdminReports() {
                                     })}
                                     </tbody>
                                 </table>
-                            )}
-                        </div>
-
-                        {/* Топ городов */}
-                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                            <p className="mb-4 text-sm font-semibold text-gray-700">
-                                {t('reports.topCities')}
-                            </p>
-                            {topCities.length === 0 ? (
-                                <p className="text-sm text-gray-400">{t('common.nothingFound')}</p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {topCities.map(({ city, count }, idx) => (
-                                        <div key={city} className="flex items-center gap-3">
-                                            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
-                                                {idx + 1}
-                                            </span>
-                                            <span className="flex-1 text-sm text-gray-700">{city}</span>
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-2 w-20 rounded-full bg-gray-100">
-                                                    <div
-                                                        className="h-2 rounded-full bg-indigo-500"
-                                                        style={{ width: topCities[0] ? `${Math.round((count / topCities[0].count) * 100)}%` : '0%' }}
-                                                    />
-                                                </div>
-                                                <span className="w-6 text-right text-sm font-semibold">
-                                                    {count}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
                             )}
                         </div>
                     </div>
