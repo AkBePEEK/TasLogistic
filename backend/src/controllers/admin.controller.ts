@@ -238,6 +238,7 @@ export async function adminGetReports(
                 currentStatus: true,
                 cashOnDelivery: true,
                 weight: true,
+                itemsCount: true,
                 createdAt: true,
                 fromCity: true,
                 toCity: true,
@@ -255,16 +256,20 @@ export async function adminGetReports(
         // Вес по типу транспорта (AVIA/RAIL/TRUCK)
         const weightByDeliveryType: Record<string, number> = { AVIA: 0, RAIL: 0, TRUCK: 0 };
         // Вес по городу назначения + типу транспорта: { "Алматы": { AVIA: 0, RAIL: 0, TRUCK: 0 } }
-        const weightByCityAndDeliveryType: Record<string, Record<string, number>> = {};
+        const weightByCityAndDeliveryType: Record<string, Record<string, number>> = {}
+        // Места по городу назначения + типу транспорта
+        const placesByCityAndDeliveryType: Record<string, Record<string, number>> = {};
 
         for (const item of items) {
             const amount = item.cashOnDelivery ?? 0;
             const weight = item.weight ?? 0;
             const toCity = item.toCity;
             const dt = item.deliveryType ?? 'TRUCK';
+            const places = item.itemsCount ?? 1;
             totalAmount += amount;
             totalWeight += weight;
-
+            // Вес по типу транспорта
+            weightByDeliveryType[dt] = (weightByDeliveryType[dt] ?? 0) + weight;
             statusCounts[item.currentStatus] =
                 (statusCounts[item.currentStatus] ?? 0) + 1;
 
@@ -273,21 +278,22 @@ export async function adminGetReports(
                 deliveredWeight += weight;
             }
 
-            // Города назначения
             if (toCity) {
+                // Города назначения
                 cityStats[toCity] = (cityStats[toCity] ?? 0) + 1;
-            }
 
-            // Вес по типу транспорта
-            weightByDeliveryType[dt] = (weightByDeliveryType[dt] ?? 0) + weight;
-
-            // Вес по городу назначения + типу транспорта
-            if (toCity) {
+                // Вес по городу назначения + типу транспорта
                 const bucket =
                     weightByCityAndDeliveryType[toCity] ??
                     (weightByCityAndDeliveryType[toCity] = { AVIA: 0, RAIL: 0, TRUCK: 0 });
 
                 bucket[dt] = (bucket[dt] ?? 0) + weight;
+
+                // Места по городу+транспорту
+                const placesBucket =
+                    placesByCityAndDeliveryType[toCity] ??
+                    (placesByCityAndDeliveryType[toCity] = { AVIA: 0, RAIL: 0, TRUCK: 0 });
+                placesBucket[dt] = (placesBucket[dt] ?? 0) + places;
             }
         }
 
@@ -314,6 +320,15 @@ export async function adminGetReports(
             ])
         );
 
+        const roundedPlacesByCityAndDeliveryType = Object.fromEntries(
+            Object.entries(placesByCityAndDeliveryType).map(([city, byType]) => [
+                city,
+                Object.fromEntries(
+                    Object.entries(byType).filter(([, p]) => p > 0)
+                ),
+            ])
+        );
+
         sendSuccess(res, {
             period,
             dateFrom,
@@ -325,7 +340,8 @@ export async function adminGetReports(
             statusCounts,
             topCities,
             weightByDeliveryType: roundedWeightByDeliveryType,
-            weightByCityAndDeliveryType: roundedWeightByCityAndDeliveryType, // ← новое поле
+            weightByCityAndDeliveryType: roundedWeightByCityAndDeliveryType,
+            placesByCityAndDeliveryType: roundedPlacesByCityAndDeliveryType,
         });
     } catch {
         sendError(res, 500, 'Внутренняя ошибка сервера');

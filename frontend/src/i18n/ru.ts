@@ -206,6 +206,7 @@ export const ru = {
             byStatus: 'По статусам',
             topCities: 'Топ городов назначения',
             weightByTransport: 'Вес по транспорту',
+            places: 'Мест',
         },
         createItem: {
             title: 'Создать новую отправку',

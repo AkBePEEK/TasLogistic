@@ -199,6 +199,7 @@ export const kz = {
             byStatus: 'Мәртебелер бойынша',
             topCities: 'Бағытталған қалалар рейтингі',
             weightByTransport: 'Көлік бойынша салмақ',
+            places: 'Орын',
         },
         createItem: {
             title: 'Жаңа жөнелтім жасау',
