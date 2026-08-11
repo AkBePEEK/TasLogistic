@@ -481,8 +481,8 @@ export function AdminItems() {
                     <p className="text-sm text-gray-500">{t('common.nothingFound')}</p>
                 </div>
             ) : (
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                    <div className="hidden grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div className="min-w-[800px] grid grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
                         {/* ← Чекбокс выбрать все */}
                         <input
                             type="checkbox"
@@ -574,7 +574,7 @@ function AdminRow({
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
-            <div className="hidden grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 lg:grid">
+            <div className="min-w-[800px] grid grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 lg:grid">
 
                 {/* ← Чекбокс */}
                 <input
@@ -667,7 +667,7 @@ function AdminRow({
             </div>
 
             {/* Mobile layout — карточка */}
-            <div className="space-y-2 lg:hidden">
+            <div className="space-y-2 md:hidden">
 
                 <div className="flex items-center gap-2">
                     {/* ← Чекбокс мобильный */}
