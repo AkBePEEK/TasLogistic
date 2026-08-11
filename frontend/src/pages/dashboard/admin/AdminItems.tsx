@@ -283,23 +283,6 @@ export function AdminItems() {
                         </span>
                     )}
                 </button>
-                <div className="hidden grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
-                    {/* ← Чекбокс выбрать все */}
-                    <input
-                        type="checkbox"
-                        checked={allSelected}
-                        onChange={toggleAll}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span>{t('common.trackCode')}</span>
-                    <span>{t('common.recipient')}</span>
-                    <span>{t('common.supplier')}</span>
-                    <span>{t('common.route')}</span>
-                    <span>{t('common.status')}</span>
-                    <span>{t('common.amount')}</span>
-                    <span>{t('common.date')}</span>
-                    <span>{t('common.actions')}</span>
-                </div>
             </div>
 
             {/* Панель мультивыбора */}
@@ -499,7 +482,14 @@ export function AdminItems() {
                 </div>
             ) : (
                 <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                    <div className="hidden grid-cols-[1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                    <div className="hidden grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                        {/* ← Чекбокс выбрать все */}
+                        <input
+                            type="checkbox"
+                            checked={allSelected}
+                            onChange={toggleAll}
+                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
                         <span>{t('common.trackCode')}</span>
                         <span>{t('common.recipient')}</span>
                         <span>{t('common.supplier')}</span>
