@@ -574,7 +574,7 @@ function AdminRow({
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
-            <div className="hidden grid-cols-[1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr_1.5fr] items-center gap-4 lg:grid">
+            <div className="hidden grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 lg:grid">
 
                 {/* ← Чекбокс */}
                 <input
