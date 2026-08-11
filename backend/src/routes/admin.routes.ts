@@ -22,9 +22,8 @@ router.use(
 router.get('/reports', adminGetReports as unknown as RequestHandler);
 router.get('/items/daily', adminGetDailyList as unknown as RequestHandler);
 router.get('/items', adminGetItems as unknown as RequestHandler);
+router.patch('/items/bulk-status', adminBulkUpdateStatus as unknown as RequestHandler);
 router.patch('/items/:id/status', validate(UpdateStatusSchema), adminUpdateStatus as unknown as RequestHandler);
 router.delete('/items/:id', adminDeleteItem as unknown as RequestHandler);
-router.patch('/bulk-status', adminBulkUpdateStatus as unknown as RequestHandler);
-router.patch('/:id/status', validate(UpdateStatusSchema), adminUpdateStatus as unknown as RequestHandler);
 
 export default router;
