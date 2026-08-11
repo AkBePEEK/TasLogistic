@@ -8,6 +8,7 @@ import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import {useSocket} from "@/hooks/useSocket";
 import {useTranslation} from "react-i18next";
 import {formatDateOnly} from "../../../../../backend/src/utils/formatDate";
+import { useSearchParams } from 'react-router-dom';
 
 const CITIES = [
     'Алматы', 'Астана', 'Шымкент', 'Қарағанды', 'Ақтобе',
@@ -50,10 +51,7 @@ export function AdminItems() {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [fromCity, setFromCity] = useState('');
-    const [toCity, setToCity] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
-    const [deliveryType, setDeliveryType] = useState<'' | CarrierType>('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [bulkStatus, setBulkStatus] = useState('');
     const [, setShowBulkPanel] = useState(false);
@@ -61,6 +59,10 @@ export function AdminItems() {
     // Дата для печати дневного списка — по умолчанию сегодня
     const [printDate, setPrintDate] = useState(() => new Date().toISOString().slice(0, 10));
     const [isPrinting, setIsPrinting] = useState(false);
+    const [searchParams] = useSearchParams();
+    const [toCity,       setToCity]       = useState(searchParams.get('toCity')       ?? '');
+    const [deliveryType, setDeliveryType] = useState((searchParams.get('deliveryType') ?? '') as '' | CarrierType);
+    const [dateFrom,     setDateFrom]     = useState(searchParams.get('dateFrom')     ?? '');
 
     const hasActiveFilters = status || fromCity || toCity || dateFrom || dateTo || deliveryType;
 

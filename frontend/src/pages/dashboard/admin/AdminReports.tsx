@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/api/admin';
 import { useTranslation } from "react-i18next";
+import {useNavigate} from "react-router-dom";
 
 const PERIODS = [
     { value: 'today', label: 'reports.today' },
@@ -56,6 +57,8 @@ export function AdminReports() {
     const deliveredWeight = data?.deliveredWeight ?? 0;
     Math.max(0, Math.round((totalWeight - deliveredWeight) * 100) / 100);
     const statusCounts = data?.statusCounts ?? {};
+    const navigate = useNavigate();
+
     // Вес по типам транспорта — с фолбеком на нули, чтобы все три типа всегда отображались
     const weightByDeliveryType = {
         AVIA: 0, RAIL: 0, TRUCK: 0,
@@ -77,6 +80,17 @@ export function AdminReports() {
             }))
         )
         .sort((a, b) => a.city.localeCompare(b.city) || a.deliveryType.localeCompare(b.deliveryType));
+
+    const periodDateFrom = (() => {
+        const now = new Date();
+        switch (period) {
+            case 'today': return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
+            case 'week':  return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+            case 'month': return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+            case 'year':  return new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+            default:      return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+        }
+    })();
 
     return (
         <div className="space-y-6">
@@ -281,7 +295,13 @@ export function AdminReports() {
                                         const prevCity = cityTransportRows[idx - 1]?.city;
                                         const isNewCity = row.city !== prevCity;
                                         return (
-                                            <tr key={`${row.city}-${row.deliveryType}`} className="border-b border-gray-50 last:border-0">
+                                            <tr
+                                                key={`${row.city}-${row.deliveryType}`}
+                                                className="border-b border-gray-50 last:border-0"
+                                                onClick={() => navigate(
+                                                    `/dashboard/admin/items?toCity=${encodeURIComponent(row.city)}&deliveryType=${row.deliveryType}&dateFrom=${periodDateFrom}`
+                                                )}
+                                            >
                                                 <td className="py-2 pr-4 text-gray-700">{isNewCity ? row.city : ''}</td>
                                                 <td className="py-2 pr-4 text-gray-600">
                                                 <span className="inline-flex items-center gap-1">
