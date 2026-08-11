@@ -61,18 +61,18 @@ model Item {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  recipientName  String?
-  recipientPhone String?
-  fromCity       String?
-  toCity         String?
+  recipientName  String
+  recipientPhone String
+  fromCity       String
+  toCity         String
   weight         Float?
-  itemsCount     Int?     @default(1)
+  itemsCount     Int         @default(1)
   cashOnDelivery Float?
   comment        String?
-  senderName     String?
-  senderPhone    String?
-  operatorName   String?
-  deliveryType   CarrierType? @default(TRUCK)
+  senderName     String
+  senderPhone    String
+  operatorName   String
+  deliveryType   CarrierType @default(TRUCK)
 
   seller        User            @relation("SellerItems", fields: [sellerId], references: [id])
   statusHistory StatusHistory[]

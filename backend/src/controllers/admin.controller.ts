@@ -254,32 +254,41 @@ export async function adminGetReports(
         const cityStats: Record<string, number> = {};
         // Вес по типу транспорта (AVIA/RAIL/TRUCK)
         const weightByDeliveryType: Record<string, number> = { AVIA: 0, RAIL: 0, TRUCK: 0 };
+        // Вес по городу назначения + типу транспорта: { "Алматы": { AVIA: 0, RAIL: 0, TRUCK: 0 } }
+        const weightByCityAndDeliveryType: Record<string, Record<string, number>> = {};
 
         for (const item of items) {
-            // Суммы
             const amount = item.cashOnDelivery ?? 0;
             const weight = item.weight ?? 0;
+            const toCity = item.toCity;
+            const dt = item.deliveryType ?? 'TRUCK';
             totalAmount += amount;
             totalWeight += weight;
 
-            // По статусам
             statusCounts[item.currentStatus] =
                 (statusCounts[item.currentStatus] ?? 0) + 1;
 
-            // Доставленные
             if (item.currentStatus === 'DELIVERED') {
                 deliveredAmount += amount;
                 deliveredWeight += weight;
             }
 
             // Города назначения
-            if (item.toCity) {
-                cityStats[item.toCity] = (cityStats[item.toCity] ?? 0) + 1;
+            if (toCity) {
+                cityStats[toCity] = (cityStats[toCity] ?? 0) + 1;
             }
 
-            // Вес по типу транспорта (если deliveryType не задан — считаем как TRUCK)
-            const dt = item.deliveryType ?? 'TRUCK';
+            // Вес по типу транспорта
             weightByDeliveryType[dt] = (weightByDeliveryType[dt] ?? 0) + weight;
+
+            // Вес по городу назначения + типу транспорта
+            if (toCity) {
+                const bucket =
+                    weightByCityAndDeliveryType[toCity] ??
+                    (weightByCityAndDeliveryType[toCity] = { AVIA: 0, RAIL: 0, TRUCK: 0 });
+
+                bucket[dt] = (bucket[dt] ?? 0) + weight;
+            }
         }
 
         // Топ 5 городов
@@ -293,6 +302,18 @@ export async function adminGetReports(
             Object.entries(weightByDeliveryType).map(([type, w]) => [type, Math.round(w * 100) / 100])
         );
 
+        // Округляем вес по городу+транспорту, убираем нулевые типы транспорта для чистоты вывода
+        const roundedWeightByCityAndDeliveryType = Object.fromEntries(
+            Object.entries(weightByCityAndDeliveryType).map(([city, byType]) => [
+                city,
+                Object.fromEntries(
+                    Object.entries(byType)
+                        .filter(([, w]) => w > 0)
+                        .map(([type, w]) => [type, Math.round(w * 100) / 100])
+                ),
+            ])
+        );
+
         sendSuccess(res, {
             period,
             dateFrom,
@@ -304,6 +325,7 @@ export async function adminGetReports(
             statusCounts,
             topCities,
             weightByDeliveryType: roundedWeightByDeliveryType,
+            weightByCityAndDeliveryType: roundedWeightByCityAndDeliveryType, // ← новое поле
         });
     } catch {
         sendError(res, 500, 'Внутренняя ошибка сервера');

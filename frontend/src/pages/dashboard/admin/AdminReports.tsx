@@ -65,6 +65,19 @@ export function AdminReports() {
     };
     const maxDeliveryWeight = Math.max(...Object.values(weightByDeliveryType), 1);
 
+    const weightByCityAndDeliveryType = data?.weightByCityAndDeliveryType ?? {};
+
+    // Строим плоский список строк для таблицы: { city, deliveryType, weight }
+    const cityTransportRows = Object.entries(weightByCityAndDeliveryType)
+        .flatMap(([city, byType]) =>
+            Object.entries(byType).map(([deliveryType, weight]) => ({
+                city,
+                deliveryType,
+                weight,
+            }))
+        )
+        .sort((a, b) => a.city.localeCompare(b.city) || a.deliveryType.localeCompare(b.deliveryType));
+
     return (
         <div className="space-y-6">
             {/* Заголовок + фильтр периода */}
@@ -243,6 +256,48 @@ export function AdminReports() {
                                         );
                                     })}
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Вес по городам и видам транспорта */}
+                        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p className="mb-4 text-sm font-semibold text-gray-700">
+                                {t('reports.weightByCityAndTransport')}
+                            </p>
+                            {cityTransportRows.length === 0 ? (
+                                <p className="text-sm text-gray-400">{t('common.nothingFound')}</p>
+                            ) : (
+                                <table className="w-full text-sm">
+                                    <thead>
+                                    <tr className="border-b border-gray-100 text-left text-xs uppercase tracking-wider text-gray-400">
+                                        <th className="py-2 pr-4 font-medium">{t('reports.city')}</th>
+                                        <th className="py-2 pr-4 font-medium">{t('reports.transportType')}</th>
+                                        <th className="py-2 text-right font-medium">{t('reports.totalWeight')}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {cityTransportRows.map((row, idx) => {
+                                        const prevCity = cityTransportRows[idx - 1]?.city;
+                                        const isNewCity = row.city !== prevCity;
+                                        return (
+                                            <tr key={`${row.city}-${row.deliveryType}`} className="border-b border-gray-50 last:border-0">
+                                                <td className="py-2 pr-4 text-gray-700">
+                                                    {isNewCity ? row.city : ''}
+                                                </td>
+                                                <td className="py-2 pr-4 text-gray-600">
+                                <span className="inline-flex items-center gap-1">
+                                    <span>{DELIVERY_TYPE_META[row.deliveryType as 'AVIA' | 'RAIL' | 'TRUCK']?.icon}</span>
+                                    {t(`carrierType.${row.deliveryType}`)}
+                                </span>
+                                                </td>
+                                                <td className="py-2 text-right font-semibold text-gray-700">
+                                                    {row.weight} кг
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    </tbody>
+                                </table>
                             )}
                         </div>
 

@@ -37,6 +37,7 @@ export interface AdminReports {
     statusCounts: Partial<Record<string, number>>;
     topCities: { city: string; count: number }[];
     weightByDeliveryType: Partial<Record<'AVIA' | 'RAIL' | 'TRUCK', number>>;
+    weightByCityAndDeliveryType: Record<string, Record<string, number>>;
 }
 
 export const adminApi = {
