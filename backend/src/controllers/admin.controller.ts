@@ -331,3 +331,45 @@ export async function adminGetReports(
         sendError(res, 500, 'Внутренняя ошибка сервера');
     }
 }
+
+/**
+ * PATCH /api/admin/items/bulk-status
+ * Массовое обновление статуса
+ */
+export async function adminBulkUpdateStatus(
+    req: AuthenticatedRequest,
+    res: Response
+): Promise<void> {
+    const { ids, status } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        sendError(res, 400, 'Список ID обязателен'); return;
+    }
+    if (!status) {
+        sendError(res, 400, 'Статус обязателен'); return;
+    }
+
+    try {
+        await prisma.$transaction([
+            prisma.item.updateMany({
+                where: { id: { in: ids } },
+                data: { currentStatus: status },
+            }),
+            // Добавляем запись в историю для каждого
+            ...ids.map((id: string) =>
+                prisma.statusHistory.create({
+                    data: {
+                        itemId: id,
+                        oldStatus: status,
+                        newStatus: status,
+                        changedBy: req.user.userId,
+                    },
+                })
+            ),
+        ]);
+
+        sendSuccess(res, null, 200, `Статус обновлён для ${ids.length} заказов`);
+    } catch {
+        sendError(res, 500, 'Внутренняя ошибка сервера');
+    }
+}

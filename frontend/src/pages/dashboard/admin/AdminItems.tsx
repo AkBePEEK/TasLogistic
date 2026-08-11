@@ -54,6 +54,9 @@ export function AdminItems() {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [deliveryType, setDeliveryType] = useState<'' | CarrierType>('');
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [bulkStatus, setBulkStatus] = useState('');
+    const [, setShowBulkPanel] = useState(false);
 
     // Дата для печати дневного списка — по умолчанию сегодня
     const [printDate, setPrintDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -105,6 +108,19 @@ export function AdminItems() {
             toast.success(t('toast.itemDeleted'));
         },
         onError: () => toast.error(t('toast.itemDeleteError')),
+    });
+
+    const bulkMutation = useMutation({
+        mutationFn: ({ ids, status }: { ids: string[]; status: string }) =>
+            adminApi.bulkUpdateStatus(ids, status),
+        onSuccess: () => {
+            void qc.invalidateQueries({ queryKey: ['admin-items'] });
+            setSelectedIds(new Set());
+            setBulkStatus('');
+            setShowBulkPanel(false);
+            toast.success(`Статус обновлён для ${selectedIds.size} заказов`);
+        },
+        onError: () => toast.error('Ошибка при массовом обновлении'),
     });
 
     const totalPages = data ? Math.ceil(data.total / 20) : 1;
@@ -217,6 +233,26 @@ export function AdminItems() {
         }
     };
 
+    const allPageIds = data?.items.map((i) => i.id) ?? [];
+    const allSelected = allPageIds.length > 0 && allPageIds.every((id) => selectedIds.has(id));
+    const someSelected = selectedIds.size > 0;
+
+    const toggleItem = (id: string) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const toggleAll = () => {
+        if (allSelected) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(allPageIds));
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Заголовок */}
@@ -243,11 +279,65 @@ export function AdminItems() {
                     {t("common.filters")}
                     {hasActiveFilters && (
                         <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 text-xs text-white">
-              !
-            </span>
+                            !
+                        </span>
                     )}
                 </button>
+                <div className="hidden grid-cols-[auto_1.2fr_1fr_1fr_1.2fr_1fr_0.8fr_0.8fr_1fr] items-center gap-4 border-b border-gray-100 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 lg:grid">
+                    {/* ← Чекбокс выбрать все */}
+                    <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleAll}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span>{t('common.trackCode')}</span>
+                    <span>{t('common.recipient')}</span>
+                    <span>{t('common.supplier')}</span>
+                    <span>{t('common.route')}</span>
+                    <span>{t('common.status')}</span>
+                    <span>{t('common.amount')}</span>
+                    <span>{t('common.date')}</span>
+                    <span>{t('common.actions')}</span>
+                </div>
             </div>
+
+            {/* Панель мультивыбора */}
+            {someSelected && (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-4">
+                    <span className="text-sm font-medium text-green-700">
+                      ✓ Выбрано: {selectedIds.size}
+                    </span>
+                    <select
+                        value={bulkStatus}
+                        onChange={(e) => setBulkStatus(e.target.value)}
+                        className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-200"
+                    >
+                        <option value="">Выберите статус...</option>
+                        {STATUS_OPTIONS.filter((s) => s.value).map((s) => (
+                            <option key={s.value} value={s.value}>{t(s.label)}</option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={() => {
+                            if (!bulkStatus) { toast.error('Выберите статус'); return; }
+                            if (confirm(`Изменить статус для ${selectedIds.size} заказов?`)) {
+                                bulkMutation.mutate({ ids: Array.from(selectedIds), status: bulkStatus });
+                            }
+                        }}
+                        disabled={!bulkStatus || bulkMutation.isPending}
+                        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                    >
+                        {bulkMutation.isPending ? 'Обновление...' : 'Применить'}
+                    </button>
+                    <button
+                        onClick={() => setSelectedIds(new Set())}
+                        className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                        Сбросить выбор
+                    </button>
+                </div>
+            )}
 
             {/* Панель печати списка за день */}
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
@@ -424,6 +514,8 @@ export function AdminItems() {
                             <AdminRow
                                 key={item.id}
                                 item={item}
+                                isSelected={selectedIds.has(item.id)}
+                                onToggleSelect={() => toggleItem(item.id)}
                                 isEditing={editingId === item.id}
                                 onEdit={() => setEditingId(item.id)}
                                 onCancelEdit={() => setEditingId(null)}
@@ -473,6 +565,8 @@ export function AdminItems() {
 interface AdminRowProps {
     item: AdminItem;
     isEditing: boolean;
+    isSelected: boolean;
+    onToggleSelect: () => void;
     onEdit: () => void;
     onCancelEdit: () => void;
     onStatusChange: (status: string) => void;
@@ -481,12 +575,26 @@ interface AdminRowProps {
     isDeleting: boolean;
 }
 
-function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDelete,isPending, isDeleting,}: AdminRowProps) {
+function AdminRow({
+                      item, isSelected, onToggleSelect,
+                      isEditing, onEdit, onCancelEdit,
+                      onStatusChange, onDelete, isPending, isDeleting,
+                  }: AdminRowProps) {
     const { i18n, t } = useTranslation();
     return (
         <div className="px-5 py-4">
             {/* Desktop layout */}
             <div className="hidden grid-cols-[1.5fr_1.5fr_1.5fr_2fr_1fr_1fr_1fr_1.5fr] items-center gap-4 lg:grid">
+
+                {/* ← Чекбокс */}
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={onToggleSelect}
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    onClick={(e) => e.stopPropagation()}
+                />
+
                 {/* Трек-код */}
                 <span className="font-mono text-sm font-semibold text-indigo-600">
                     {item.trackingCode}
@@ -570,12 +678,20 @@ function AdminRow({item, isEditing, onEdit, onCancelEdit, onStatusChange, onDele
 
             {/* Mobile layout — карточка */}
             <div className="space-y-2 lg:hidden">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm font-semibold text-indigo-600">
-                    {item.trackingCode}
-                  </span>
-                    <StatusBadge status={item.currentStatus} />
+
+                <div className="flex items-center gap-2">
+                    {/* ← Чекбокс мобильный */}
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={onToggleSelect}
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                    />
+                    <span className="font-mono text-sm font-semibold text-indigo-600">
+                      {item.trackingCode}
+                    </span>
                 </div>
+                <StatusBadge status={item.currentStatus} />
 
                 {item.recipientName && (
                     <p className="text-sm text-gray-700">{item.recipientName}</p>

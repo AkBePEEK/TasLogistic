@@ -67,4 +67,7 @@ export const adminApi = {
         apiClient.get<ApiResponse<AdminReports>>('/admin/reports', {
             params: { period },
         }),
+
+    bulkUpdateStatus: (ids: string[], status: string) =>
+        apiClient.patch<ApiResponse>('/admin/items/bulk-status', { ids, status }),
 };
