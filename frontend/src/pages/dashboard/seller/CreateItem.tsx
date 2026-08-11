@@ -99,14 +99,14 @@ export function CreateItem() {
                         <Field label={t("createItem.senderName")} error={errors.senderName?.message} required>
                             <input
                                 {...register('senderName')}
-                                placeholder="Иванов Иван Иванович"
+                                value="Гульнур"
                                 className={inputCls}
                             />
                         </Field>
                         <Field label={t('createItem.phone')} error={errors.senderPhone?.message} required>
                             <input
                                 {...register('senderPhone')}
-                                placeholder="+7 707 123 4567"
+                                value="+7 747 033 9028"
                                 className={inputCls}
                             />
                         </Field>
@@ -164,7 +164,7 @@ export function CreateItem() {
                     <Field label={t('createItem.operatorName')} error={errors.operatorName?.message} required>
                         <input
                             {...register('operatorName')}
-                            placeholder={t('createItem.operatorNamePlaceholder')}
+                            value={'Айдос'}
                             className={inputCls}
                         />
                     </Field>
