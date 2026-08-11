@@ -175,7 +175,7 @@ export function CreateItem() {
                     <Field label={t('createItem.itemTitle')}  error={errors.title?.message} required>
                         <input
                             {...register('title')}
-                            placeholder={t('createItem.titlePlaceholder')}
+                            value={'Товар'}
                             className={inputCls}
                         />
                     </Field>
