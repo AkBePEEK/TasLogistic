@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ItemDetail, sellerApi } from '@/api/seller';
@@ -16,13 +16,6 @@ const STATUS_LABEL: Record<string, string> = {
     DELIVERED: 'status.DELIVERED',
     CANCELLED: 'status.CANCELLED',
 };
-
-const DELIVERY_TYPES: { value: CarrierType; label: string }[] = [
-    { value: 'AVIA', label: '✈️ Авиа' },
-    { value: 'RAIL', label: '🚂 ЖД' },
-    { value: 'TRUCK', label: '🚛 Фура' },
-];
-
 const DELIVERY_LABEL: Record<CarrierType, string> = {
     AVIA: 'АВИА',
     RAIL: 'ЖД',
@@ -201,13 +194,13 @@ export function ReceiptPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const [deliveryType, setDeliveryType] = useState<CarrierType>('TRUCK');
 
     const { data: item, isLoading, isError } = useQuery({
         queryKey: ['seller-item', id],
         queryFn: () => sellerApi.getItemById(id as string).then((r) => r.data.data),
         enabled: !!id,
     });
+    const deliveryType: CarrierType = (item?.deliveryType as CarrierType) ?? 'TRUCK';
 
     // Собираем PDF-превью для обоих форматов (реальный PDF в iframe — WYSIWYG, без canvas)
     const previewUrl80 = useMemo(() => {
@@ -252,21 +245,6 @@ export function ReceiptPage() {
                 >
                     {t('receipt.back')}
                 </button>
-
-                <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-                    {DELIVERY_TYPES.map((dt) => (
-                        <button
-                            key={dt.value}
-                            onClick={() => setDeliveryType(dt.value)}
-                            className={[
-                                'px-3 py-2 text-sm font-medium transition-colors',
-                                deliveryType === dt.value ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50',
-                            ].join(' ')}
-                        >
-                            {dt.label}
-                        </button>
-                    ))}
-                </div>
 
                 <button
                     onClick={() => handleDownloadReceipt(80)}

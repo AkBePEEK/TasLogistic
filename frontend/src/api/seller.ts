@@ -14,18 +14,19 @@ export interface StatusHistoryEntry {
 }
 
 export interface ItemDetail extends Item {
-    recipientName?: string;
-    recipientPhone?: string;
-    senderName?: string;
-    senderPhone?: string;
-    fromCity?: string;
-    toCity?: string;
-    weight?: number;
+    recipientName: string;
+    recipientPhone: string;
+    senderName: string;
+    senderPhone: string;
+    fromCity: string;
+    toCity: string;
+    weight: number;
     itemsCount?: number;
     cashOnDelivery?: number;
     comment?: string;
     operatorName?: string;
     statusHistory: StatusHistoryEntry[];
+    deliveryType: string;
 }
 
 export interface PaginatedItems {
