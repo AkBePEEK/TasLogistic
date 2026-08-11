@@ -285,10 +285,10 @@ export function AdminReports() {
                                                     {isNewCity ? row.city : ''}
                                                 </td>
                                                 <td className="py-2 pr-4 text-gray-600">
-                                <span className="inline-flex items-center gap-1">
-                                    <span>{DELIVERY_TYPE_META[row.deliveryType as 'AVIA' | 'RAIL' | 'TRUCK']?.icon}</span>
-                                    {t(`carrierType.${row.deliveryType}`)}
-                                </span>
+                                                <span className="inline-flex items-center gap-1">
+                                                    <span>{DELIVERY_TYPE_META[row.deliveryType as 'AVIA' | 'RAIL' | 'TRUCK']?.icon}</span>
+                                                    {t(`carrierType.${row.deliveryType}`)}
+                                                </span>
                                                 </td>
                                                 <td className="py-2 text-right font-semibold text-gray-700">
                                                     {row.weight} кг
