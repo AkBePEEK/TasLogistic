@@ -38,7 +38,16 @@ export function CreateItem() {
 
     const {register, handleSubmit, formState: {errors}} = useForm<Form>({
         resolver: zodResolver(CreateItemSchema),
-        defaultValues: {cashOnDelivery: 0, deliveryType: 'TRUCK', fromCity: 'Алматы', itemsCount: 1, operatorName: ''},
+        defaultValues: {
+            cashOnDelivery: 0,
+            deliveryType: 'TRUCK',
+            fromCity: 'Алматы',
+            itemsCount: 1,
+            operatorName: 'Айдос',
+            senderName: 'Гульнур',
+            senderPhone: '+7 747 033 9028',
+            title: 'Товар',
+        },
     });
 
     const mutation = useMutation({
@@ -99,14 +108,14 @@ export function CreateItem() {
                         <Field label={t("createItem.senderName")} error={errors.senderName?.message} required>
                             <input
                                 {...register('senderName')}
-                                value="Гульнур"
+                                placeholder="Гульнур"
                                 className={inputCls}
                             />
                         </Field>
                         <Field label={t('createItem.phone')} error={errors.senderPhone?.message} required>
                             <input
                                 {...register('senderPhone')}
-                                value="+7 747 033 9028"
+                                placeholder="+7 747 033 9028"
                                 className={inputCls}
                             />
                         </Field>
@@ -164,7 +173,7 @@ export function CreateItem() {
                     <Field label={t('createItem.operatorName')} error={errors.operatorName?.message} required>
                         <input
                             {...register('operatorName')}
-                            value={'Айдос'}
+                            placeholder={'Айдос'}
                             className={inputCls}
                         />
                     </Field>
